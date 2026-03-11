@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>EURIX - AR Core Engine (Live & Interactive)</title>
+    <title>EURIX - AR Core Engine</title>
 
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
@@ -79,17 +79,27 @@
             z-index: 10000;
         }
 
-        /* BORDINO BLU RIMOSSO! */
+        /* FIX 1: Nasconde il canvas ma non lo blocca per il 3D */
+        #canvas-core {
+            position: absolute;
+            top: -9999px;
+            visibility: hidden;
+        }
+
+        /* FIX 2: Bordo blu rimosso e visibilità ripristinata nel modale */
         .canvas-pinned {
+            visibility: visible !important;
+            position: static !important;
             display: block !important;
             width: 90% !important;
             max-width: 600px !important;
             height: auto !important;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+            cursor: pointer;
         }
 
-        /* Stili per la vista Dettaglio (Grafico) */
+        /* Stili Grafico Dettaglio */
         #detail-view {
             display: none;
             width: 90%;
@@ -146,7 +156,7 @@
         <div id="main-view-container"></div>
 
         <div id="detail-view">
-            <h2 id="detail-title">Andamento Giornaliero</h2>
+            <h2 id="detail-title">Andamento</h2>
             <div id="detail-chart-container">
                 <canvas id="chart-canvas"></canvas>
             </div>
@@ -154,7 +164,7 @@
         </div>
     </div>
 
-    <canvas id="canvas-core" style="display:none;"></canvas>
+    <canvas id="canvas-core"></canvas>
 
     <a-scene embedded
         arjs="sourceType: webcam; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
@@ -188,22 +198,16 @@
         let currentConfig = null;
         let renderLoop = null;
 
-        // ==========================================
-        // MOTORE DI AGGIORNAMENTO LIVE (1 SECONDO)
-        // ==========================================
         function startRenderLoop(config) {
             currentConfig = config;
 
-            // Imposta dimensioni una volta sola
             canvasCore.width = config.template.config.canvasW;
             canvasCore.height = config.template.config.canvasH;
             planeCore.setAttribute('width', config.template.config.planeW);
             planeCore.setAttribute('height', config.template.config.planeH);
 
-            // Ferma eventuali loop precedenti
             if (renderLoop) clearInterval(renderLoop);
 
-            // Funzione di disegno
             function tick() {
                 config.template.fetchDati((dati) => {
                     config.template.draw(ctx, dati);
@@ -213,18 +217,15 @@
                 });
             }
 
-            tick(); // Disegna subito il primo frame
-            renderLoop = setInterval(tick, 1000); // Poi aggiorna ogni secondo
+            tick();
+            renderLoop = setInterval(tick, 1000);
         }
 
-        // ==========================================
-        // GESTIONE MARKER
-        // ==========================================
         let isPinned = false;
         const uiControls = document.getElementById('ui-controls');
-
         const scaleZoom = [0.5, 0.75, 1.0, 1.5, 2.0];
         let indiceZoom = 2;
+
         function cambiaZoom(direzione) {
             indiceZoom += direzione;
             if (indiceZoom < 0) indiceZoom = 0;
@@ -241,9 +242,7 @@
                 if (config && config.template) {
                     if (content3D.parentNode !== markerEl) markerEl.appendChild(content3D);
                     content3D.setAttribute('visible', 'true');
-
-                    startRenderLoop(config); // Avvia l'orologio!
-
+                    startRenderLoop(config);
                     if (!isPinned) uiControls.style.display = 'flex';
                 }
             });
@@ -252,14 +251,11 @@
                 if (!isPinned) {
                     uiControls.style.display = 'none';
                     content3D.setAttribute('visible', 'false');
-                    if (renderLoop) clearInterval(renderLoop); // Spegni l'orologio se non è inquadrato e non è pinnato
+                    if (renderLoop) clearInterval(renderLoop);
                 }
             });
         });
 
-        // ==========================================
-        // PIN A SCHERMO
-        // ==========================================
         function pinToScreen() {
             isPinned = true;
             uiControls.style.display = 'none';
@@ -272,7 +268,7 @@
         function unpinFromScreen() {
             isPinned = false;
             document.getElementById('hud-modal').style.display = 'none';
-            chiudiDettaglio(); // Chiude il grafico se era aperto
+            chiudiDettaglio();
             document.body.appendChild(canvasCore);
             canvasCore.classList.remove('canvas-pinned');
             content3D.setAttribute('visible', 'true');
@@ -286,64 +282,79 @@
         }
 
         // ==========================================
-        // INTERATTIVITÀ: CLICK SUI PULSANTI DEL CANVAS
+        // GESTIONE CLICK SULLE HITBOX
         // ==========================================
         canvasCore.addEventListener('click', (event) => {
-            if (!isPinned || !currentConfig) return; // Funziona solo se è bloccato a schermo
+            if (!isPinned || !currentConfig) return;
 
-            // Calcolo matematico per capire dove hai toccato, indipendentemente dalla dimensione dello schermo
             const rect = canvasCore.getBoundingClientRect();
             const scaleX = canvasCore.width / rect.width;
             const scaleY = canvasCore.height / rect.height;
             const clickX = (event.clientX - rect.left) * scaleX;
             const clickY = (event.clientY - rect.top) * scaleY;
 
-            // Controlla se il touch è caduto in una delle hitbox definite nel file layout_iaq.js
             const hitboxes = currentConfig.template.hitboxes || [];
             for (let box of hitboxes) {
                 if (clickX >= box.x && clickX <= box.x + box.w && clickY >= box.y && clickY <= box.y + box.h) {
-                    apriDettaglio(box.id); // Apri il grafico per quella metrica!
+                    apriDettaglio(box.id);
                     break;
                 }
             }
         });
 
         // ==========================================
-        // GESTIONE GRAFICO (Chart.js)
+        // GRAFICI REALISTICI (CHART.JS)
         // ==========================================
         let detailChart = null;
 
         function apriDettaglio(metricaId) {
-            // UI Switch: Nascondi il cruscotto e mostra il grafico
             document.getElementById('main-view-container').style.display = 'none';
             document.getElementById('detail-view').style.display = 'flex';
-            document.getElementById('detail-title').innerText = "Andamento: " + metricaId.toUpperCase();
 
-            // Generazione Dati Finti per la demo (es. 10 punti dati casuali)
-            const fakeData = Array.from({ length: 10 }, () => Math.floor(Math.random() * 50) + 10);
+            // Imposta Titolo
+            let titolo = metricaId.toUpperCase();
+            if (metricaId === 'iaq_score') titolo = "QUALITA' DELL'ARIA";
+            document.getElementById('detail-title').innerText = "Andamento: " + titolo;
+
+            // Dati Finti Realistici (Curve a campana)
+            let baseVal = 0, variazione = 0, unita = "";
+            if (metricaId === 'temperatura') { baseVal = 19; variazione = 4; unita = "°C"; }
+            else if (metricaId === 'umidita') { baseVal = 40; variazione = 15; unita = "%"; }
+            else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; unita = "dB"; }
+            else if (metricaId === 'luce') { baseVal = 400; variazione = 150; unita = "lux"; }
+            else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 0.8; unita = "Punti"; }
+
+            const fakeData = [];
+            for (let i = 0; i < 10; i++) {
+                const trend = Math.sin(i / 9 * Math.PI) * variazione;
+                const rumoreDiff = (Math.random() * variazione * 0.3) - (variazione * 0.15);
+                fakeData.push((baseVal + trend + rumoreDiff).toFixed(1));
+            }
+
             const labels = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 'Ora'];
-
             const ctxChart = document.getElementById('chart-canvas').getContext('2d');
 
-            if (detailChart) detailChart.destroy(); // Distruggi il grafico vecchio se esiste
+            if (detailChart) detailChart.destroy();
 
-            // Crea il nuovo grafico bellissimo
             detailChart = new Chart(ctxChart, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: metricaId,
-                        data: fakeData,
-                        borderColor: '#22c55e', // Verde acceso
-                        backgroundColor: 'rgba(34, 197, 94, 0.2)', // Verde trasparente
-                        fill: true, tension: 0.4, borderWidth: 4, pointRadius: 6
+                        label: metricaId, data: fakeData, borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.2)', fill: true, tension: 0.4, borderWidth: 4, pointRadius: 6
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: { y: { suggestedMin: 0 } }
+                    scales: {
+                        y: {
+                            title: { display: true, text: unita, font: { size: 14, weight: 'bold' } },
+                            ticks: { maxTicksLimit: 6 },
+                            beginAtZero: false
+                        }
+                    }
                 }
             });
         }

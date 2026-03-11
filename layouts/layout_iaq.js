@@ -4,7 +4,7 @@
 // ==========================================
 
 const LayoutIAQ = {
-    // 1. PARAMETRI DI STRUTTURA (Letti dal Motore Core)
+    // 1. PARAMETRI DI STRUTTURA
     config: {
         canvasW: 900,
         canvasH: 1600,
@@ -12,13 +12,13 @@ const LayoutIAQ = {
         planeH: 4.8
     },
 
-    // 2. MAPPA DELLE AREE CLICCABILI (Per il futuro Drill-down)
+    // 2. MAPPA DELLE AREE CLICCABILI (Coordinate sistemate!)
     hitboxes: [
         { id: "iaq_score", x: 250, y: 350, w: 400, h: 300 }, // Area centrale dell'arco
-        { id: "temperatura", x: 80, y: 1000, w: 740, h: 100 },
-        { id: "umidita", x: 80, y: 1120, w: 740, h: 100 },
-        { id: "rumore", x: 80, y: 1240, w: 740, h: 100 },
-        { id: "luce", x: 80, y: 1360, w: 740, h: 100 }
+        { id: "temperatura", x: 80, y: 940, w: 740, h: 100 },
+        { id: "umidita", x: 80, y: 1060, w: 740, h: 100 },
+        { id: "rumore", x: 80, y: 1180, w: 740, h: 100 },
+        { id: "luce", x: 80, y: 1300, w: 740, h: 100 }
     ],
 
     // 3. DATABASE FITTIZIO (Simulazione chiamata API)
@@ -42,12 +42,12 @@ const LayoutIAQ = {
         // --- SFONDO E BORDO ARMONICO ---
         ctx.clearRect(0, 0, 900, 1600);
 
-        ctx.fillStyle = '#f8fafc'; // Bianco "sporco" molto elegante
+        ctx.fillStyle = '#f8fafc'; // Bianco "sporco"
         ctx.beginPath();
         ctx.roundRect(10, 10, 880, 1580, 50); // Bordo arrotondato
         ctx.fill();
 
-        ctx.strokeStyle = '#cbd5e1'; // Grigio chiaro per il bordo
+        ctx.strokeStyle = '#cbd5e1'; // Grigio chiaro
         ctx.lineWidth = 8;
         ctx.stroke();
 
@@ -69,7 +69,6 @@ const LayoutIAQ = {
         const radius = 280;
         const thickness = 50;
 
-        // Crea il gradiente da 1 (Rosso) a 10 (Verde)
         const gradient = ctx.createConicGradient(Math.PI, cx, cy);
         gradient.addColorStop(0, '#ef4444'); // Rosso
         gradient.addColorStop(0.25, '#f97316'); // Arancio
@@ -96,7 +95,6 @@ const LayoutIAQ = {
         else { label = "OTTIMA"; colorePunteggio = "#22c55e"; }
 
         // --- FRECCIA TRIANGOLARE INTERNA ---
-        // Calcola l'angolo in base al punteggio (1 -> 180°, 10 -> 360°)
         const percentuale = (scoreNum - 1) / 9; // Normalizza da 0 a 1
         const angoloFreccia = Math.PI + (percentuale * Math.PI);
         const raggioInterno = radius - (thickness / 2) - 15;
@@ -104,12 +102,10 @@ const LayoutIAQ = {
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(angoloFreccia);
-
-        // Disegna un piccolo triangolo che punta verso l'arco
         ctx.beginPath();
-        ctx.moveTo(raggioInterno, 0); // Punta
-        ctx.lineTo(raggioInterno - 25, -15); // Base sx
-        ctx.lineTo(raggioInterno - 25, 15);  // Base dx
+        ctx.moveTo(raggioInterno, 0);
+        ctx.lineTo(raggioInterno - 25, -15);
+        ctx.lineTo(raggioInterno - 25, 15);
         ctx.closePath();
         ctx.fillStyle = '#64748b';
         ctx.fill();
@@ -118,21 +114,18 @@ const LayoutIAQ = {
         // --- TESTO CENTRALE ACCELEROMETRO ---
         ctx.fillStyle = '#0f172a';
         ctx.font = 'bold 150px sans-serif';
-        // Trasforma 9.4 in 9,4 per formattazione italiana
         ctx.fillText(dati.score.replace('.', ','), 450, 550);
 
         ctx.fillStyle = colorePunteggio;
         ctx.font = 'bold 45px sans-serif';
         ctx.fillText(label, 450, 650);
 
-        // Min e Max (1 e 10) ai bordi dell'arco
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'bold 35px sans-serif';
         ctx.fillText("1", 170, 700);
         ctx.fillText("10", 730, 700);
 
-        // --- CRUSCOTTO INFERIORE (Metriche) ---
-        // Box arrotondato bianco per raggruppare i dati
+        // --- CRUSCOTTO INFERIORE ---
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.roundRect(50, 850, 800, 650, 40);
@@ -143,30 +136,24 @@ const LayoutIAQ = {
 
         ctx.textAlign = 'left';
 
-        // Funzione helper per disegnare le singole righe di dati
         function drawRigaDato(y, label, valore, unita) {
-            // Testo etichetta (sottolineato graficamente per suggerire il click)
             ctx.fillStyle = '#64748b';
             ctx.font = '40px sans-serif';
             ctx.fillText(label, 100, y);
 
-            // Finta sottolineatura
             const labelWidth = ctx.measureText(label).width;
             ctx.fillRect(100, y + 10, labelWidth, 3);
 
-            // Valore e unità a destra
             ctx.fillStyle = '#0f172a';
             ctx.font = 'bold 50px sans-serif';
             ctx.textAlign = 'right';
             ctx.fillText(`${valore} ${unita}`, 740, y);
 
-            // Pallino verde di stato (tutto OK)
             ctx.fillStyle = '#22c55e';
             ctx.beginPath();
             ctx.arc(800, y - 15, 12, 0, Math.PI * 2);
             ctx.fill();
-
-            ctx.textAlign = 'left'; // reset
+            ctx.textAlign = 'left';
         }
 
         drawRigaDato(1000, "Temperatura", dati.temperatura, "°C");
