@@ -7,6 +7,8 @@
 
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <!-- Importazione del nuovo template (se aggiunto Chart.js in futuro, andrà qui sopra) -->
+    <script src="layouts/layout_iaq.js"></script>
 
     <style>
         body {
@@ -134,10 +136,11 @@
                 layout: { canvasW: 900, canvasH: 1600, planeW: 2.7, planeH: 4.8 }
             },
             "1": {
-                tipo: "quadro_elettrico",
-                nome: "Quadro Q-01",
+                tipo: "Sensore IAQ",
+                nome: "Sensore IAQ",
                 // Layout Orizzontale (16:9)
-                layout: { canvasW: 1600, canvasH: 900, planeW: 4.8, planeH: 2.7 }
+                layout: { canvasW: 1600, canvasH: 900, planeW: 4.8, planeH: 2.7 },
+                template: LayoutIAQ
             }
         };
 
@@ -149,30 +152,23 @@
         const ctx = canvasCore.getContext('2d');
 
         function applicaLayout(configurazione) {
-            // 1. Applica le dimensioni fisiche al Canvas 2D
-            canvasCore.width = configurazione.layout.canvasW;
-            canvasCore.height = configurazione.layout.canvasH;
+            // 1. Legge le configurazioni dal template per impostare le dimensioni
+            canvasCore.width = configurazione.template.config.canvasW;
+            canvasCore.height = configurazione.template.config.canvasH;
 
             // 2. Applica le dimensioni all'Ologramma 3D in A-Frame
-            planeCore.setAttribute('width', configurazione.layout.planeW);
-            planeCore.setAttribute('height', configurazione.layout.planeH);
+            planeCore.setAttribute('width', configurazione.template.config.planeW);
+            planeCore.setAttribute('height', configurazione.template.config.planeH);
 
-            // 3. (Mockup temporaneo) Disegna qualcosa per farci capire che ha funzionato
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(0, 0, canvasCore.width, canvasCore.height);
+            // 3. Recupera i dati e disegna il layout
+            configurazione.template.fetchDati((dati) => {
+                configurazione.template.draw(ctx, dati);
 
-            ctx.fillStyle = '#10b981'; // Verde brillante
-            ctx.font = 'bold 60px sans-serif';
-            ctx.fillText(`TIPO: ${configurazione.tipo.toUpperCase()}`, 50, 100);
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '40px sans-serif';
-            ctx.fillText(`Risoluzione: ${canvasCore.width}x${canvasCore.height}`, 50, 180);
-
-            // Forza l'aggiornamento della texture GPU
-            if (planeCore.getObject3D('mesh')) {
-                planeCore.getObject3D('mesh').material.map.needsUpdate = true;
-            }
+                // Forza l'aggiornamento della texture GPU dopo il draw
+                if (planeCore.getObject3D('mesh')) {
+                    planeCore.getObject3D('mesh').material.map.needsUpdate = true;
+                }
+            });
         }
 
         // ==========================================
