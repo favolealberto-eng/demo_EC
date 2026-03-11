@@ -70,11 +70,16 @@ const LayoutIAQ = {
         const thickness = 50;
 
         const gradient = ctx.createConicGradient(Math.PI, cx, cy);
-        gradient.addColorStop(0, '#ef4444'); // Rosso
-        gradient.addColorStop(0.25, '#f97316'); // Arancio
-        gradient.addColorStop(0.5, '#eab308'); // Giallo
-        gradient.addColorStop(0.75, '#84cc16'); // Verde chiaro
-        gradient.addColorStop(1, '#22c55e'); // Verde scuro
+        gradient.addColorStop(0, '#991b1b');     // Rosso scuro (inizio arco)
+        gradient.addColorStop(0.125, '#ef4444'); // Rosso
+        gradient.addColorStop(0.25, '#eab308');  // Giallo
+        gradient.addColorStop(0.375, '#22c55e'); // Verde chiaro
+        gradient.addColorStop(0.5, '#15803d');   // Verde scuro (fine arco)
+
+        // Fix per evitare gradienti errati sui bordi arrotondati (lineCap='round'):
+        // La coda destra "sborda" oltre 0.5, la coda sinistra "pesca" dal valore 1.0
+        gradient.addColorStop(0.6, '#15803d');   // Mantiene il verde scuro cap destra
+        gradient.addColorStop(1, '#991b1b');     // Fix "pezzettino verde" cap sinistra
 
         ctx.beginPath();
         ctx.arc(cx, cy, radius, Math.PI, Math.PI * 2);
