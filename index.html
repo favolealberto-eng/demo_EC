@@ -237,17 +237,20 @@
 
             if (renderLoop) clearInterval(renderLoop);
 
-            function tick() {
-                config.template.fetchDati((dati) => {
-                    config.template.draw(ctx, dati, config);
+            function tick(cfg) {
+                // Se cfg.template non c'è più (magari marker perso), ferma
+                if (!cfg || !cfg.template) return;
+                
+                cfg.template.fetchDati((dati) => {
+                    cfg.template.draw(ctx, dati, cfg);
                     if (planeCore.getObject3D('mesh')) {
                         planeCore.getObject3D('mesh').material.map.needsUpdate = true;
                     }
                 });
             }
 
-            tick();
-            renderLoop = setInterval(tick, 1000);
+            tick(config);
+            renderLoop = setInterval(() => tick(currentConfig), 1000);
         }
 
         let isPinned = false;
