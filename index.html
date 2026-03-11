@@ -9,8 +9,6 @@
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="layouts/layout_iaq.js"></script>
-
     <style>
         body {
             margin: 0;
@@ -185,10 +183,41 @@
     </a-scene>
 
     <script>
-        const registroMacchinari = {
-            "0": { tipo: "macchina_caffe", nome: "Macchinetta Area Break" },
-            "1": { tipo: "Sensore IAQ", nome: "Sensore IAQ", template: (typeof LayoutIAQ !== 'undefined') ? LayoutIAQ : null }
-        };
+        // ==========================================
+        // 1. DATABASE DINAMICO E LOADER SCRIPT
+        // ==========================================
+        let registroMacchinari = {}; // Partiamo con un registro vuoto
+
+        // Funzione per scaricare il JSON all'avvio
+        async function caricaAnagrafica() {
+            try {
+                const response = await fetch('registro.json');
+                registroMacchinari = await response.json();
+                console.log("✅ Anagrafica caricata con successo:", registroMacchinari);
+            } catch (error) {
+                console.error("❌ Errore nel caricamento di registro.json. Stai usando un server locale?", error);
+            }
+        }
+        caricaAnagrafica(); // Esegui subito all'apertura dell'app
+
+        // Funzione geniale: carica i file JS dei layout solo quando inquadri il marker!
+        function caricaTemplateJS(urlFile, nomeOggetto) {
+            return new Promise((resolve, reject) => {
+                // Se lo abbiamo già caricato prima, non lo ricarichiamo
+                if (window[nomeOggetto]) {
+                    resolve(window[nomeOggetto]);
+                    return;
+                }
+
+                // Crea un tag <script> invisibile e lo inietta nell'HTML
+                console.log(`Caricamento layout necessario: ${urlFile}...`);
+                const script = document.createElement('script');
+                script.src = urlFile;
+                script.onload = () => resolve(window[nomeOggetto]); // Quando ha finito, restituisci l'oggetto (es. LayoutIAQ)
+                script.onerror = () => reject(new Error(`Impossibile trovare il file ${urlFile}`));
+                document.head.appendChild(script);
+            });
+        }
 
         const canvasCore = document.getElementById('canvas-core');
         const planeCore = document.getElementById('plane-core');
@@ -235,15 +264,30 @@
         }
 
         document.querySelectorAll('.ar-marker').forEach(markerEl => {
-            markerEl.addEventListener('markerFound', (e) => {
+            // Aggiungiamo 'async' perché ora dobbiamo aspettare il caricamento dei file
+            markerEl.addEventListener('markerFound', async (e) => {
                 const markerId = e.target.getAttribute('value');
                 const config = registroMacchinari[markerId];
 
-                if (config && config.template) {
+                // Se l'ID esiste nel nostro Excel/JSON...
+                if (config) {
                     if (content3D.parentNode !== markerEl) markerEl.appendChild(content3D);
                     content3D.setAttribute('visible', 'true');
-                    startRenderLoop(config);
-                    if (!isPinned) uiControls.style.display = 'flex';
+
+                    try {
+                        // 🌟 LA MAGIA: Chiede di scaricare il file JS indicato nel JSON
+                        const templateObj = await caricaTemplateJS(config.template_file, config.template_obj);
+
+                        // Attacca l'oggetto scaricato alla configurazione, così startRenderLoop sa cosa usare
+                        config.template = templateObj;
+
+                        startRenderLoop(config);
+                        if (!isPinned) uiControls.style.display = 'flex';
+
+                    } catch (errore) {
+                        console.error("Errore fatale:", errore);
+                        // Se inquadri l'estintore ma non hai ancora creato layout_estintore.js, ti avvisa qui.
+                    }
                 }
             });
 
