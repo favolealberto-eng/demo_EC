@@ -38,7 +38,7 @@ const LayoutIAQ = {
     },
 
     // 4. MOTORE GRAFICO SPECIFICO
-    draw: function (ctx, dati) {
+    draw: function (ctx, dati, config) {
         // --- SFONDO E BORDO ARMONICO ---
         ctx.clearRect(0, 0, 900, 1600);
 
@@ -55,7 +55,10 @@ const LayoutIAQ = {
         ctx.fillStyle = '#334155';
         ctx.font = 'bold 55px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText("Qualità dell'aria", 450, 120);
+        
+        // Se disponibile un nome nel registro.json (es. iaq_1) lo stampa sistemato
+        const titolo = config && config.nome ? config.nome.toUpperCase().replace('_', ' ') : "QUALITÀ DELL'ARIA";
+        ctx.fillText(titolo, 450, 120);
 
         // Orario formattato
         const orario = dati.timestamp.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });

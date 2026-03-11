@@ -239,7 +239,7 @@
 
             function tick() {
                 config.template.fetchDati((dati) => {
-                    config.template.draw(ctx, dati);
+                    config.template.draw(ctx, dati, config);
                     if (planeCore.getObject3D('mesh')) {
                         planeCore.getObject3D('mesh').material.map.needsUpdate = true;
                     }
@@ -271,15 +271,15 @@
 
                 // Se l'ID esiste nel nostro Excel/JSON...
                 if (config) {
-                    if (content3D.parentNode !== markerEl) markerEl.appendChild(content3D);
-                    content3D.setAttribute('visible', 'true');
-
                     try {
                         // 🌟 LA MAGIA: Chiede di scaricare il file JS indicato nel JSON
                         const templateObj = await caricaTemplateJS(config.template_file, config.template_obj);
 
                         // Attacca l'oggetto scaricato alla configurazione, così startRenderLoop sa cosa usare
                         config.template = templateObj;
+
+                        if (content3D.parentNode !== markerEl) markerEl.appendChild(content3D);
+                        content3D.setAttribute('visible', 'true');
 
                         startRenderLoop(config);
                         if (!isPinned) uiControls.style.display = 'flex';
