@@ -195,15 +195,27 @@
                 const markerId = e.target.getAttribute('value');
                 const config = registroMacchinari[markerId];
 
-                if (config && config.template) {
-                    // Se vediamo un marker valido, ci spostiamo l'ologramma sopra e lo accendiamo
-                    markerEl.appendChild(content3D);
-                    content3D.setAttribute('visible', 'true');
-
-                    applicaLayout(config);
-
-                    if (!isPinned) uiControls.style.display = 'flex';
+                // 1. Controllo: Il marker esiste nel JSON?
+                if (!config) {
+                    alert("Ho visto il Marker " + markerId + ", ma non l'hai inserito nel registroMacchinari!");
+                    return;
                 }
+
+                // 2. Controllo: Il file esterno si è caricato?
+                if (!config.template) {
+                    alert("Ho visto il Marker " + markerId + ", ma il file 'layout_iaq.js' NON si è caricato. Controlla che il nome del file sia esatto (con il .js finale) e che sia dentro la cartella 'layouts'.");
+                    return;
+                }
+
+                // Se superiamo i controlli, eseguiamo la magia!
+                if (content3D.parentNode !== markerEl) {
+                    markerEl.appendChild(content3D);
+                }
+                content3D.setAttribute('visible', 'true');
+
+                applicaLayout(config);
+
+                if (!isPinned) uiControls.style.display = 'flex';
             });
 
             markerEl.addEventListener('markerLost', () => {
