@@ -1,5 +1,236 @@
 <!DOCTYPE html>
 <html>
-// ciao
+
+<head>
+    <meta charset="utf-8">
+    <title>EURIX - AR Core Engine (Dynamic Resolution)</title>
+
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: sans-serif;
+        }
+
+        /* ==========================================
+         UI & MODALE
+         ========================================== */
+        #ui-controls {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-minimal {
+            background: rgba(15, 23, 42, 0.6);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-pin {
+            background: rgba(249, 115, 22, 0.8);
+        }
+
+        #hud-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* LA REGOLA INTATTA: Si adatta perfettamente a qualsiasi aspect-ratio (16:9, 9:16, 1:1) */
+        .canvas-pinned {
+            display: block !important;
+            width: 90% !important;
+            max-width: 1000px !important;
+            height: auto !important;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            border: 3px solid #3b82f6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="ui-controls">
+        <button class="btn-minimal" onclick="cambiaZoom(1)">➕</button>
+        <button class="btn-minimal" onclick="cambiaZoom(-1)">➖</button>
+        <button class="btn-minimal btn-pin" onclick="pinToScreen()">📌</button>
+    </div>
+
+    <div id="hud-modal">
+        <button class="btn-close" onclick="unpinFromScreen()">✖</button>
+        <div id="main-view-container"></div>
+    </div>
+
+    <canvas id="canvas-core" style="display:none;"></canvas>
+
+    <a-scene embedded
+        arjs="sourceType: webcam; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
+        renderer="antialias: true; logarithmicDepthBuffer: true; alpha: true;">
+
+        <a-marker id="marker-core" type="barcode" value="0" emitevents="true" smooth="true" smoothCount="7"
+            smoothTolerance="0.02" smoothThreshold="5">
+
+            <a-entity id="content-core" rotation="-75 0 0">
+                <a-plane id="plane-core" position="0 1.5 0" material="src: #canvas-core; shader: flat;"></a-plane>
+            </a-entity>
+
+        </a-marker>
+
+        <a-entity id="main-camera" camera look-controls="enabled: false" wasd-controls="enabled: false"></a-entity>
+    </a-scene>
+
+    <script>
+        // ==========================================
+        // 1. IL "REGISTRO" (JSON) CON METADATI DI LAYOUT
+        // ==========================================
+        const registroMacchinari = {
+            "0": {
+                tipo: "macchina_caffe",
+                nome: "Macchinetta Area Break",
+                // Layout Verticale (9:16)
+                layout: { canvasW: 900, canvasH: 1600, planeW: 2.7, planeH: 4.8 }
+            },
+            "1": {
+                tipo: "quadro_elettrico",
+                nome: "Quadro Q-01",
+                // Layout Orizzontale (16:9)
+                layout: { canvasW: 1600, canvasH: 900, planeW: 4.8, planeH: 2.7 }
+            }
+        };
+
+        // ==========================================
+        // 2. MOTORE DI CARICAMENTO DINAMICO
+        // ==========================================
+        const canvasCore = document.getElementById('canvas-core');
+        const planeCore = document.getElementById('plane-core');
+        const ctx = canvasCore.getContext('2d');
+
+        function applicaLayout(configurazione) {
+            // 1. Applica le dimensioni fisiche al Canvas 2D
+            canvasCore.width = configurazione.layout.canvasW;
+            canvasCore.height = configurazione.layout.canvasH;
+
+            // 2. Applica le dimensioni all'Ologramma 3D in A-Frame
+            planeCore.setAttribute('width', configurazione.layout.planeW);
+            planeCore.setAttribute('height', configurazione.layout.planeH);
+
+            // 3. (Mockup temporaneo) Disegna qualcosa per farci capire che ha funzionato
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvasCore.width, canvasCore.height);
+
+            ctx.fillStyle = '#10b981'; // Verde brillante
+            ctx.font = 'bold 60px sans-serif';
+            ctx.fillText(`TIPO: ${configurazione.tipo.toUpperCase()}`, 50, 100);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '40px sans-serif';
+            ctx.fillText(`Risoluzione: ${canvasCore.width}x${canvasCore.height}`, 50, 180);
+
+            // Forza l'aggiornamento della texture GPU
+            if (planeCore.getObject3D('mesh')) {
+                planeCore.getObject3D('mesh').material.map.needsUpdate = true;
+            }
+        }
+
+        // ==========================================
+        // 3. LOGICA INTERFACCIA, ZOOM E FISSAGGIO
+        // ==========================================
+        let isPinned = false;
+        const uiControls = document.getElementById('ui-controls');
+        const marker = document.getElementById('marker-core');
+        const content3D = document.getElementById('content-core');
+
+        // ZOOM SETUP
+        const scaleZoom = [0.5, 0.75, 1.0, 1.5, 2.0];
+        let indiceZoom = 2;
+
+        function cambiaZoom(direzione) {
+            indiceZoom += direzione;
+            if (indiceZoom < 0) indiceZoom = 0;
+            if (indiceZoom >= scaleZoom.length) indiceZoom = scaleZoom.length - 1;
+            const s = scaleZoom[indiceZoom];
+            content3D.setAttribute('scale', `${s} ${s} ${s}`);
+        }
+
+        // RICONOSCIMENTO MARKER
+        marker.addEventListener('markerFound', (e) => {
+            const markerId = e.target.getAttribute('value');
+            const config = registroMacchinari[markerId];
+
+            if (config) {
+                // Avvia il layout specifico per questo macchinario!
+                applicaLayout(config);
+
+                if (!isPinned) uiControls.style.display = 'flex';
+            }
+        });
+
+        marker.addEventListener('markerLost', () => {
+            if (!isPinned) uiControls.style.display = 'none';
+        });
+
+        // GESTIONE PIN A SCHERMO (La regola CSS al 90% entra in gioco qui)
+        function pinToScreen() {
+            isPinned = true;
+            uiControls.style.display = 'none';
+            document.getElementById('hud-modal').style.display = 'flex';
+            content3D.setAttribute('visible', 'false');
+            document.getElementById('main-view-container').appendChild(canvasCore);
+            canvasCore.classList.add('canvas-pinned');
+        }
+
+        function unpinFromScreen() {
+            isPinned = false;
+            document.getElementById('hud-modal').style.display = 'none';
+            document.body.appendChild(canvasCore);
+            canvasCore.classList.remove('canvas-pinned');
+            content3D.setAttribute('visible', 'true');
+            if (marker.object3D.visible) uiControls.style.display = 'flex';
+        }
+    </script>
+</body>
 
 </html>
