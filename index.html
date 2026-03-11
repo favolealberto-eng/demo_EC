@@ -7,8 +7,8 @@
 
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <!-- Importazione del nuovo template (se aggiunto Chart.js in futuro, andrà qui sopra) -->
-    <script src="../layouts/layout_iaq.js"></script>
+
+    <script src="layouts/layout_iaq.js"></script>
 
     <style>
         body {
@@ -18,9 +18,6 @@
             font-family: sans-serif;
         }
 
-        /* ==========================================
-         UI & MODALE
-         ========================================== */
         #ui-controls {
             position: fixed;
             bottom: 30px;
@@ -80,7 +77,6 @@
             cursor: pointer;
         }
 
-        /* LA REGOLA INTATTA: Si adatta perfettamente a qualsiasi aspect-ratio (16:9, 9:16, 1:1) */
         .canvas-pinned {
             display: block !important;
             width: 90% !important;
@@ -112,55 +108,64 @@
         arjs="sourceType: webcam; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
         renderer="antialias: true; logarithmicDepthBuffer: true; alpha: true;">
 
-        <!-- I marker verranno generati dinamicamente dal JavaScript (vedi in basso) -->
-        <a-entity id="content-core" rotation="-75 0 0" visible="false">
-            <a-plane id="plane-core" position="0 1.5 0" material="src: #canvas-core; shader: flat;"></a-plane>
-        </a-entity>
+        <a-marker class="ar-marker" type="barcode" value="0" emitevents="true" smooth="true" smoothCount="7"
+            smoothTolerance="0.02" smoothThreshold="5"></a-marker>
+
+        <a-marker class="ar-marker" type="barcode" value="1" emitevents="true" smooth="true" smoothCount="7"
+            smoothTolerance="0.02" smoothThreshold="5">
+            <a-entity id="content-core" rotation="-75 0 0" visible="false">
+                <a-plane id="plane-core" position="0 1.5 0"
+                    material="src: #canvas-core; shader: flat; transparent: true"></a-plane>
+            </a-entity>
+        </a-marker>
 
         <a-entity id="main-camera" camera look-controls="enabled: false" wasd-controls="enabled: false"></a-entity>
     </a-scene>
 
     <script>
         // ==========================================
-        // 1. IL "REGISTRO" (JSON) CON METADATI DI LAYOUT
+        // 1. REGISTRO JSON
         // ==========================================
         const registroMacchinari = {
             "0": {
                 tipo: "macchina_caffe",
                 nome: "Macchinetta Area Break",
-                // Layout Verticale (9:16)
                 layout: { canvasW: 900, canvasH: 1600, planeW: 2.7, planeH: 4.8 }
             },
             "1": {
                 tipo: "Sensore IAQ",
                 nome: "Sensore IAQ",
-                // Layout Orizzontale (16:9)
-                layout: { canvasW: 1600, canvasH: 900, planeW: 4.8, planeH: 2.7 },
-                template: LayoutIAQ
+                template: (typeof LayoutIAQ !== 'undefined') ? LayoutIAQ : null // Controllo di sicurezza se il file non carica
             }
         };
 
         // ==========================================
-        // 2. MOTORE DI CARICAMENTO DINAMICO
+        // 2. MOTORE DI CARICAMENTO
         // ==========================================
         const canvasCore = document.getElementById('canvas-core');
         const planeCore = document.getElementById('plane-core');
         const ctx = canvasCore.getContext('2d');
+        const content3D = document.getElementById('content-core');
 
         function applicaLayout(configurazione) {
-            // 1. Legge le configurazioni dal template per impostare le dimensioni
-            canvasCore.width = configurazione.template.config.canvasW;
-            canvasCore.height = configurazione.template.config.canvasH;
+            // Seleziona il template o esci se non c'è
+            const template = configurazione.template;
+            if (!template) {
+                console.error("Template non trovato per:", configurazione.nome);
+                return;
+            }
 
-            // 2. Applica le dimensioni all'Ologramma 3D in A-Frame
-            planeCore.setAttribute('width', configurazione.template.config.planeW);
-            planeCore.setAttribute('height', configurazione.template.config.planeH);
+            // Imposta dimensioni
+            canvasCore.width = template.config.canvasW;
+            canvasCore.height = template.config.canvasH;
+            planeCore.setAttribute('width', template.config.planeW);
+            planeCore.setAttribute('height', template.config.planeH);
 
-            // 3. Recupera i dati e disegna il layout
-            configurazione.template.fetchDati((dati) => {
-                configurazione.template.draw(ctx, dati);
+            // Carica i dati e disegna
+            template.fetchDati((dati) => {
+                template.draw(ctx, dati);
 
-                // Forza l'aggiornamento della texture GPU dopo il draw
+                // Forza aggiornamento GPU
                 if (planeCore.getObject3D('mesh')) {
                     planeCore.getObject3D('mesh').material.map.needsUpdate = true;
                 }
@@ -168,16 +173,14 @@
         }
 
         // ==========================================
-        // 3. LOGICA INTERFACCIA E GESTIONE MULTI-MARKER
+        // 3. LOGICA INTERFACCIA E MARKER
         // ==========================================
         let isPinned = false;
         const uiControls = document.getElementById('ui-controls');
-        const content3D = document.getElementById('content-core');
 
-        // ZOOM SETUP
+        // Zoom Logic
         const scaleZoom = [0.5, 0.75, 1.0, 1.5, 2.0];
         let indiceZoom = 2;
-
         function cambiaZoom(direzione) {
             indiceZoom += direzione;
             if (indiceZoom < 0) indiceZoom = 0;
@@ -186,46 +189,34 @@
             content3D.setAttribute('scale', `${s} ${s} ${s}`);
         }
 
-        // GENERAZIONE DINAMICA MARKER
-        const sceneEl = document.querySelector('a-scene');
-        sceneEl.addEventListener('loaded', () => {
-            Object.keys(registroMacchinari).forEach(markerId => {
-                const markerEl = document.createElement('a-marker');
-                markerEl.setAttribute('type', 'barcode');
-                markerEl.setAttribute('value', markerId);
-                markerEl.setAttribute('emitevents', 'true');
-                markerEl.setAttribute('smooth', 'true');
-                markerEl.setAttribute('smoothCount', '7');
-                markerEl.setAttribute('smoothTolerance', '0.02');
-                markerEl.setAttribute('smoothThreshold', '5');
+        // Inizializza i listener su tutti i marker scritti nell'HTML
+        document.querySelectorAll('.ar-marker').forEach(markerEl => {
+            markerEl.addEventListener('markerFound', (e) => {
+                const markerId = e.target.getAttribute('value');
+                const config = registroMacchinari[markerId];
 
-                markerEl.addEventListener('markerFound', () => {
-                    const config = registroMacchinari[markerId];
-                    if (config) {
-                        // Sposta l'Ologramma 3D sotto il marker inquadrato
-                        if (content3D.parentNode !== markerEl) {
-                            markerEl.appendChild(content3D);
-                        }
-                        content3D.setAttribute('visible', 'true');
+                if (config && config.template) {
+                    // Se vediamo un marker valido, ci spostiamo l'ologramma sopra e lo accendiamo
+                    markerEl.appendChild(content3D);
+                    content3D.setAttribute('visible', 'true');
 
-                        applicaLayout(config);
-                        if (!isPinned) uiControls.style.display = 'flex';
-                    }
-                });
+                    applicaLayout(config);
 
-                markerEl.addEventListener('markerLost', () => {
-                    if (!isPinned) {
-                        uiControls.style.display = 'none';
-                        // Nascondiamo il contenuto per sicurezza quando si perde il marker
-                        content3D.setAttribute('visible', 'false');
-                    }
-                });
+                    if (!isPinned) uiControls.style.display = 'flex';
+                }
+            });
 
-                sceneEl.appendChild(markerEl);
+            markerEl.addEventListener('markerLost', () => {
+                if (!isPinned) {
+                    uiControls.style.display = 'none';
+                    content3D.setAttribute('visible', 'false');
+                }
             });
         });
 
-        // GESTIONE PIN A SCHERMO
+        // ==========================================
+        // 4. PIN A SCHERMO
+        // ==========================================
         function pinToScreen() {
             isPinned = true;
             uiControls.style.display = 'none';
@@ -241,8 +232,9 @@
             document.body.appendChild(canvasCore);
             canvasCore.classList.remove('canvas-pinned');
             content3D.setAttribute('visible', 'true');
-            // Se il marker corrente a cui è attaccato il contenuto è visibile, mostra i controlli
-            if (content3D.parentNode && content3D.parentNode.object3D && content3D.parentNode.object3D.visible) {
+
+            // Controlla se il marker che possiede content3D è ancora inquadrato
+            if (content3D.parentNode && content3D.parentNode.object3D.visible) {
                 uiControls.style.display = 'flex';
             } else {
                 content3D.setAttribute('visible', 'false');
