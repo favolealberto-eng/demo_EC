@@ -8,7 +8,7 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <!-- Importazione del nuovo template (se aggiunto Chart.js in futuro, andrà qui sopra) -->
-    <script src="layouts/layout_iaq.js"></script>
+    <script src="../layouts/layout_iaq.js"></script>
 
     <style>
         body {
@@ -112,14 +112,10 @@
         arjs="sourceType: webcam; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
         renderer="antialias: true; logarithmicDepthBuffer: true; alpha: true;">
 
-        <a-marker id="marker-core" type="barcode" value="0" emitevents="true" smooth="true" smoothCount="7"
-            smoothTolerance="0.02" smoothThreshold="5">
-
-            <a-entity id="content-core" rotation="-75 0 0">
-                <a-plane id="plane-core" position="0 1.5 0" material="src: #canvas-core; shader: flat;"></a-plane>
-            </a-entity>
-
-        </a-marker>
+        <!-- I marker verranno generati dinamicamente dal JavaScript (vedi in basso) -->
+        <a-entity id="content-core" rotation="-75 0 0" visible="false">
+            <a-plane id="plane-core" position="0 1.5 0" material="src: #canvas-core; shader: flat;"></a-plane>
+        </a-entity>
 
         <a-entity id="main-camera" camera look-controls="enabled: false" wasd-controls="enabled: false"></a-entity>
     </a-scene>
@@ -172,11 +168,10 @@
         }
 
         // ==========================================
-        // 3. LOGICA INTERFACCIA, ZOOM E FISSAGGIO
+        // 3. LOGICA INTERFACCIA E GESTIONE MULTI-MARKER
         // ==========================================
         let isPinned = false;
         const uiControls = document.getElementById('ui-controls');
-        const marker = document.getElementById('marker-core');
         const content3D = document.getElementById('content-core');
 
         // ZOOM SETUP
@@ -191,24 +186,46 @@
             content3D.setAttribute('scale', `${s} ${s} ${s}`);
         }
 
-        // RICONOSCIMENTO MARKER
-        marker.addEventListener('markerFound', (e) => {
-            const markerId = e.target.getAttribute('value');
-            const config = registroMacchinari[markerId];
+        // GENERAZIONE DINAMICA MARKER
+        const sceneEl = document.querySelector('a-scene');
+        sceneEl.addEventListener('loaded', () => {
+            Object.keys(registroMacchinari).forEach(markerId => {
+                const markerEl = document.createElement('a-marker');
+                markerEl.setAttribute('type', 'barcode');
+                markerEl.setAttribute('value', markerId);
+                markerEl.setAttribute('emitevents', 'true');
+                markerEl.setAttribute('smooth', 'true');
+                markerEl.setAttribute('smoothCount', '7');
+                markerEl.setAttribute('smoothTolerance', '0.02');
+                markerEl.setAttribute('smoothThreshold', '5');
 
-            if (config) {
-                // Avvia il layout specifico per questo macchinario!
-                applicaLayout(config);
+                markerEl.addEventListener('markerFound', () => {
+                    const config = registroMacchinari[markerId];
+                    if (config) {
+                        // Sposta l'Ologramma 3D sotto il marker inquadrato
+                        if (content3D.parentNode !== markerEl) {
+                            markerEl.appendChild(content3D);
+                        }
+                        content3D.setAttribute('visible', 'true');
 
-                if (!isPinned) uiControls.style.display = 'flex';
-            }
+                        applicaLayout(config);
+                        if (!isPinned) uiControls.style.display = 'flex';
+                    }
+                });
+
+                markerEl.addEventListener('markerLost', () => {
+                    if (!isPinned) {
+                        uiControls.style.display = 'none';
+                        // Nascondiamo il contenuto per sicurezza quando si perde il marker
+                        content3D.setAttribute('visible', 'false');
+                    }
+                });
+
+                sceneEl.appendChild(markerEl);
+            });
         });
 
-        marker.addEventListener('markerLost', () => {
-            if (!isPinned) uiControls.style.display = 'none';
-        });
-
-        // GESTIONE PIN A SCHERMO (La regola CSS al 90% entra in gioco qui)
+        // GESTIONE PIN A SCHERMO
         function pinToScreen() {
             isPinned = true;
             uiControls.style.display = 'none';
@@ -224,7 +241,12 @@
             document.body.appendChild(canvasCore);
             canvasCore.classList.remove('canvas-pinned');
             content3D.setAttribute('visible', 'true');
-            if (marker.object3D.visible) uiControls.style.display = 'flex';
+            // Se il marker corrente a cui è attaccato il contenuto è visibile, mostra i controlli
+            if (content3D.parentNode && content3D.parentNode.object3D && content3D.parentNode.object3D.visible) {
+                uiControls.style.display = 'flex';
+            } else {
+                content3D.setAttribute('visible', 'false');
+            }
         }
     </script>
 </body>
