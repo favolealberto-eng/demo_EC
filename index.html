@@ -3,10 +3,11 @@
 
 <head>
     <meta charset="utf-8">
-    <title>EURIX - AR Core Engine (Dynamic Resolution)</title>
+    <title>EURIX - AR Core Engine (Live & Interactive)</title>
 
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="layouts/layout_iaq.js"></script>
 
@@ -75,16 +76,58 @@
             font-size: 20px;
             font-weight: bold;
             cursor: pointer;
+            z-index: 10000;
         }
 
+        /* BORDINO BLU RIMOSSO! */
         .canvas-pinned {
             display: block !important;
             width: 90% !important;
-            max-width: 1000px !important;
+            max-width: 600px !important;
             height: auto !important;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-            border: 3px solid #3b82f6;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Stili per la vista Dettaglio (Grafico) */
+        #detail-view {
+            display: none;
+            width: 90%;
+            max-width: 600px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 25px;
+            box-sizing: border-box;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #detail-title {
+            text-align: center;
+            color: #334155;
+            margin-top: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        #detail-chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .btn-back-detail {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -99,7 +142,16 @@
 
     <div id="hud-modal">
         <button class="btn-close" onclick="unpinFromScreen()">✖</button>
+
         <div id="main-view-container"></div>
+
+        <div id="detail-view">
+            <h2 id="detail-title">Andamento Giornaliero</h2>
+            <div id="detail-chart-container">
+                <canvas id="chart-canvas"></canvas>
+            </div>
+            <button class="btn-back-detail" onclick="chiudiDettaglio()">⬅ Torna al Cruscotto</button>
+        </div>
     </div>
 
     <canvas id="canvas-core" style="display:none;"></canvas>
@@ -123,62 +175,54 @@
     </a-scene>
 
     <script>
-        // ==========================================
-        // 1. REGISTRO JSON
-        // ==========================================
         const registroMacchinari = {
-            "0": {
-                tipo: "macchina_caffe",
-                nome: "Macchinetta Area Break",
-                layout: { canvasW: 900, canvasH: 1600, planeW: 2.7, planeH: 4.8 }
-            },
-            "1": {
-                tipo: "Sensore IAQ",
-                nome: "Sensore IAQ",
-                template: (typeof LayoutIAQ !== 'undefined') ? LayoutIAQ : null // Controllo di sicurezza se il file non carica
-            }
+            "0": { tipo: "macchina_caffe", nome: "Macchinetta Area Break" },
+            "1": { tipo: "Sensore IAQ", nome: "Sensore IAQ", template: (typeof LayoutIAQ !== 'undefined') ? LayoutIAQ : null }
         };
 
-        // ==========================================
-        // 2. MOTORE DI CARICAMENTO
-        // ==========================================
         const canvasCore = document.getElementById('canvas-core');
         const planeCore = document.getElementById('plane-core');
         const ctx = canvasCore.getContext('2d');
         const content3D = document.getElementById('content-core');
 
-        function applicaLayout(configurazione) {
-            // Seleziona il template o esci se non c'è
-            const template = configurazione.template;
-            if (!template) {
-                console.error("Template non trovato per:", configurazione.nome);
-                return;
+        let currentConfig = null;
+        let renderLoop = null;
+
+        // ==========================================
+        // MOTORE DI AGGIORNAMENTO LIVE (1 SECONDO)
+        // ==========================================
+        function startRenderLoop(config) {
+            currentConfig = config;
+
+            // Imposta dimensioni una volta sola
+            canvasCore.width = config.template.config.canvasW;
+            canvasCore.height = config.template.config.canvasH;
+            planeCore.setAttribute('width', config.template.config.planeW);
+            planeCore.setAttribute('height', config.template.config.planeH);
+
+            // Ferma eventuali loop precedenti
+            if (renderLoop) clearInterval(renderLoop);
+
+            // Funzione di disegno
+            function tick() {
+                config.template.fetchDati((dati) => {
+                    config.template.draw(ctx, dati);
+                    if (planeCore.getObject3D('mesh')) {
+                        planeCore.getObject3D('mesh').material.map.needsUpdate = true;
+                    }
+                });
             }
 
-            // Imposta dimensioni
-            canvasCore.width = template.config.canvasW;
-            canvasCore.height = template.config.canvasH;
-            planeCore.setAttribute('width', template.config.planeW);
-            planeCore.setAttribute('height', template.config.planeH);
-
-            // Carica i dati e disegna
-            template.fetchDati((dati) => {
-                template.draw(ctx, dati);
-
-                // Forza aggiornamento GPU
-                if (planeCore.getObject3D('mesh')) {
-                    planeCore.getObject3D('mesh').material.map.needsUpdate = true;
-                }
-            });
+            tick(); // Disegna subito il primo frame
+            renderLoop = setInterval(tick, 1000); // Poi aggiorna ogni secondo
         }
 
         // ==========================================
-        // 3. LOGICA INTERFACCIA E MARKER
+        // GESTIONE MARKER
         // ==========================================
         let isPinned = false;
         const uiControls = document.getElementById('ui-controls');
 
-        // Zoom Logic
         const scaleZoom = [0.5, 0.75, 1.0, 1.5, 2.0];
         let indiceZoom = 2;
         function cambiaZoom(direzione) {
@@ -189,45 +233,32 @@
             content3D.setAttribute('scale', `${s} ${s} ${s}`);
         }
 
-        // Inizializza i listener su tutti i marker scritti nell'HTML
         document.querySelectorAll('.ar-marker').forEach(markerEl => {
             markerEl.addEventListener('markerFound', (e) => {
                 const markerId = e.target.getAttribute('value');
                 const config = registroMacchinari[markerId];
 
-                // 1. Controllo: Il marker esiste nel JSON?
-                if (!config) {
-                    alert("Ho visto il Marker " + markerId + ", ma non l'hai inserito nel registroMacchinari!");
-                    return;
+                if (config && config.template) {
+                    if (content3D.parentNode !== markerEl) markerEl.appendChild(content3D);
+                    content3D.setAttribute('visible', 'true');
+
+                    startRenderLoop(config); // Avvia l'orologio!
+
+                    if (!isPinned) uiControls.style.display = 'flex';
                 }
-
-                // 2. Controllo: Il file esterno si è caricato?
-                if (!config.template) {
-                    alert("Ho visto il Marker " + markerId + ", ma il file 'layout_iaq.js' NON si è caricato. Controlla che il nome del file sia esatto (con il .js finale) e che sia dentro la cartella 'layouts'.");
-                    return;
-                }
-
-                // Se superiamo i controlli, eseguiamo la magia!
-                if (content3D.parentNode !== markerEl) {
-                    markerEl.appendChild(content3D);
-                }
-                content3D.setAttribute('visible', 'true');
-
-                applicaLayout(config);
-
-                if (!isPinned) uiControls.style.display = 'flex';
             });
 
             markerEl.addEventListener('markerLost', () => {
                 if (!isPinned) {
                     uiControls.style.display = 'none';
                     content3D.setAttribute('visible', 'false');
+                    if (renderLoop) clearInterval(renderLoop); // Spegni l'orologio se non è inquadrato e non è pinnato
                 }
             });
         });
 
         // ==========================================
-        // 4. PIN A SCHERMO
+        // PIN A SCHERMO
         // ==========================================
         function pinToScreen() {
             isPinned = true;
@@ -241,16 +272,85 @@
         function unpinFromScreen() {
             isPinned = false;
             document.getElementById('hud-modal').style.display = 'none';
+            chiudiDettaglio(); // Chiude il grafico se era aperto
             document.body.appendChild(canvasCore);
             canvasCore.classList.remove('canvas-pinned');
             content3D.setAttribute('visible', 'true');
 
-            // Controlla se il marker che possiede content3D è ancora inquadrato
             if (content3D.parentNode && content3D.parentNode.object3D.visible) {
                 uiControls.style.display = 'flex';
             } else {
                 content3D.setAttribute('visible', 'false');
+                if (renderLoop) clearInterval(renderLoop);
             }
+        }
+
+        // ==========================================
+        // INTERATTIVITÀ: CLICK SUI PULSANTI DEL CANVAS
+        // ==========================================
+        canvasCore.addEventListener('click', (event) => {
+            if (!isPinned || !currentConfig) return; // Funziona solo se è bloccato a schermo
+
+            // Calcolo matematico per capire dove hai toccato, indipendentemente dalla dimensione dello schermo
+            const rect = canvasCore.getBoundingClientRect();
+            const scaleX = canvasCore.width / rect.width;
+            const scaleY = canvasCore.height / rect.height;
+            const clickX = (event.clientX - rect.left) * scaleX;
+            const clickY = (event.clientY - rect.top) * scaleY;
+
+            // Controlla se il touch è caduto in una delle hitbox definite nel file layout_iaq.js
+            const hitboxes = currentConfig.template.hitboxes || [];
+            for (let box of hitboxes) {
+                if (clickX >= box.x && clickX <= box.x + box.w && clickY >= box.y && clickY <= box.y + box.h) {
+                    apriDettaglio(box.id); // Apri il grafico per quella metrica!
+                    break;
+                }
+            }
+        });
+
+        // ==========================================
+        // GESTIONE GRAFICO (Chart.js)
+        // ==========================================
+        let detailChart = null;
+
+        function apriDettaglio(metricaId) {
+            // UI Switch: Nascondi il cruscotto e mostra il grafico
+            document.getElementById('main-view-container').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'flex';
+            document.getElementById('detail-title').innerText = "Andamento: " + metricaId.toUpperCase();
+
+            // Generazione Dati Finti per la demo (es. 10 punti dati casuali)
+            const fakeData = Array.from({ length: 10 }, () => Math.floor(Math.random() * 50) + 10);
+            const labels = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 'Ora'];
+
+            const ctxChart = document.getElementById('chart-canvas').getContext('2d');
+
+            if (detailChart) detailChart.destroy(); // Distruggi il grafico vecchio se esiste
+
+            // Crea il nuovo grafico bellissimo
+            detailChart = new Chart(ctxChart, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: metricaId,
+                        data: fakeData,
+                        borderColor: '#22c55e', // Verde acceso
+                        backgroundColor: 'rgba(34, 197, 94, 0.2)', // Verde trasparente
+                        fill: true, tension: 0.4, borderWidth: 4, pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { suggestedMin: 0 } }
+                }
+            });
+        }
+
+        function chiudiDettaglio() {
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('main-view-container').style.display = 'block';
         }
     </script>
 </body>
