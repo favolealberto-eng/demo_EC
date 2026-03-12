@@ -98,10 +98,11 @@
 
         /* FIX CANVAS: Invisibile in 3D ma attivo */
         #canvas-core {
-            position: absolute;
-            top: -9999px;
-            left: -9999px;
-            opacity: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1000;
+            opacity: 0.001;
             pointer-events: none;
         }
 
@@ -188,7 +189,7 @@
         <a-marker class="ar-marker" type="barcode" value="1"></a-marker>
 
         <a-entity id="content-core" rotation="-75 0 0" visible="false">
-            <a-plane id="plane-core" position="0 1.5 0"
+            <a-plane id="plane-core" aggiorna-canvas position="0 1.5 0"
                 material="src: #canvas-core; shader: flat; transparent: true"></a-plane>
         </a-entity>
 
@@ -196,6 +197,15 @@
     </a-scene>
 
     <script>
+        AFRAME.registerComponent('aggiorna-canvas', {
+            tick: function () {
+                const mesh = this.el.getObject3D('mesh');
+                if (mesh && mesh.material && mesh.material.map) {
+                    mesh.material.map.needsUpdate = true;
+                }
+            }
+        });
+
         // --- FUNZIONI DI DEBUG ---
         const debugBox = document.getElementById('debug-box');
         function scriviLog(messaggio, colore = "black") {
