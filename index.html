@@ -3,27 +3,94 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Test Livello 0 - AR Pura</title>
+    <title>Tabula Rasa - Diagnostica</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
 
+    <div id="debug-box"
+        style="position: fixed; top: 10px; left: 10px; background: rgba(255,255,255,0.9); border: 2px solid red; padding: 15px; z-index: 9999; color: black; font-family: monospace; font-size: 14px; max-width: 80%;">
+        ⚙️ LOG DI SISTEMA:<br>
+    </div>
+
+    <canvas id="canvas-0" width="500" height="500" style="display: none;"></canvas>
+    <canvas id="canvas-1" width="500" height="500" style="display: none;"></canvas>
+
     <a-scene embedded
         arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;">
-
-        <a-marker type="barcode" value="0">
-            <a-box position="0 0.5 0" color="#ef4444" scale="1 1 1"></a-box>
+        <a-marker type="barcode" value="0" id="marker-0">
+            <a-plane position="0 0.5 0" rotation="-90 0 0" width="2" height="2" material="src: #canvas-0"></a-plane>
         </a-marker>
-
-        <a-marker type="barcode" value="1">
-            <a-box position="0 0.5 0" color="#3b82f6" scale="1 1 1"></a-box>
+        <a-marker type="barcode" value="1" id="marker-1">
+            <a-plane position="0 0.5 0" rotation="-90 0 0" width="2" height="2" material="src: #canvas-1"></a-plane>
         </a-marker>
-
         <a-entity camera></a-entity>
     </a-scene>
 
+    <script>
+        const debugBox = document.getElementById('debug-box');
+        function scriviLog(messaggio, colore = "black") {
+            debugBox.innerHTML += `<span style="color: ${colore};">${messaggio}</span><br>`;
+        }
+
+        scriviLog("1. Inizio caricamento registro.json...", "blue");
+
+        // Proviamo a leggere il JSON
+        fetch('registro.json?nocache=' + new Date().getTime())
+            .then(response => {
+                if (!response.ok) throw new Error("Errore HTTP: " + response.status);
+                scriviLog("2. File JSON trovato. Leggo i dati...", "green");
+                return response.json();
+            })
+            .then(registro => {
+                scriviLog("3. Dati JSON letti! In attesa dei marker...", "green");
+                avviaRiconoscimento(registro);
+            })
+            .catch(errore => {
+                scriviLog("❌ ERRORE JSON: " + errore.message, "red");
+                scriviLog("Antigravity sta bloccando il file registro.json!", "red");
+            });
+
+        function avviaRiconoscimento(registro) {
+            document.querySelectorAll('a-marker').forEach(marker => {
+                marker.addEventListener('markerFound', () => {
+                    const id = marker.getAttribute('value');
+                    scriviLog(`👀 Visto Marker ${id}!`, "blue");
+
+                    const config = registro[id];
+                    if (!config) {
+                        scriviLog(`❌ Marker ${id} non presente nel JSON`, "red");
+                        return;
+                    }
+
+                    scriviLog(`Cerco file JS: ${config.file}...`, "blue");
+                    const script = document.createElement('script');
+                    script.src = config.file;
+
+                    script.onload = () => {
+                        scriviLog(`✅ File ${config.file} caricato! Disegno...`, "green");
+                        const canvas = document.getElementById('canvas-' + id);
+                        const ctx = canvas.getContext('2d');
+                        window[config.oggetto].disegna(ctx);
+
+                        const plane = marker.querySelector('a-plane');
+                        if (plane.getObject3D('mesh')) {
+                            plane.getObject3D('mesh').material.map.needsUpdate = true;
+                            scriviLog(`🎨 Ologramma aggiornato!`, "green");
+                        }
+                    };
+
+                    script.onerror = () => {
+                        scriviLog(`❌ ERRORE: Impossibile caricare ${config.file}`, "red");
+                    };
+
+                    document.head.appendChild(script);
+                });
+            });
+        }
+    </script>
 </body>
 
 </html>
