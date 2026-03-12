@@ -77,8 +77,8 @@
             z-index: 10000;
         }
 
-        /* FIX DEFINTIVO: Il canvas è invisibile ma tecnicamente "in campo" e renderizzato */
-        #canvas-core {
+        /* FIX DEFINTIVO: I canvas sono invisibili ma tecnicamente "in campo" e renderizzati */
+        .canvas-core {
             position: absolute;
             top: -9999px;
             left: -9999px;
@@ -161,19 +161,28 @@
         </div>
     </div>
 
-    <canvas id="canvas-core"></canvas>
+    <!-- Canvas separati per ogni marker -->
+    <canvas id="canvas-0" class="canvas-core"></canvas>
+    <canvas id="canvas-1" class="canvas-core"></canvas>
 
     <a-scene embedded
         arjs="sourceType: webcam; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
         renderer="antialias: true; logarithmicDepthBuffer: true; alpha: true;">
 
-        <a-marker class="ar-marker" type="barcode" value="0" emitevents="true" smooth="true" smoothCount="7"
-            smoothTolerance="0.02" smoothThreshold="5"></a-marker>
-        <a-marker class="ar-marker" type="barcode" value="1" emitevents="true" smooth="true" smoothCount="7"
-            smoothTolerance="0.02" smoothThreshold="5">
-            <a-entity id="content-core" rotation="-75 0 0" visible="false">
-                <a-plane id="plane-core" position="0 1.5 0"
-                    material="src: #canvas-core; shader: flat; transparent: true"></a-plane>
+        <!-- Definizioni statiche per ogni marker, con i propri a-plane e a-entity -->
+        <a-marker id="marker-0" class="ar-marker" type="barcode" value="0" emitevents="true" smooth="true"
+            smoothCount="7" smoothTolerance="0.02" smoothThreshold="5">
+            <a-entity id="content-0" rotation="-75 0 0" visible="false">
+                <a-plane id="plane-0" position="0 1.5 0"
+                    material="src: #canvas-0; shader: flat; transparent: true"></a-plane>
+            </a-entity>
+        </a-marker>
+
+        <a-marker id="marker-1" class="ar-marker" type="barcode" value="1" emitevents="true" smooth="true"
+            smoothCount="7" smoothTolerance="0.02" smoothThreshold="5">
+            <a-entity id="content-1" rotation="-75 0 0" visible="false">
+                <a-plane id="plane-1" position="0 1.5 0"
+                    material="src: #canvas-1; shader: flat; transparent: true"></a-plane>
             </a-entity>
         </a-marker>
 
@@ -211,131 +220,164 @@
             });
         }
 
-        const canvasCore = document.getElementById('canvas-core');
-        const planeCore = document.getElementById('plane-core');
-        const ctx = canvasCore.getContext('2d');
-        const content3D = document.getElementById('content-core');
+        let activeMarkerId = null; // Memorizza il marker attualmente inquadrato
+        const renderLoops = {};    // Registra i cicli di render per non sdoppiarli
 
-        let currentConfig = null;
-        let renderLoop = null;
+        function forceUpdate(planeId) {
+            const plane = document.getElementById(planeId);
+            if (plane && plane.getObject3D('mesh')) {
+                plane.getObject3D('mesh').material.map.needsUpdate = true;
+            }
+        }
 
-        function startRenderLoop(config) {
-            currentConfig = config;
-            canvasCore.width = config.template.config.canvasW;
-            canvasCore.height = config.template.config.canvasH;
-            planeCore.setAttribute('width', config.template.config.planeW);
-            planeCore.setAttribute('height', config.template.config.planeH);
+        function startRenderLoop(markerId, config) {
+            const canvas = document.getElementById(`canvas-${markerId}`);
+            const plane = document.getElementById(`plane-${markerId}`);
+            if (!canvas || !plane || !config.template) return;
 
-            if (renderLoop) clearInterval(renderLoop);
+            const ctx = canvas.getContext('2d');
+            canvas.width = config.template.config.canvasW;
+            canvas.height = config.template.config.canvasH;
+            plane.setAttribute('width', config.template.config.planeW);
+            plane.setAttribute('height', config.template.config.planeH);
 
-            function tick(cfg) {
-                if (!cfg || !cfg.template) return;
-                cfg.template.fetchDati((dati) => {
-                    cfg.template.draw(ctx, dati, cfg);
-                    if (planeCore.getObject3D('mesh')) {
-                        planeCore.getObject3D('mesh').material.map.needsUpdate = true;
-                    }
+            // Pulizia vecchio ciclo se esiste
+            if (renderLoops[markerId]) clearInterval(renderLoops[markerId]);
+
+            function tick() {
+                config.template.fetchDati((dati) => {
+                    config.template.draw(ctx, dati, config);
+                    forceUpdate(`plane-${markerId}`);
                 });
             }
 
-            tick(config);
-            renderLoop = setInterval(() => tick(currentConfig), 1000);
+            tick();
+            renderLoops[markerId] = setInterval(tick, 1000);
         }
 
         let isPinned = false;
         const uiControls = document.getElementById('ui-controls');
-        const scaleZoom = [0.5, 0.75, 1.0, 1.5, 2.0];
-        let indiceZoom = 2;
+        // Zoom levels per ogni marker, come in esempio.txt
+        let zoomLevels = { "0": 1.0, "1": 1.0 };
 
-        function cambiaZoom(direzione) {
-            indiceZoom += direzione;
-            if (indiceZoom < 0) indiceZoom = 0;
-            if (indiceZoom >= scaleZoom.length) indiceZoom = scaleZoom.length - 1;
-            const s = scaleZoom[indiceZoom];
-            content3D.setAttribute('scale', `${s} ${s} ${s}`);
-        }
-
-        document.querySelectorAll('.ar-marker').forEach(markerEl => {
-            markerEl.addEventListener('markerFound', async (e) => {
-                // Prendi il markerId in modo sicuro (stringa ed elimina spazi accidentali)
-                const markerId = String(markerEl.getAttribute('value') || '').trim();
-
-                const config = registroMacchinari[markerId];
-
-                // CATCH SILENZIOSO: AR.js spesso "allucina" barcode inesistenti nel video (falsi positivi).
-                // Un alert() blocca tutto il thread del browser! Usiamo console.warn per ignorarlo in sicurezza.
-                if (!config) {
-                    console.warn(`⚠️ Rilevato Marker ID "${markerId}", ma non esiste in anagrafica. Ignorato silenziosamente.`);
-                    return;
-                }
-
-                try {
-                    const templateObj = await caricaTemplateJS(config.template_file, config.template_obj);
-                    config.template = templateObj;
-
-                    if (content3D.parentNode !== markerEl) {
-                        markerEl.appendChild(content3D);
-                        // Reset robusto dello zoom quando si cambia marker
-                        content3D.setAttribute('scale', '1 1 1');
-                        indiceZoom = 2;
-                    }
-                    content3D.setAttribute('visible', 'true');
-
-                    startRenderLoop(config);
-                    if (!isPinned) uiControls.style.display = 'flex';
-
-                } catch (errore) {
-                    alert(`⚠️ IMPOSSIBILE CARICARE IL GRAFICO: Assicurati che il file ${config.template_file} esista!`);
-                    console.error(errore);
-                }
-            });
-
-            markerEl.addEventListener('markerLost', () => {
-                if (!isPinned) {
-                    uiControls.style.display = 'none';
-                    content3D.setAttribute('visible', 'false');
-                    if (renderLoop) clearInterval(renderLoop);
-                }
-            });
-        });
-
-        // --- Logica Pin e Grafici invariata dal blocco precedente ---
-        function pinToScreen() {
-            isPinned = true;
-            uiControls.style.display = 'none';
-            document.getElementById('hud-modal').style.display = 'flex';
-            content3D.setAttribute('visible', 'false');
-            document.getElementById('main-view-container').appendChild(canvasCore);
-            canvasCore.classList.add('canvas-pinned');
-        }
-
-        function unpinFromScreen() {
-            isPinned = false;
-            document.getElementById('hud-modal').style.display = 'none';
-            chiudiDettaglio();
-            document.body.appendChild(canvasCore);
-            canvasCore.classList.remove('canvas-pinned');
-            content3D.setAttribute('visible', 'true');
-
-            if (content3D.parentNode && content3D.parentNode.object3D.visible) {
-                uiControls.style.display = 'flex';
-            } else {
-                content3D.setAttribute('visible', 'false');
-                if (renderLoop) clearInterval(renderLoop);
+        function applicaZoom(markerId) {
+            const content = document.getElementById(`content-${markerId}`);
+            if (content && !isPinned) {
+                const z = zoomLevels[markerId];
+                content.setAttribute('scale', `${z} ${z} ${z}`);
             }
         }
 
-        canvasCore.addEventListener('click', (event) => {
-            if (!isPinned || !currentConfig) return;
-            const rect = canvasCore.getBoundingClientRect();
-            const scaleX = canvasCore.width / rect.width;
-            const scaleY = canvasCore.height / rect.height;
+        function cambiaZoom(direzione) {
+            if (activeMarkerId !== null && !isPinned) {
+                // Modifica di 0.25 a step, limitato tra 0.5 e 2.0
+                zoomLevels[activeMarkerId] += (direzione * 0.25);
+                if (zoomLevels[activeMarkerId] < 0.5) zoomLevels[activeMarkerId] = 0.5;
+                if (zoomLevels[activeMarkerId] > 2.0) zoomLevels[activeMarkerId] = 2.0;
+
+                applicaZoom(activeMarkerId);
+            }
+        }
+
+        // --- GESTIONE DEI MARKER COME IN ESEMPIO.TXT ---
+        // Vengono ciclati tutti i marker esplicitamente dal registro
+        Object.keys(registroMacchinari).forEach(markerId => {
+            const markerEl = document.getElementById(`marker-${markerId}`);
+            if (markerEl) {
+                markerEl.addEventListener('markerFound', async () => {
+                    const config = registroMacchinari[markerId];
+                    if (!config) return;
+
+                    try {
+                        const templateObj = await caricaTemplateJS(config.template_file, config.template_obj);
+                        config.template = templateObj;
+
+                        const content3D = document.getElementById(`content-${markerId}`);
+                        if (content3D) content3D.setAttribute('visible', 'true');
+
+                        startRenderLoop(markerId, config);
+
+                        if (!isPinned) {
+                            activeMarkerId = markerId;
+                            uiControls.style.display = 'flex';
+                            applicaZoom(markerId);
+                        }
+
+                    } catch (errore) {
+                        console.error(`⚠️ Errore caricamento grafico per marker ${markerId}:`, errore);
+                    }
+                });
+
+                markerEl.addEventListener('markerLost', () => {
+                    if (!isPinned && activeMarkerId === markerId) {
+                        const content3D = document.getElementById(`content-${markerId}`);
+                        if (content3D) content3D.setAttribute('visible', 'false');
+
+                        activeMarkerId = null;
+                        uiControls.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        // --- Logica Pin e Grafici ---
+        function pinToScreen() {
+            if (activeMarkerId === null) return;
+            isPinned = true;
+            uiControls.style.display = 'none';
+            document.getElementById('hud-modal').style.display = 'flex';
+
+            const content3D = document.getElementById(`content-${activeMarkerId}`);
+            if (content3D) content3D.setAttribute('visible', 'false');
+
+            const activeCanvas = document.getElementById(`canvas-${activeMarkerId}`);
+            document.getElementById('main-view-container').appendChild(activeCanvas);
+            activeCanvas.classList.add('canvas-pinned');
+        }
+
+        function unpinFromScreen() {
+            if (activeMarkerId === null) return;
+            isPinned = false;
+            document.getElementById('hud-modal').style.display = 'none';
+            chiudiDettaglio();
+
+            const activeCanvas = document.getElementById(`canvas-${activeMarkerId}`);
+            document.body.appendChild(activeCanvas);
+            activeCanvas.classList.remove('canvas-pinned');
+
+            const content3D = document.getElementById(`content-${activeMarkerId}`);
+            if (content3D) content3D.setAttribute('visible', 'true');
+
+            const marker = document.getElementById(`marker-${activeMarkerId}`);
+            if (marker && marker.object3D.visible) {
+                uiControls.style.display = 'flex';
+            } else {
+                if (content3D) content3D.setAttribute('visible', 'false');
+                activeMarkerId = null;
+            }
+        }
+
+        // Deleghiamo i click su tutti i canvas registrati
+        document.addEventListener('click', (event) => {
+            if (!isPinned || activeMarkerId === null) return;
+
+            const activeCanvas = document.getElementById(`canvas-${activeMarkerId}`);
+            if (event.target !== activeCanvas) return; // ignora click altrove
+
+            const config = registroMacchinari[activeMarkerId];
+            if (!config || !config.template) return;
+
+            const rect = activeCanvas.getBoundingClientRect();
+            const scaleX = activeCanvas.width / rect.width;
+            const scaleY = activeCanvas.height / rect.height;
             const clickX = (event.clientX - rect.left) * scaleX;
             const clickY = (event.clientY - rect.top) * scaleY;
-            const hitboxes = currentConfig.template.hitboxes || [];
+            const hitboxes = config.template.hitboxes || [];
+
             for (let box of hitboxes) {
                 if (clickX >= box.x && clickX <= box.x + box.w && clickY >= box.y && clickY <= box.y + box.h) {
-                    apriDettaglio(box.id); break;
+                    apriDettaglio(box.id);
+                    break;
                 }
             }
         });
