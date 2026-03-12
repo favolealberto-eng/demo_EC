@@ -281,11 +281,13 @@
         let currentConfig = null;
         let renderLoop = null;
         let isPinned = false;
-        let zoomLevels = { "0": 1.0, "1": 1.0 }; // Zoom indipendente per ogni marker
+        let zoomLevels = {}; // Si popolerà in automatico!
+
+        // NUOVA VARIABILE: Salva gli ultimi dati ricevuti per usarli nel calendario
+        let lastFetchedData = {};
 
         const uiControls = document.getElementById('ui-controls');
 
-        // CARICAMENTO JSON
         // CARICAMENTO JSON E GENERAZIONE AUTOMATICA
         fetch('registro.json?nocache=' + new Date().getTime())
             .then(res => res.json())
@@ -293,10 +295,9 @@
                 registroMacchinari = dati;
                 console.log("✅ JSON caricato con successo!");
 
-                // --- INIZIO GENERAZIONE AUTOMATICA ---
                 const scene = document.getElementById('ar-scene');
 
-                // Per ogni ID (0, 1, 7, 8, ecc.) presente nel JSON:
+                // Per ogni ID presente nel JSON (Generatore Matrioska):
                 Object.keys(registroMacchinari).forEach(id => {
 
                     // 1. Crea il Canvas invisibile
@@ -327,16 +328,16 @@
                     plane.setAttribute('position', '0 1.5 0');
                     plane.setAttribute('material', `src: #canvas-${id}; shader: flat; transparent: true`);
 
-                    // 5. Assembla tutto come le matrioske e inseriscilo nella Scena 3D
+                    // 5. Assembla tutto e inseriscilo nella Scena 3D
                     entity.appendChild(plane);
                     marker.appendChild(entity);
                     scene.appendChild(marker);
 
-                    // 6. Inizializza il livello di zoom base per questo marker
+                    // 6. Inizializza il livello di zoom base
                     zoomLevels[id] = 1.0;
                 });
 
-                // Adesso che i marker esistono nel DOM, attacchiamo i "sensori" per il riconoscimento
+                // Attacchiamo i "sensori" per il riconoscimento
                 attivaRiconoscimentoMarker();
             })
             .catch(err => alert("❌ Errore caricamento JSON: " + err.message));
@@ -378,12 +379,10 @@
         function startRenderLoop(id, config) {
             currentConfig = config;
 
-            // Prendiamo il canvas e il piano SPECIFICI per questo marker
             const canvas = document.getElementById('canvas-' + id);
             const ctx = canvas.getContext('2d');
             const plane = document.getElementById('plane-' + id);
 
-            // Adattiamo le dimensioni
             canvas.width = config.template.config.canvasW;
             canvas.height = config.template.config.canvasH;
             plane.setAttribute('width', config.template.config.planeW);
@@ -394,8 +393,10 @@
             function tick() {
                 if (!currentConfig || !currentConfig.template) return;
                 currentConfig.template.fetchDati((dati) => {
+
+                    lastFetchedData = dati; // <-- FONDAMENTALE: Salva i dati per usarli nel Calendario!
+
                     currentConfig.template.draw(ctx, dati, currentConfig);
-                    // Aggiorniamo la GPU per questo specifico piano
                     if (plane.getObject3D('mesh')) {
                         plane.getObject3D('mesh').material.map.needsUpdate = true;
                     }
@@ -422,7 +423,6 @@
             uiControls.style.display = 'none';
             document.getElementById('hud-modal').style.display = 'flex';
 
-            // Nascondiamo l'ologramma 3D del marker per non vederlo in background
             const content3D = document.getElementById('content-' + currentMarkerId);
             if (content3D) content3D.setAttribute('visible', 'false');
 
@@ -443,7 +443,6 @@
             activeCanvas.classList.remove('canvas-pinned');
             activeCanvas.classList.add('hidden-canvas');
 
-            // Ripristiniamo la visibilità 3D
             const content3D = document.getElementById('content-' + currentMarkerId);
             if (content3D) content3D.setAttribute('visible', 'true');
 
@@ -452,20 +451,17 @@
                 uiControls.style.display = 'flex';
             } else {
                 if (renderLoop) clearInterval(renderLoop);
-
-                // Se il marker è stato perso mentre eravamo nel modale, nascondiamo e sblocchiamo
                 if (content3D) content3D.setAttribute('visible', 'false');
                 currentMarkerId = null;
             }
         }
 
-        // --- GESTIONE CLICK E GRAFICI ---
+        // --- GESTIONE CLICK, GRAFICI E CALENDARIO ---
         document.addEventListener('click', (event) => {
-            // Controlla il click solo se c'è un canvas pinnato
             if (!isPinned || !currentConfig || !currentMarkerId) return;
 
             const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
-            if (event.target !== activeCanvas) return; // Se clicchi fuori dal canvas, ignora
+            if (event.target !== activeCanvas) return;
 
             const rect = activeCanvas.getBoundingClientRect();
             const scaleX = activeCanvas.width / rect.width;
@@ -476,14 +472,70 @@
             const hitboxes = currentConfig.template.hitboxes || [];
             for (let box of hitboxes) {
                 if (clickX >= box.x && clickX <= box.x + box.w && clickY >= box.y && clickY <= box.y + box.h) {
-                    apriDettaglio(box.id); break;
+
+                    // <-- FONDAMENTALE: Smistamento del Click -->
+                    if (box.id === "calendario") {
+                        apriCalendario();
+                    } else {
+                        apriDettaglio(box.id);
+                    }
+                    break;
                 }
             }
         });
 
+        // --- FUNZIONE NUOVA: APRI CALENDARIO HTML ---
+        function apriCalendario() {
+            document.getElementById('main-view-container').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('calendar-view').style.display = 'flex';
+
+            document.getElementById('cal-room-name').innerText = currentConfig.nome;
+            const timeline = document.getElementById('cal-timeline');
+            timeline.innerHTML = ''; // Pulisce lo storico
+
+            // Genera la griglia oraria dalle 8:00 alle 18:00
+            const oreInizio = 8;
+            const oreFine = 18;
+            const altezzaOra = 60; // Altezza di un'ora in pixel
+
+            for (let i = oreInizio; i <= oreFine; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'time-slot';
+                slot.innerHTML = `<div class="time-label">${i}:00</div><div class="time-content" id="ora-${i}"></div>`;
+                timeline.appendChild(slot);
+            }
+
+            // Inserisce gli eventi presi dall'ultimo fetchDati
+            if (lastFetchedData.agendaGiorno) {
+                lastFetchedData.agendaGiorno.forEach(evento => {
+                    const topPos = (evento.inizio - oreInizio) * altezzaOra;
+                    const durata = evento.fine - evento.inizio;
+                    const altezza = durata * altezzaOra;
+
+                    const divEvento = document.createElement('div');
+                    divEvento.className = 'cal-event';
+                    divEvento.style.top = `${topPos + 1}px`;
+                    divEvento.style.height = `${altezza - 2}px`;
+
+                    // Converte i decimali in minuti (es. 14.5 -> 14:30)
+                    const formattaOra = (num) => {
+                        const h = Math.floor(num);
+                        const m = (num % 1 === 0.5) ? "30" : "00";
+                        return `${h}:${m}`;
+                    };
+
+                    divEvento.innerHTML = `<strong>${evento.titolo}</strong><br><span style="font-weight:normal; font-size:12px;">${formattaOra(evento.inizio)} - ${formattaOra(evento.fine)}</span>`;
+                    document.getElementById(`ora-${oreInizio}`).appendChild(divEvento);
+                });
+            }
+        }
+
+        // --- FUNZIONI GRAFICI (Esistenti) ---
         let detailChart = null;
         function apriDettaglio(metricaId) {
             document.getElementById('main-view-container').style.display = 'none';
+            document.getElementById('calendar-view').style.display = 'none'; // Nasconde eventuale calendario
             document.getElementById('detail-view').style.display = 'flex';
 
             let titolo = metricaId.toUpperCase();
@@ -513,8 +565,10 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { title: { display: true, text: unita, font: { size: 14, weight: 'bold' } }, ticks: { maxTicksLimit: 6 }, beginAtZero: false } } }
             });
         }
+
         function chiudiDettaglio() {
             document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('calendar-view').style.display = 'none'; // <-- FONDAMENTALE: Chiude anche il calendario
             document.getElementById('main-view-container').style.display = 'block';
         }
     </script>
