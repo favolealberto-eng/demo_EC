@@ -10,5 +10,23 @@
     "nome": "Sensore IAQ Zona 1",
     "file": "layouts/layout_iaq.js",
     "oggetto": "LayoutIAQ"
+  },
+  "2": {
+    "tipo": "estintore",
+    "nome": "Ufficio 1",
+    "file": "layouts/layout_estintore.js",
+    "oggetto": "LayoutEstintore"
+  },
+  "3": {
+    "tipo": "estintore",
+    "nome": "Ufficio 2",
+    "file": "layouts/layout_estintore.js",
+    "oggetto": "LayoutEstintore"
+  },
+  "4": {
+    "tipo": "estintore",
+    "nome": "Ufficio 3",
+    "file": "layouts/layout_estintore.js",
+    "oggetto": "LayoutEstintore"
   }
 }
