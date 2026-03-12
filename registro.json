@@ -10,29 +10,5 @@
     "nome": "iaq_2",
     "template_file": "layouts/layout_iaq.js",
     "template_obj": "LayoutIAQ"
-  },
-  "3": {
-    "tipo": "quadro_elettrico",
-    "nome": "quadro_el_1",
-    "template_file": "layouts/layout_quadro.js",
-    "template_obj": "LayoutQuadro"
-  },
-  "4": {
-    "tipo": "quadro_elettrico",
-    "nome": "quadro_el_2",
-    "template_file": "layouts/layout_quadro.js",
-    "template_obj": "LayoutQuadro"
-  },
-  "5": {
-    "tipo": "estintore",
-    "nome": "est_1",
-    "template_file": "layouts/layout_estintore.js",
-    "template_obj": "LayoutEstintore"
-  },
-  "6": {
-    "tipo": "estintore",
-    "nome": "est_2",
-    "template_file": "layouts/layout_estintore.js",
-    "template_obj": "LayoutEstintore"
   }
 }
