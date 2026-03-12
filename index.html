@@ -245,9 +245,10 @@
             border-right: 1px solid #e2e8f0;
             position: relative;
             background: #ffffff;
-            min-height: 600px; /* Assicura lo scroll */
+            min-height: 600px;
+            /* Assicura lo scroll */
         }
-        
+
         .week-col:last-child {
             border-right: none;
         }
@@ -269,7 +270,8 @@
             position: absolute;
             left: 2px;
             right: 2px;
-            background: #fef08a; /* Giallo post-it */
+            background: #fef08a;
+            /* Giallo post-it */
             border-left: 3px solid #eab308;
             color: #854d0e;
             padding: 4px;
@@ -277,7 +279,7 @@
             font-size: 11px;
             line-height: 1.2;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -404,7 +406,12 @@
                     script.onload = () => {
                         config.template = window[config.oggetto];
                         startRenderLoop(id, config);
-                        if (!isPinned) uiControls.style.display = 'flex';
+
+                        // FONDAMENTALE FORZATURA PER MARKER DINAMICI: Il bottone HUD DEVE apparire qui.
+                        if (!isPinned) {
+                            uiControls.style.display = 'flex';
+                            uiControls.style.zIndex = '10000'; // Assicura che sia sopra a tutto
+                        }
                     };
 
                     document.head.appendChild(script);
@@ -492,8 +499,10 @@
             const content3D = document.getElementById('content-' + currentMarkerId);
             if (content3D) content3D.setAttribute('visible', 'true');
 
+            // Quando togliamo il pin, verifichiamo se il marker è ancora "in vista" basandoci sul loop
+            // Sui marker dinamici generati in JS, object3D potrebbe bloccarsi in cache, usiamo un fallback
             const marker = document.getElementById('marker-' + currentMarkerId);
-            if (marker && marker.object3D.visible) {
+            if (marker && marker.object3D && marker.object3D.visible) {
                 uiControls.style.display = 'flex';
             } else {
                 if (renderLoop) clearInterval(renderLoop);
@@ -543,7 +552,7 @@
         function mostraVistaGiorno() {
             document.getElementById('tab-giorno').classList.add('active');
             document.getElementById('tab-settimana').classList.remove('active');
-            
+
             const timeline = document.getElementById('cal-timeline');
             timeline.innerHTML = ''; // Pulisce
             timeline.style.padding = '20px'; // Ripristina padding giorno
@@ -588,9 +597,9 @@
         function mostraVistaSettimana() {
             document.getElementById('tab-settimana').classList.add('active');
             document.getElementById('tab-giorno').classList.remove('active');
-            
+
             const timeline = document.getElementById('cal-timeline');
-            timeline.innerHTML = ''; 
+            timeline.innerHTML = '';
             timeline.style.padding = '0'; // Togliamo il padding per far aderire i bordi
             timeline.classList.add('cal-week-grid');
 
@@ -602,16 +611,16 @@
                 giorni.forEach(giorno => {
                     const col = document.createElement('div');
                     col.className = 'week-col';
-                    
+
                     const header = document.createElement('div');
                     header.className = 'week-day-header';
                     header.innerText = giorno.substring(0, 3).toUpperCase(); // Es: LUN, MAR
                     col.appendChild(header);
 
                     // Aggiungiamo le linee guida orarie per sfondo
-                    for(let i=oreInizio; i<=18; i++) {
+                    for (let i = oreInizio; i <= 18; i++) {
                         const line = document.createElement('div');
-                        line.style.cssText = `position:absolute; top:${(i-oreInizio)*altezzaOra + 40}px; width:100%; border-top:1px dashed #e2e8f0; pointer-events:none;`;
+                        line.style.cssText = `position:absolute; top:${(i - oreInizio) * altezzaOra + 40}px; width:100%; border-top:1px dashed #e2e8f0; pointer-events:none;`;
                         col.appendChild(line);
                     }
 
@@ -627,7 +636,7 @@
                         divEvento.style.top = `${topPos}px`;
                         divEvento.style.height = `${altezza - 2}px`;
                         divEvento.innerText = evento.titolo;
-                        
+
                         col.appendChild(divEvento);
                     });
 
