@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>EURIX - AR Core Engine (Live Debug)</title>
+    <title>EURIX - AR Core (Stable Architecture)</title>
 
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
@@ -15,23 +15,6 @@
             overflow: hidden;
             background-color: #000;
             font-family: sans-serif;
-        }
-
-        /* BOX DI DIAGNOSTICA (DEBUG) */
-        #debug-box {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.85);
-            border: 2px solid #3b82f6;
-            border-radius: 8px;
-            padding: 10px;
-            z-index: 9999;
-            color: black;
-            font-family: monospace;
-            font-size: 12px;
-            max-width: 70%;
-            pointer-events: none;
         }
 
         /* UI CONTROLS */
@@ -65,7 +48,7 @@
             background: rgba(249, 115, 22, 0.8);
         }
 
-        /* MODALE & CANVAS */
+        /* MODALE */
         #hud-modal {
             display: none;
             position: fixed;
@@ -96,8 +79,8 @@
             z-index: 10000;
         }
 
-        /* FIX CANVAS: Invisibile in 3D ma attivo */
-        #canvas-core {
+        /* CANVASES (Invisibili di base, ma attivi per il 3D) */
+        .hidden-canvas {
             position: fixed;
             top: 0;
             left: 0;
@@ -119,7 +102,7 @@
             cursor: pointer;
         }
 
-        /* GRAFICI */
+        /* GRAFICO */
         #detail-view {
             display: none;
             width: 90%;
@@ -162,8 +145,6 @@
 
 <body>
 
-    <div id="debug-box">⚙️ LOG DI SISTEMA:<br></div>
-
     <div id="ui-controls">
         <button class="btn-minimal" onclick="cambiaZoom(1)">➕</button>
         <button class="btn-minimal" onclick="cambiaZoom(-1)">➖</button>
@@ -180,123 +161,95 @@
         </div>
     </div>
 
-    <canvas id="canvas-core"></canvas>
+    <canvas id="canvas-0" class="hidden-canvas"></canvas>
+    <canvas id="canvas-1" class="hidden-canvas"></canvas>
 
     <a-scene embedded
         arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;">
 
-        <a-marker class="ar-marker" type="barcode" value="0"></a-marker>
-        <a-marker class="ar-marker" type="barcode" value="1"></a-marker>
+        <a-marker class="ar-marker" type="barcode" value="0" id="marker-0">
+            <a-entity id="content-0" rotation="-75 0 0">
+                <a-plane id="plane-0" position="0 1.5 0"
+                    material="src: #canvas-0; shader: flat; transparent: true"></a-plane>
+            </a-entity>
+        </a-marker>
 
-        <a-entity id="content-core" rotation="-75 0 0" visible="false">
-            <a-plane id="plane-core" aggiorna-canvas position="0 1.5 0"
-                material="src: #canvas-core; shader: flat; transparent: true"></a-plane>
-        </a-entity>
+        <a-marker class="ar-marker" type="barcode" value="1" id="marker-1">
+            <a-entity id="content-1" rotation="-75 0 0">
+                <a-plane id="plane-1" position="0 1.5 0"
+                    material="src: #canvas-1; shader: flat; transparent: true"></a-plane>
+            </a-entity>
+        </a-marker>
 
         <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-        AFRAME.registerComponent('aggiorna-canvas', {
-            tick: function () {
-                const mesh = this.el.getObject3D('mesh');
-                if (mesh && mesh.material && mesh.material.map) {
-                    mesh.material.map.needsUpdate = true;
-                }
-            }
-        });
-
-        // --- FUNZIONI DI DEBUG ---
-        const debugBox = document.getElementById('debug-box');
-        function scriviLog(messaggio, colore = "black") {
-            // Mostriamo solo gli ultimi 5 messaggi per non riempire lo schermo
-            const messaggi = debugBox.innerHTML.split('<br>').filter(m => m.trim() !== '');
-            if (messaggi.length > 5) messaggi.splice(1, 1);
-            debugBox.innerHTML = messaggi.join('<br>') + `<br><span style="color: ${colore};">${messaggio}</span>`;
-        }
-
-        // --- MOTORE PRINCIPALE ---
         let registroMacchinari = {};
-        const canvasCore = document.getElementById('canvas-core');
-        const planeCore = document.getElementById('plane-core');
-        const ctx = canvasCore.getContext('2d');
-        const content3D = document.getElementById('content-core');
-        const uiControls = document.getElementById('ui-controls');
 
+        // VARIABILI DI STATO
+        let currentMarkerId = null;
         let currentConfig = null;
         let renderLoop = null;
         let isPinned = false;
-        let indiceZoom = 2;
-        const scaleZoom = [0.5, 0.75, 1.0, 1.5, 2.0];
+        let zoomLevels = { "0": 1.0, "1": 1.0 }; // Zoom indipendente per ogni marker
 
-        // 1. CARICAMENTO JSON (Tabula Rasa Style)
-        scriviLog("Avvio: Cerco registro.json...", "blue");
+        const uiControls = document.getElementById('ui-controls');
+
+        // CARICAMENTO JSON
         fetch('registro.json?nocache=' + new Date().getTime())
-            .then(res => {
-                if (!res.ok) throw new Error("File non trovato (HTTP " + res.status + ")");
-                return res.json();
-            })
+            .then(res => res.json())
             .then(dati => {
                 registroMacchinari = dati;
-                scriviLog("✅ JSON caricato con successo!", "green");
+                console.log("✅ JSON caricato con successo!");
             })
-            .catch(err => scriviLog("❌ Errore JSON: " + err.message, "red"));
+            .catch(err => alert("❌ Errore caricamento JSON: " + err.message));
 
-        // 2. GESTIONE MARKER E CARICAMENTO JS
+        // GESTIONE MARKER
         document.querySelectorAll('.ar-marker').forEach(markerEl => {
             markerEl.addEventListener('markerFound', () => {
                 const id = markerEl.getAttribute('value');
-                scriviLog(`👀 Visto Marker ${id}`, "blue");
-
+                currentMarkerId = id;
                 const config = registroMacchinari[id];
-                if (!config) {
-                    scriviLog(`⚠️ Marker ${id} non presente in JSON`, "orange");
-                    return;
-                }
 
-                // Sposta l'ologramma sul marker corrente
-                if (content3D.parentNode !== markerEl) {
-                    markerEl.appendChild(content3D);
-                    content3D.setAttribute('scale', '1 1 1'); // Reset zoom
-                    indiceZoom = 2;
-                }
+                if (!config) return;
 
-                scriviLog(`Cerco file: ${config.file}...`, "blue");
                 const script = document.createElement('script');
                 script.src = config.file;
 
                 script.onload = () => {
-                    scriviLog(`✅ ${config.file} pronto. Avvio rendering...`, "green");
-
-                    // Colleghiamo l'oggetto letto da window (Il fix magico!)
                     config.template = window[config.oggetto];
-
-                    content3D.setAttribute('visible', 'true');
-                    startRenderLoop(config);
-
+                    startRenderLoop(id, config);
                     if (!isPinned) uiControls.style.display = 'flex';
                 };
 
-                script.onerror = () => scriviLog(`❌ Fallito caricamento ${config.file}`, "red");
                 document.head.appendChild(script);
             });
 
             markerEl.addEventListener('markerLost', () => {
-                if (!isPinned) {
+                const id = markerEl.getAttribute('value');
+                if (!isPinned && currentMarkerId === id) {
                     uiControls.style.display = 'none';
-                    content3D.setAttribute('visible', 'false');
                     if (renderLoop) clearInterval(renderLoop);
+                    currentMarkerId = null;
                 }
             });
         });
 
-        // 3. LOOP DI DISEGNO (Aggiornamento 3D)
-        function startRenderLoop(config) {
+        // LOOP DI DISEGNO SPECIFICO
+        function startRenderLoop(id, config) {
             currentConfig = config;
-            canvasCore.width = config.template.config.canvasW;
-            canvasCore.height = config.template.config.canvasH;
-            planeCore.setAttribute('width', config.template.config.planeW);
-            planeCore.setAttribute('height', config.template.config.planeH);
+
+            // Prendiamo il canvas e il piano SPECIFICI per questo marker
+            const canvas = document.getElementById('canvas-' + id);
+            const ctx = canvas.getContext('2d');
+            const plane = document.getElementById('plane-' + id);
+
+            // Adattiamo le dimensioni
+            canvas.width = config.template.config.canvasW;
+            canvas.height = config.template.config.canvasH;
+            plane.setAttribute('width', config.template.config.planeW);
+            plane.setAttribute('height', config.template.config.planeH);
 
             if (renderLoop) clearInterval(renderLoop);
 
@@ -304,8 +257,9 @@
                 if (!currentConfig || !currentConfig.template) return;
                 currentConfig.template.fetchDati((dati) => {
                     currentConfig.template.draw(ctx, dati, currentConfig);
-                    if (planeCore.getObject3D('mesh')) {
-                        planeCore.getObject3D('mesh').material.map.needsUpdate = true;
+                    // Aggiorniamo la GPU per questo specifico piano
+                    if (plane.getObject3D('mesh')) {
+                        plane.getObject3D('mesh').material.map.needsUpdate = true;
                     }
                 });
             }
@@ -314,46 +268,59 @@
             renderLoop = setInterval(tick, 1000);
         }
 
-        // --- UI E INTERAZIONI ---
+        // --- INTERAZIONI: ZOOM E PIN ---
         function cambiaZoom(direzione) {
-            indiceZoom += direzione;
-            if (indiceZoom < 0) indiceZoom = 0;
-            if (indiceZoom >= scaleZoom.length) indiceZoom = scaleZoom.length - 1;
-            const s = scaleZoom[indiceZoom];
-            content3D.setAttribute('scale', `${s} ${s} ${s}`);
+            if (currentMarkerId === null) return;
+            zoomLevels[currentMarkerId] += direzione * 0.25;
+            if (zoomLevels[currentMarkerId] < 0.5) zoomLevels[currentMarkerId] = 0.5;
+
+            const s = zoomLevels[currentMarkerId];
+            document.getElementById('content-' + currentMarkerId).setAttribute('scale', `${s} ${s} ${s}`);
         }
 
         function pinToScreen() {
+            if (currentMarkerId === null) return;
             isPinned = true;
             uiControls.style.display = 'none';
             document.getElementById('hud-modal').style.display = 'flex';
-            content3D.setAttribute('visible', 'false');
-            document.getElementById('main-view-container').appendChild(canvasCore);
-            canvasCore.classList.add('canvas-pinned');
+
+            const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
+            document.getElementById('main-view-container').appendChild(activeCanvas);
+            activeCanvas.classList.remove('hidden-canvas');
+            activeCanvas.classList.add('canvas-pinned');
         }
 
         function unpinFromScreen() {
+            if (currentMarkerId === null) return;
             isPinned = false;
             document.getElementById('hud-modal').style.display = 'none';
             chiudiDettaglio();
-            document.body.appendChild(canvasCore);
-            canvasCore.classList.remove('canvas-pinned');
-            content3D.setAttribute('visible', 'true');
 
-            if (content3D.parentNode && content3D.parentNode.object3D.visible) {
+            const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
+            document.body.appendChild(activeCanvas);
+            activeCanvas.classList.remove('canvas-pinned');
+            activeCanvas.classList.add('hidden-canvas');
+
+            const marker = document.getElementById('marker-' + currentMarkerId);
+            if (marker && marker.object3D.visible) {
                 uiControls.style.display = 'flex';
             } else {
-                content3D.setAttribute('visible', 'false');
                 if (renderLoop) clearInterval(renderLoop);
+                currentMarkerId = null;
             }
         }
 
-        // --- GESTIONE GRAFICI (CHART.JS) ---
-        canvasCore.addEventListener('click', (event) => {
-            if (!isPinned || !currentConfig) return;
-            const rect = canvasCore.getBoundingClientRect();
-            const scaleX = canvasCore.width / rect.width;
-            const scaleY = canvasCore.height / rect.height;
+        // --- GESTIONE CLICK E GRAFICI ---
+        document.addEventListener('click', (event) => {
+            // Controlla il click solo se c'è un canvas pinnato
+            if (!isPinned || !currentConfig || !currentMarkerId) return;
+
+            const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
+            if (event.target !== activeCanvas) return; // Se clicchi fuori dal canvas, ignora
+
+            const rect = activeCanvas.getBoundingClientRect();
+            const scaleX = activeCanvas.width / rect.width;
+            const scaleY = activeCanvas.height / rect.height;
             const clickX = (event.clientX - rect.left) * scaleX;
             const clickY = (event.clientY - rect.top) * scaleY;
 
