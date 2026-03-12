@@ -313,6 +313,10 @@
             uiControls.style.display = 'none';
             document.getElementById('hud-modal').style.display = 'flex';
 
+            // Nascondiamo l'ologramma 3D del marker per non vederlo in background
+            const content3D = document.getElementById('content-' + currentMarkerId);
+            if (content3D) content3D.setAttribute('visible', 'false');
+
             const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
             document.getElementById('main-view-container').appendChild(activeCanvas);
             activeCanvas.classList.remove('hidden-canvas');
@@ -330,11 +334,18 @@
             activeCanvas.classList.remove('canvas-pinned');
             activeCanvas.classList.add('hidden-canvas');
 
+            // Ripristiniamo la visibilità 3D
+            const content3D = document.getElementById('content-' + currentMarkerId);
+            if (content3D) content3D.setAttribute('visible', 'true');
+
             const marker = document.getElementById('marker-' + currentMarkerId);
             if (marker && marker.object3D.visible) {
                 uiControls.style.display = 'flex';
             } else {
                 if (renderLoop) clearInterval(renderLoop);
+                
+                // Se il marker è stato perso mentre eravamo nel modale, nascondiamo e sblocchiamo
+                if (content3D) content3D.setAttribute('visible', 'false');
                 currentMarkerId = null;
             }
         }
