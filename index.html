@@ -1025,32 +1025,27 @@
 
             let titolo = metricaId.toUpperCase();
             if (metricaId === 'iaq_score') titolo = "QUALITÀ DELL'ARIA";
+            if (metricaId === 'benchmark_energia') titolo = "CONSUMO REALE VS BASELINE";
             document.getElementById('detail-title').innerText = "Andamento: " + titolo;
 
-            let baseVal = 0, variazione = 0, unita = "";
-            if (metricaId === 'temperatura') { baseVal = 19; variazione = 4; unita = "°C"; }
-            else if (metricaId === 'umidita') { baseVal = 40; variazione = 15; unita = "%"; }
-            else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; unita = "dB"; }
-            else if (metricaId === 'luce') { baseVal = 400; variazione = 150; unita = "lux"; }
-            else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 0.8; unita = "Punti"; }
-
-            const fakeData = [];
-            for (let i = 0; i < 10; i++) {
-                const trend = Math.sin(i / 9 * Math.PI) * variazione;
-                const rumoreDiff = (Math.random() * variazione * 0.3) - (variazione * 0.15);
-                fakeData.push((baseVal + trend + rumoreDiff).toFixed(1));
-            }
-
+            let theDatasets = [];
             const labels = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 'Ora'];
-            const ctxChart = document.getElementById('chart-canvas').getContext('2d');
-            if (detailChart) detailChart.destroy();
+            let unita = "";
 
-            detailChart = new Chart(ctxChart, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: metricaId,
+            if (metricaId === 'benchmark_energia') {
+                unita = "kWh";
+                const fakeData = [];
+                const baselineData = [];
+                const baseline = lastFetchedData && lastFetchedData.baseline_enpi ? lastFetchedData.baseline_enpi : 12.5;
+                for (let i = 0; i < 10; i++) {
+                    baselineData.push(baseline);
+                    const diff = (Math.random() * 4) - 1.5;
+                    fakeData.push((baseline + diff).toFixed(1));
+                }
+
+                theDatasets = [
+                    {
+                        label: 'Consumo Reale',
                         data: fakeData,
                         borderColor: '#f59e0b',
                         backgroundColor: 'rgba(245,158,11,0.12)',
@@ -1061,7 +1056,57 @@
                         pointBackgroundColor: '#f59e0b',
                         pointBorderColor: 'rgba(255,255,255,0.3)',
                         pointBorderWidth: 2
-                    }]
+                    },
+                    {
+                        label: 'Baseline ISO 50001',
+                        data: baselineData,
+                        borderColor: '#22c55e',
+                        backgroundColor: 'transparent',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 0
+                    }
+                ];
+            } else {
+                let baseVal = 0, variazione = 0;
+                if (metricaId === 'temperatura') { baseVal = 19; variazione = 4; unita = "°C"; }
+                else if (metricaId === 'umidita') { baseVal = 40; variazione = 15; unita = "%"; }
+                else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; unita = "dB"; }
+                else if (metricaId === 'luce') { baseVal = 400; variazione = 150; unita = "lux"; }
+                else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 0.8; unita = "Punti"; }
+
+                const fakeData = [];
+                for (let i = 0; i < 10; i++) {
+                    const trend = Math.sin(i / 9 * Math.PI) * variazione;
+                    const rumoreDiff = (Math.random() * variazione * 0.3) - (variazione * 0.15);
+                    fakeData.push((baseVal + trend + rumoreDiff).toFixed(1));
+                }
+
+                theDatasets = [{
+                    label: metricaId,
+                    data: fakeData,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.12)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: 'rgba(255,255,255,0.3)',
+                    pointBorderWidth: 2
+                }];
+            }
+
+            const ctxChart = document.getElementById('chart-canvas').getContext('2d');
+            if (detailChart) detailChart.destroy();
+
+            detailChart = new Chart(ctxChart, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: theDatasets
                 },
                 options: {
                     responsive: true,

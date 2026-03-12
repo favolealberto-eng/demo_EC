@@ -42,5 +42,21 @@
     "id_sala": "curie",
     "file": "layouts/layout_sala.js",
     "oggetto": "LayoutSala"
+  },
+  "7": {
+    "tipo": "macchina",
+    "nome": "Compressore Aria CMP-01",
+    "id_macchina": "cmp01",
+    "soglia_kw": 45,
+    "file": "layouts/layout_macchina.js",
+    "oggetto": "LayoutMacchina"
+  },
+  "8": {
+    "tipo": "macchina",
+    "nome": "Pompa Idraulica PMP-02",
+    "id_macchina": "pmp02",
+    "soglia_kw": 30,
+    "file": "layouts/layout_macchina.js",
+    "oggetto": "LayoutMacchina"
   }
 }
