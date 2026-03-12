@@ -3,7 +3,7 @@
 // Risoluzione nativa: 900x1600 (Verticale 9:16)
 // ==========================================
 
-const LayoutIAQ = {
+window.LayoutIAQ = {
     // 1. PARAMETRI DI STRUTTURA
     config: {
         canvasW: 900,
@@ -23,11 +23,10 @@ const LayoutIAQ = {
 
     // 3. DATABASE FITTIZIO (Simulazione chiamata API)
     fetchDati: function (callback) {
-        // Simuliamo un ritardo di rete di 200ms
         setTimeout(() => {
             const mockData = {
                 timestamp: new Date(),
-                score: (Math.random() * 2 + 7.5).toFixed(1), // Oscilla tra 7.5 e 9.5
+                score: (Math.random() * 2 + 7.5).toFixed(1),
                 temperatura: (22.5 + Math.random() * 0.5).toFixed(1),
                 umidita: (45 + Math.random() * 2).toFixed(0),
                 rumore: (40 + Math.random() * 5).toFixed(0),
@@ -39,50 +38,42 @@ const LayoutIAQ = {
 
     // 4. MOTORE GRAFICO SPECIFICO
     draw: function (ctx, dati, config) {
-        // --- SFONDO E BORDO ARMONICO ---
         ctx.clearRect(0, 0, 900, 1600);
 
-        ctx.fillStyle = '#f8fafc'; // Bianco "sporco"
+        ctx.fillStyle = '#f8fafc';
         ctx.beginPath();
-        ctx.roundRect(10, 10, 880, 1580, 50); // Bordo arrotondato
+        ctx.roundRect(10, 10, 880, 1580, 50);
         ctx.fill();
 
-        ctx.strokeStyle = '#cbd5e1'; // Grigio chiaro
+        ctx.strokeStyle = '#cbd5e1';
         ctx.lineWidth = 8;
         ctx.stroke();
 
-        // --- HEADER TITOLETTO ---
         ctx.fillStyle = '#334155';
         ctx.font = 'bold 55px sans-serif';
         ctx.textAlign = 'center';
-        
-        // Se disponibile un nome nel registro.json (es. iaq_1) lo stampa sistemato
+
         const titolo = config && config.nome ? config.nome.toUpperCase().replace('_', ' ') : "QUALITÀ DELL'ARIA";
         ctx.fillText(titolo, 450, 120);
 
-        // Orario formattato
         const orario = dati.timestamp.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         ctx.fillStyle = '#94a3b8';
         ctx.font = '35px sans-serif';
         ctx.fillText(`Oggi, ${orario}`, 450, 180);
 
-        // --- ACCELEROMETRO (Arco Graduato) ---
         const cx = 450;
         const cy = 600;
         const radius = 280;
         const thickness = 50;
 
         const gradient = ctx.createConicGradient(Math.PI, cx, cy);
-        gradient.addColorStop(0, '#991b1b');     // Rosso scuro (inizio arco)
-        gradient.addColorStop(0.125, '#ef4444'); // Rosso
-        gradient.addColorStop(0.25, '#eab308');  // Giallo
-        gradient.addColorStop(0.375, '#22c55e'); // Verde chiaro
-        gradient.addColorStop(0.5, '#15803d');   // Verde scuro (fine arco)
-
-        // Fix per evitare gradienti errati sui bordi arrotondati (lineCap='round'):
-        // La coda destra "sborda" oltre 0.5, la coda sinistra "pesca" dal valore 1.0
-        gradient.addColorStop(0.6, '#15803d');   // Mantiene il verde scuro cap destra
-        gradient.addColorStop(1, '#991b1b');     // Fix "pezzettino verde" cap sinistra
+        gradient.addColorStop(0, '#991b1b');
+        gradient.addColorStop(0.125, '#ef4444');
+        gradient.addColorStop(0.25, '#eab308');
+        gradient.addColorStop(0.375, '#22c55e');
+        gradient.addColorStop(0.5, '#15803d');
+        gradient.addColorStop(0.6, '#15803d');
+        gradient.addColorStop(1, '#991b1b');
 
         ctx.beginPath();
         ctx.arc(cx, cy, radius, Math.PI, Math.PI * 2);
@@ -91,7 +82,6 @@ const LayoutIAQ = {
         ctx.lineCap = 'round';
         ctx.stroke();
 
-        // --- CALCOLO PUNTEGGIO E COLORI ---
         const scoreNum = parseFloat(dati.score);
         let label = "";
         let colorePunteggio = "";
@@ -102,8 +92,7 @@ const LayoutIAQ = {
         else if (scoreNum < 9) { label = "BUONA"; colorePunteggio = "#84cc16"; }
         else { label = "OTTIMA"; colorePunteggio = "#22c55e"; }
 
-        // --- FRECCIA TRIANGOLARE INTERNA ---
-        const percentuale = (scoreNum - 1) / 9; // Normalizza da 0 a 1
+        const percentuale = (scoreNum - 1) / 9;
         const angoloFreccia = Math.PI + (percentuale * Math.PI);
         const raggioInterno = radius - (thickness / 2) - 15;
 
@@ -119,7 +108,6 @@ const LayoutIAQ = {
         ctx.fill();
         ctx.restore();
 
-        // --- TESTO CENTRALE ACCELEROMETRO ---
         ctx.fillStyle = '#0f172a';
         ctx.font = 'bold 150px sans-serif';
         ctx.fillText(dati.score.replace('.', ','), 450, 550);
@@ -133,7 +121,6 @@ const LayoutIAQ = {
         ctx.fillText("1", 170, 700);
         ctx.fillText("10", 730, 700);
 
-        // --- CRUSCOTTO INFERIORE ---
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.roundRect(50, 850, 800, 650, 40);

@@ -1,10 +1,14 @@
 {
   "0": {
-    "file": "layout_0.js",
-    "oggetto": "LayoutZero"
+    "tipo": "iaq",
+    "nome": "Sensore IAQ Zona 0",
+    "file": "layout_iaq.js",
+    "oggetto": "LayoutIAQ"
   },
   "1": {
-    "file": "layout_1.js",
-    "oggetto": "LayoutUno"
+    "tipo": "iaq",
+    "nome": "Sensore IAQ Zona 1",
+    "file": "layout_iaq.js",
+    "oggetto": "LayoutIAQ"
   }
 }
