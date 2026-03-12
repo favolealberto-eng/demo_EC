@@ -181,50 +181,23 @@
     </a-scene>
 
     <script>
-        let registroMacchinari = {};
-
         // ==========================================
-        // 1. DATABASE DINAMICO (CON PARACADUTE ANTI-CRASH)
+        // 1. DATABASE LOCALE
         // ==========================================
-        let registroMacchinari = {};
-
-        async function caricaAnagrafica() {
-            try {
-                // TRUCCO 1: Aggiungiamo un timestamp per forzare Antigravity a NON usare la cache
-                const url = 'registro.json?nocache=' + new Date().getTime();
-                const response = await fetch(url);
-
-                if (!response.ok) throw new Error("HTTP Status " + response.status);
-
-                // Leggiamo il testo grezzo e poi lo convertiamo
-                const testoGrezzo = await response.text();
-                registroMacchinari = JSON.parse(testoGrezzo);
-
-                console.log("✅ Anagrafica caricata dal file JSON con successo!");
-
-            } catch (error) {
-                console.error("❌ Il server ha fallito la lettura del JSON:", error);
-                alert("⚠️ Antigravity non riesce a leggere il file registro.json. Attivo il database di EMERGENZA per non bloccare la demo!");
-
-                // TRUCCO 2: IL PARACADUTE DI EMERGENZA
-                // Se il file esterno fallisce, l'app usa questi dati e continua a funzionare perfettamente.
-                registroMacchinari = {
-                    "0": {
-                        "tipo": "iaq",
-                        "nome": "iaq_1",
-                        "template_file": "layouts/layout_iaq.js",
-                        "template_obj": "LayoutIAQ"
-                    },
-                    "1": {
-                        "tipo": "iaq",
-                        "nome": "iaq_2",
-                        "template_file": "layouts/layout_iaq.js",
-                        "template_obj": "LayoutIAQ"
-                    }
-                };
+        const registroMacchinari = {
+            "0": {
+                "tipo": "iaq",
+                "nome": "SENSORE IAQ 1",
+                "template_file": "layouts/layout_iaq.js",
+                "template_obj": "LayoutIAQ"
+            },
+            "1": {
+                "tipo": "iaq",
+                "nome": "SENSORE IAQ 2",
+                "template_file": "layouts/layout_iaq.js",
+                "template_obj": "LayoutIAQ"
             }
-        }
-        caricaAnagrafica();
+        };
 
         function caricaTemplateJS(urlFile, nomeOggetto) {
             return new Promise((resolve, reject) => {
