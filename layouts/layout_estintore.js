@@ -12,9 +12,6 @@ window.LayoutEstintore = {
     // 2. RECUPERO DATI (Simulazione)
     fetchDati: function (callback) {
         setTimeout(() => {
-            // Simuliamo lo stato in base al nome (o a un id reale se ci fosse)
-            // Lo passeremo tramite config nel 'draw' per semplicità, 
-            // ma qui possiamo restituire i dati del cartellino
             callback({
                 scadenza_polvere: "15/10/2026",
                 scadenza_collaudo: "15/10/2032",
@@ -29,132 +26,155 @@ window.LayoutEstintore = {
 
     // 3. DISEGNO DEL CARTELLINO MANUTENZIONE
     draw: function (ctx, dati, config) {
-        // --- SFONDO E BORDO ---
-        ctx.clearRect(0, 0, 1600, 900);
+        const W = 1600, H = 900;
+        ctx.clearRect(0, 0, W, H);
 
-        ctx.fillStyle = '#f8fafc'; // Bianco
-        ctx.beginPath();
-        ctx.roundRect(10, 10, 1580, 880, 40);
-        ctx.fill();
+        // --- SFONDO SCURO ---
+        const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+        bgGrad.addColorStop(0, '#0d1f3c');
+        bgGrad.addColorStop(0.5, '#0f2d1f');
+        bgGrad.addColorStop(1, '#0d1f3c');
+        ctx.fillStyle = bgGrad;
+        ctx.beginPath(); ctx.roundRect(0, 0, W, H, 40); ctx.fill();
 
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 8;
-        ctx.stroke();
+        // Bordo ambra
+        ctx.strokeStyle = 'rgba(245,158,11,0.35)';
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 39); ctx.stroke();
 
-        // --- CALCOLO STATO (Verde = OK, Giallo = In Scadenza, Rosso = Scaduto) ---
-        // Usiamo un trucco: deduciamo lo stato fittizio dal nome configurato,
-        // così generiamo i 3 casi richiesti senza complicare la finta API.
+        // --- CALCOLO STATO (logica invariata) ---
         const nomeUpper = config && config.nome ? config.nome.toUpperCase() : "ESTINTORE";
 
-        let statoColore = "#22c55e"; // Verde (OK)
+        let statoColore = "#22c55e";
         let testoStato = "REGOLARE";
-        let dateColorBase = "#0f172a";
+        let dateColorBase = "#f1f5f9";
 
         if (nomeUpper.includes("UFFICIO 2")) {
-            statoColore = "#eab308"; // Giallo (In scadenza)
+            statoColore = "#eab308";
             testoStato = "SCADENZA IMMINENTE";
-            dati.scadenza_polvere = "10/04/2026"; // Mettiamola vicina
-            dateColorBase = "#ca8a04";
+            dati.scadenza_polvere = "10/04/2026";
+            dateColorBase = "#fde68a";
         } else if (nomeUpper.includes("UFFICIO 3")) {
-            statoColore = "#ef4444"; // Rosso (Scaduto)
+            statoColore = "#ef4444";
             testoStato = "MANUTENZIONE SCADUTA";
-            dati.scadenza_polvere = "15/01/2025"; // Passata
+            dati.scadenza_polvere = "15/01/2025";
             dati.pressione_ok = false;
-            dateColorBase = "#dc2626";
+            dateColorBase = "#fca5a5";
         }
 
-        // --- HEADER TITOLETTO ---
-        ctx.fillStyle = '#334155';
-        ctx.font = 'bold 60px sans-serif';
-        ctx.textAlign = 'left';
+        // --- HEADER STRIP con gradiente ambra→arancio ---
+        const hdrGrad = ctx.createLinearGradient(10, 10, 1590, 10);
+        hdrGrad.addColorStop(0, '#f59e0b');
+        hdrGrad.addColorStop(1, '#ea580c');
+        ctx.fillStyle = hdrGrad;
+        ctx.beginPath(); ctx.roundRect(10, 10, W - 20, 120, [30, 30, 0, 0]); ctx.fill();
 
-        const titolo = "ESTINTORE: " + nomeUpper;
-        ctx.fillText(titolo, 80, 120);
+        // Titolo header
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 58px sans-serif'; ctx.textAlign = 'left';
+        ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 8;
+        ctx.fillText("ESTINTORE: " + nomeUpper, 70, 96);
+        ctx.shadowBlur = 0;
 
-        // BOLLINO DI STATO (In alto a destra)
+        // Bollino stato (in alto a destra, con glow)
         ctx.fillStyle = statoColore;
-        ctx.beginPath();
-        ctx.arc(1450, 100, 30, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.shadowColor = statoColore; ctx.shadowBlur = 20;
+        ctx.beginPath(); ctx.arc(1450, 70, 28, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
 
         ctx.fillStyle = statoColore;
-        ctx.font = 'bold 35px sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(testoStato, 1400, 115);
+        ctx.font = 'bold 34px sans-serif'; ctx.textAlign = 'right';
+        ctx.shadowColor = statoColore; ctx.shadowBlur = 8;
+        ctx.fillText(testoStato, 1400, 82);
+        ctx.shadowBlur = 0;
 
         // --- LINEA SEPARATRICE ---
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(80, 170);
-        ctx.lineTo(1520, 170);
-        ctx.stroke();
+        ctx.strokeStyle = 'rgba(245,158,11,0.3)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(60, 155); ctx.lineTo(1540, 155); ctx.stroke();
 
-        // --- COLONNA SINISTRA: DATE IMPORTANTI E DATI ---
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#64748b';
-        ctx.font = 'bold 45px sans-serif';
-        ctx.fillText("PIANO MANUTENTIVO", 80, 260);
+        // --- COLONNA SINISTRA: PIANO MANUTENTIVO ---
+        // Label sezione
+        ctx.fillStyle = 'rgba(245,158,11,0.9)';
+        ctx.font = 'bold 40px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText("PIANO MANUTENTIVO", 70, 235);
+        ctx.fillStyle = 'rgba(245,158,11,0.35)';
+        ctx.fillRect(70, 242, 330, 3);
 
-        ctx.font = '40px sans-serif';
-        ctx.fillText("Prossima Revisione Polvere:", 80, 350);
-        ctx.fillText("Prossimo Collaudo Bombola:", 80, 450);
-        ctx.fillText("Ultima Ispezione Visiva:", 80, 550);
-        ctx.fillText("Tecnico Assegnato:", 80, 650);
+        // Righe dati
+        function drawDataRow(y, labelTxt, valueTxt, valueColor) {
+            // Separatore
+            ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(70, y - 35); ctx.lineTo(940, y - 35); ctx.stroke();
 
-        ctx.fillStyle = dateColorBase;
-        ctx.font = 'bold 45px monospace';
-        ctx.fillText(dati.scadenza_polvere, 700, 350);
+            ctx.fillStyle = 'rgba(148,163,184,0.8)';
+            ctx.font = '38px sans-serif'; ctx.textAlign = 'left';
+            ctx.fillText(labelTxt, 70, y);
 
-        ctx.fillStyle = '#0f172a';
-        ctx.fillText(dati.scadenza_collaudo, 700, 450);
-        ctx.fillText(dati.ultima_revisione, 700, 550);
-        ctx.fillText(dati.tecnico, 700, 650);
+            ctx.fillStyle = valueColor || '#f1f5f9';
+            ctx.font = 'bold 42px monospace'; ctx.textAlign = 'left';
+            ctx.fillText(valueTxt, 680, y);
+        }
+
+        drawDataRow(330, "Prossima Revisione Polvere:", dati.scadenza_polvere, dateColorBase);
+        drawDataRow(430, "Prossimo Collaudo Bombola:", dati.scadenza_collaudo, '#f1f5f9');
+        drawDataRow(530, "Ultima Ispezione Visiva:", dati.ultima_revisione, '#f1f5f9');
+        drawDataRow(630, "Tecnico Assegnato:", dati.tecnico, '#f1f5f9');
 
         // --- COLONNA DESTRA: CHECKLIST ---
-        ctx.fillStyle = '#f1f5f9';
-        ctx.beginPath();
-        ctx.roundRect(1000, 220, 520, 500, 20);
-        ctx.fill();
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 3;
-        ctx.stroke();
+        // Card checklist
+        ctx.fillStyle = 'rgba(255,255,255,0.04)';
+        ctx.beginPath(); ctx.roundRect(990, 185, 560, 550, 22); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+        ctx.lineWidth = 1.5; ctx.stroke();
 
-        ctx.fillStyle = '#334155';
-        ctx.font = 'bold 40px sans-serif';
-        ctx.fillText("CHECKLIST ISPEZIONE", 1040, 290);
+        // Titolo checklist
+        ctx.fillStyle = 'rgba(245,158,11,0.9)';
+        ctx.font = 'bold 36px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText("CHECKLIST ISPEZIONE", 1020, 252);
+        ctx.fillStyle = 'rgba(245,158,11,0.35)';
+        ctx.fillRect(1020, 258, 320, 2);
 
-        // Funzione helper per le checkbox
+        // Funzione helper checkbox (logica invariata)
         function drawCheckItem(y, testo, superato) {
-            // Box
-            ctx.fillStyle = superato ? '#22c55e' : '#ef4444';
-            ctx.beginPath();
-            ctx.roundRect(1040, y, 40, 40, 8);
-            ctx.fill();
+            // Separatore riga
+            ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+            ctx.lineWidth = 1;
+            if (y > 310) { ctx.beginPath(); ctx.moveTo(1020, y - 30); ctx.lineTo(1520, y - 30); ctx.stroke(); }
+
+            // Box colorato con glow
+            const colore = superato ? '#22c55e' : '#ef4444';
+            ctx.fillStyle = colore;
+            ctx.shadowColor = colore; ctx.shadowBlur = 12;
+            ctx.beginPath(); ctx.roundRect(1030, y - 4, 42, 42, 10); ctx.fill();
+            ctx.shadowBlur = 0;
 
             // Spunta/X
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 35px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(superato ? "✓" : "✗", 1060, y + 32);
+            ctx.font = 'bold 32px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(superato ? "✓" : "✗", 1051, y + 30);
 
             // Testo
             ctx.textAlign = 'left';
-            ctx.fillStyle = '#475569';
-            ctx.font = '35px sans-serif';
-            ctx.fillText(testo, 1100, y + 32);
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '34px sans-serif';
+            ctx.fillText(testo, 1090, y + 30);
         }
 
-        drawCheckItem(360, "Pressione Manometro OK", dati.pressione_ok);
-        drawCheckItem(460, "Sigillo Sicurezza Integro", dati.sigillo_integro);
-        drawCheckItem(560, "Tubo e Lancia Intatti", dati.tubo_ok);
+        drawCheckItem(330, "Pressione Manometro OK",     dati.pressione_ok);
+        drawCheckItem(430, "Sigillo Sicurezza Integro",  dati.sigillo_integro);
+        drawCheckItem(530, "Tubo e Lancia Intatti",      dati.tubo_ok);
 
-        // Footer QR / ID Finto
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '30px monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText("ID ASSET: EXT-" + Math.floor(Math.random() * 9000 + 1000), 1520, 840);
+        // --- FOOTER ---
+        ctx.strokeStyle = 'rgba(245,158,11,0.20)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(60, 775); ctx.lineTo(1540, 775); ctx.stroke();
+
+        ctx.fillStyle = 'rgba(100,116,139,0.6)';
+        ctx.font = '28px monospace'; ctx.textAlign = 'right';
+        ctx.fillText("ID ASSET: EXT-" + Math.floor(Math.random() * 9000 + 1000), 1540, 825);
         ctx.textAlign = 'left';
-        ctx.fillText("Ultimo agg.: " + new Date().toLocaleTimeString(), 80, 840);
+        ctx.fillText("Ultimo agg.: " + new Date().toLocaleTimeString(), 70, 825);
     }
 };

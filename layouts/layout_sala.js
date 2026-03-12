@@ -68,53 +68,118 @@ window.LayoutSala = {
         // Salviamo l'ID per usarlo nel fetchDati
         this.currentIdSala = config.id_sala;
 
-        ctx.clearRect(0, 0, 800, 1000);
+        const W = 800, H = 1000;
+        ctx.clearRect(0, 0, W, H);
 
-        // Sfondo principale (Bianco arrotondato con ombra)
+        // --- SFONDO SCURO PRINCIPALE ---
+        const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+        bgGrad.addColorStop(0, '#0d1f3c');
+        bgGrad.addColorStop(0.6, '#0f2d1f');
+        bgGrad.addColorStop(1, '#0d1f3c');
+        ctx.fillStyle = bgGrad;
+        ctx.beginPath(); ctx.roundRect(0, 0, W, H, 40); ctx.fill();
+
+        // Bordo sottile ambra
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(245,158,11,0.35)';
+        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 39); ctx.stroke();
+
+        // --- HEADER con gradiente ambra→arancio ---
+        const hdrGrad = ctx.createLinearGradient(10, 10, 790, 10);
+        hdrGrad.addColorStop(0, '#f59e0b');
+        hdrGrad.addColorStop(1, '#ea580c');
+        ctx.fillStyle = hdrGrad;
+        ctx.beginPath(); ctx.roundRect(10, 10, W - 20, 145, [34, 34, 0, 0]); ctx.fill();
+
         ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.roundRect(10, 10, 780, 980, 40); ctx.fill();
-        ctx.lineWidth = 4; ctx.strokeStyle = '#e2e8f0'; ctx.stroke();
+        ctx.font = 'bold 58px sans-serif'; ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 8;
+        ctx.fillText(config.nome.toUpperCase(), 400, 104);
+        ctx.shadowBlur = 0;
 
-        // Header (Nome Sala)
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath(); ctx.roundRect(10, 10, 780, 150, [40, 40, 0, 0]); ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 60px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(config.nome.toUpperCase(), 400, 105);
+        // Sottotitolo header
+        ctx.fillStyle = 'rgba(255,255,255,0.75)';
+        ctx.font = '28px sans-serif';
+        ctx.fillText('STATO SALA CONFERENZE', 400, 140);
 
-        // Status Badge (Libera/Occupata)
-        ctx.fillStyle = dati.colore + "22"; // Sfondo leggero trasparente
-        ctx.beginPath(); ctx.roundRect(50, 200, 700, 150, 20); ctx.fill();
-        ctx.lineWidth = 6; ctx.strokeStyle = dati.colore; ctx.stroke();
+        // --- STATUS BADGE ---
+        // Sfondo badge
+        ctx.fillStyle = dati.colore + '25';
+        ctx.beginPath(); ctx.roundRect(50, 200, 700, 145, 22); ctx.fill();
+        ctx.lineWidth = 4; ctx.strokeStyle = dati.colore; ctx.stroke();
+
+        // Pallino stato
+        ctx.fillStyle = dati.colore;
+        ctx.beginPath(); ctx.arc(110, 265, 22, 0, Math.PI * 2); ctx.fill();
+        // Glow
+        ctx.shadowColor = dati.colore; ctx.shadowBlur = 18;
+        ctx.beginPath(); ctx.arc(110, 265, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
 
         ctx.fillStyle = dati.colore;
-        ctx.font = 'bold 45px sans-serif';
-        ctx.fillText(dati.stato, 400, 265);
-        ctx.fillStyle = '#334155';
-        ctx.font = '35px sans-serif';
-        ctx.fillText(dati.messaggio, 400, 320);
+        ctx.font = 'bold 44px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText(dati.stato, 155, 278);
 
-        // Info Sala (Posti e Dotazioni)
+        ctx.fillStyle = 'rgba(255,255,255,0.65)';
+        ctx.font = '33px sans-serif';
+        ctx.fillText(dati.messaggio, 155, 325);
+
+        // --- SEPARATORE ---
+        ctx.strokeStyle = 'rgba(245,158,11,0.25)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(50, 380); ctx.lineTo(750, 380); ctx.stroke();
+
+        // --- SEZIONE INFO ---
         ctx.textAlign = 'left';
-        ctx.fillStyle = '#64748b';
-        ctx.font = 'bold 35px sans-serif';
-        ctx.fillText("INFO SALA", 50, 430);
-        ctx.fillRect(50, 445, 180, 4);
+        ctx.fillStyle = 'rgba(245,158,11,0.85)';
+        ctx.font = 'bold 30px sans-serif';
+        ctx.fillText('INFO SALA', 50, 430);
+        // Underline
+        ctx.fillStyle = 'rgba(245,158,11,0.4)';
+        ctx.fillRect(50, 438, 160, 3);
 
-        ctx.fillStyle = '#0f172a';
-        ctx.font = '40px sans-serif';
-        ctx.fillText(`👥 Capienza: ${dati.posti} posti a sedere`, 50, 520);
+        // Card info
+        ctx.fillStyle = 'rgba(255,255,255,0.04)';
+        ctx.beginPath(); ctx.roundRect(50, 455, 700, 310, 18); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+        ctx.lineWidth = 1.5; ctx.stroke();
+
+        ctx.fillStyle = '#f1f5f9';
+        ctx.font = '38px sans-serif';
+        ctx.fillText(`👥  Capienza: ${dati.posti} posti a sedere`, 80, 515);
+
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.fillRect(80, 535, 640, 1);
 
         dati.dotazioni.forEach((dot, index) => {
-            ctx.fillText(dot, 50, 590 + (index * 60));
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '36px sans-serif';
+            ctx.fillText(dot, 80, 590 + (index * 58));
         });
 
-        // Bottone Apri Calendario (Simulato nel Canvas)
-        const btnY = 800;
-        ctx.fillStyle = '#3b82f6';
-        ctx.beginPath(); ctx.roundRect(50, btnY, 700, 120, 20); ctx.fill();
+        // --- SEPARATORE ---
+        ctx.strokeStyle = 'rgba(245,158,11,0.20)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(50, 788); ctx.lineTo(750, 788); ctx.stroke();
+
+        // --- BOTTONE CALENDARIO (brand gradient) ---
+        const btnY = 810;
+        const btnGrad = ctx.createLinearGradient(50, btnY, 750, btnY);
+        btnGrad.addColorStop(0, '#f59e0b');
+        btnGrad.addColorStop(1, '#ea580c');
+        ctx.fillStyle = btnGrad;
+        ctx.beginPath(); ctx.roundRect(50, btnY, 700, 118, 20); ctx.fill();
+
+        // Glow del bottone
+        ctx.shadowColor = 'rgba(245,158,11,0.45)';
+        ctx.shadowBlur = 22;
+        ctx.beginPath(); ctx.roundRect(50, btnY, 700, 118, 20); ctx.fill();
+        ctx.shadowBlur = 0;
+
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 40px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText("📅 APRI CALENDARIO", 400, btnY + 75);
+        ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 6;
+        ctx.fillText('📅  APRI CALENDARIO', 400, btnY + 73);
+        ctx.shadowBlur = 0;
     }
 };

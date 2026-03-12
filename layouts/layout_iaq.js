@@ -38,34 +38,53 @@ window.LayoutIAQ = {
 
     // 4. MOTORE GRAFICO SPECIFICO
     draw: function (ctx, dati, config) {
-        ctx.clearRect(0, 0, 900, 1600);
+        const W = 900, H = 1600;
+        ctx.clearRect(0, 0, W, H);
 
-        ctx.fillStyle = '#f8fafc';
+        // --- SFONDO SCURO ---
+        const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+        bgGrad.addColorStop(0, '#0d1f3c');
+        bgGrad.addColorStop(0.55, '#0f2d1f');
+        bgGrad.addColorStop(1, '#0d1f3c');
+        ctx.fillStyle = bgGrad;
+        ctx.beginPath(); ctx.roundRect(0, 0, W, H, 50); ctx.fill();
+
+        // Bordo ambra
+        ctx.strokeStyle = 'rgba(245,158,11,0.35)';
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 49); ctx.stroke();
+
+        // --- HEADER ---
+        const titolo = config && config.nome ? config.nome.toUpperCase().replace('_', ' ') : "QUALITÀ DELL'ARIA";
+        ctx.fillStyle = '#f1f5f9';
+        ctx.font = 'bold 54px sans-serif'; ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(245,158,11,0.4)'; ctx.shadowBlur = 12;
+        ctx.fillText(titolo, W / 2, 110);
+        ctx.shadowBlur = 0;
+
+        // Sottotitolo orario
+        const orario = dati.timestamp.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        ctx.fillStyle = 'rgba(148,163,184,0.85)';
+        ctx.font = '34px sans-serif';
+        ctx.fillText(`Aggiornato: ${orario}`, W / 2, 170);
+
+        // Linea separatrice
+        ctx.strokeStyle = 'rgba(245,158,11,0.25)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(60, 200); ctx.lineTo(840, 200); ctx.stroke();
+
+        // --- ARCO IAQ (invariato nella logica, restyled) ---
+        const cx = 450, cy = 600, radius = 280, thickness = 50;
+
+        // Track di sfondo scuro
         ctx.beginPath();
-        ctx.roundRect(10, 10, 880, 1580, 50);
-        ctx.fill();
-
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 8;
+        ctx.arc(cx, cy, radius, Math.PI, Math.PI * 2);
+        ctx.lineWidth = thickness + 10;
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineCap = 'round';
         ctx.stroke();
 
-        ctx.fillStyle = '#334155';
-        ctx.font = 'bold 55px sans-serif';
-        ctx.textAlign = 'center';
-
-        const titolo = config && config.nome ? config.nome.toUpperCase().replace('_', ' ') : "QUALITÀ DELL'ARIA";
-        ctx.fillText(titolo, 450, 120);
-
-        const orario = dati.timestamp.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '35px sans-serif';
-        ctx.fillText(`Oggi, ${orario}`, 450, 180);
-
-        const cx = 450;
-        const cy = 600;
-        const radius = 280;
-        const thickness = 50;
-
+        // Arco colorato
         const gradient = ctx.createConicGradient(Math.PI, cx, cy);
         gradient.addColorStop(0, '#991b1b');
         gradient.addColorStop(0.125, '#ef4444');
@@ -82,9 +101,9 @@ window.LayoutIAQ = {
         ctx.lineCap = 'round';
         ctx.stroke();
 
+        // --- CALCOLO STATO E FRECCIA (logica invariata) ---
         const scoreNum = parseFloat(dati.score);
-        let label = "";
-        let colorePunteggio = "";
+        let label = "", colorePunteggio = "";
 
         if (scoreNum < 3) { label = "SCARSA"; colorePunteggio = "#ef4444"; }
         else if (scoreNum < 5) { label = "ACCETTABILE"; colorePunteggio = "#f97316"; }
@@ -104,56 +123,83 @@ window.LayoutIAQ = {
         ctx.lineTo(raggioInterno - 25, -15);
         ctx.lineTo(raggioInterno - 25, 15);
         ctx.closePath();
-        ctx.fillStyle = '#64748b';
+        ctx.fillStyle = '#f1f5f9';
+        ctx.shadowColor = 'rgba(255,255,255,0.5)';
+        ctx.shadowBlur = 8;
         ctx.fill();
+        ctx.shadowBlur = 0;
         ctx.restore();
 
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 150px sans-serif';
-        ctx.fillText(dati.score.replace('.', ','), 450, 550);
+        // Valore score
+        ctx.fillStyle = '#f1f5f9';
+        ctx.font = 'bold 145px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = colorePunteggio; ctx.shadowBlur = 20;
+        ctx.fillText(dati.score.replace('.', ','), cx, 555);
+        ctx.shadowBlur = 0;
 
+        // Label qualità
         ctx.fillStyle = colorePunteggio;
-        ctx.font = 'bold 45px sans-serif';
-        ctx.fillText(label, 450, 650);
+        ctx.font = 'bold 44px sans-serif';
+        ctx.shadowColor = colorePunteggio; ctx.shadowBlur = 10;
+        ctx.fillText(label, cx, 648);
+        ctx.shadowBlur = 0;
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = 'bold 35px sans-serif';
+        // Scale labels
+        ctx.fillStyle = 'rgba(148,163,184,0.7)';
+        ctx.font = 'bold 32px sans-serif';
         ctx.fillText("1", 170, 700);
-        ctx.fillText("10", 730, 700);
+        ctx.fillText("10", 732, 700);
 
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.roundRect(50, 850, 800, 650, 40);
-        ctx.fill();
-        ctx.strokeStyle = '#f1f5f9';
-        ctx.lineWidth = 4;
-        ctx.stroke();
+        // --- CARD DATI SENSORI ---
+        ctx.fillStyle = 'rgba(255,255,255,0.04)';
+        ctx.beginPath(); ctx.roundRect(40, 800, 820, 720, 40); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+        ctx.lineWidth = 1.5; ctx.stroke();
+
+        // Titolo card
+        ctx.fillStyle = 'rgba(245,158,11,0.9)';
+        ctx.font = 'bold 30px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('DATI SENSORI AMBIENTALI', 75, 855);
+        ctx.fillStyle = 'rgba(245,158,11,0.35)';
+        ctx.fillRect(75, 862, 370, 2);
 
         ctx.textAlign = 'left';
 
         function drawRigaDato(y, label, valore, unita) {
-            ctx.fillStyle = '#64748b';
-            ctx.font = '40px sans-serif';
-            ctx.fillText(label, 100, y);
+            // Separatore riga
+            ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(75, y - 28); ctx.lineTo(825, y - 28); ctx.stroke();
 
-            const labelWidth = ctx.measureText(label).width;
-            ctx.fillRect(100, y + 10, labelWidth, 3);
+            // Label
+            ctx.fillStyle = 'rgba(148,163,184,0.85)';
+            ctx.font = '38px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(label, 90, y);
 
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 50px sans-serif';
+            // Valore
+            ctx.fillStyle = '#f1f5f9';
+            ctx.font = 'bold 48px sans-serif';
             ctx.textAlign = 'right';
-            ctx.fillText(`${valore} ${unita}`, 740, y);
+            ctx.fillText(`${valore} ${unita}`, 750, y);
 
+            // Pallino verde live indicator
             ctx.fillStyle = '#22c55e';
-            ctx.beginPath();
-            ctx.arc(800, y - 15, 12, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 10;
+            ctx.beginPath(); ctx.arc(810, y - 14, 10, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
             ctx.textAlign = 'left';
         }
 
-        drawRigaDato(1000, "Temperatura", dati.temperatura, "°C");
-        drawRigaDato(1120, "Umidità", dati.umidita, "%");
-        drawRigaDato(1240, "Rumore", dati.rumore, "dB");
-        drawRigaDato(1360, "Illuminamento", dati.luce, "lux");
+        drawRigaDato(990,  "Temperatura",  dati.temperatura, "°C");
+        drawRigaDato(1110, "Umidità",      dati.umidita,     "%");
+        drawRigaDato(1230, "Rumore",       dati.rumore,      "dB");
+        drawRigaDato(1350, "Illuminamento",dati.luce,        "lux");
+
+        // Footer
+        ctx.fillStyle = 'rgba(100,116,139,0.5)';
+        ctx.font = '26px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Tocca una riga per il dettaglio storico', W / 2, 1545);
     }
 };
