@@ -5,6 +5,11 @@
     <meta charset="utf-8">
     <title>EURIX - AR Core (Stable Architecture)</title>
 
+    <!-- Forzatura Anti-Cache per i browser Mobile -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -394,6 +399,9 @@
         function attivaRiconoscimentoMarker() {
             document.querySelectorAll('.ar-marker').forEach(markerEl => {
                 markerEl.addEventListener('markerFound', () => {
+                    // SE SIAMO NELLA MODALE NON ACCETTIAMO CAMBI DI MARKER DA BACKGROUND CASCUALI
+                    if (isPinned) return; 
+
                     const id = markerEl.getAttribute('value');
                     currentMarkerId = id;
                     const config = registroMacchinari[id];
@@ -401,7 +409,8 @@
                     if (!config) return;
 
                     const script = document.createElement('script');
-                    script.src = config.file;
+                    // Aggiungiamo il timestamp per forzare il download della versione piú recente del JS del layout (Cache-busting)
+                    script.src = config.file + '?v=' + new Date().getTime();
 
                     script.onload = () => {
                         config.template = window[config.oggetto];
@@ -480,7 +489,11 @@
             if (content3D) content3D.setAttribute('visible', 'false');
 
             const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
+            
+            // Svuotiamo il contenitore per sicurezza (previene il glitch dei multi-pannelli)
+            document.getElementById('main-view-container').innerHTML = ''; 
             document.getElementById('main-view-container').appendChild(activeCanvas);
+            
             activeCanvas.classList.remove('hidden-canvas');
             activeCanvas.classList.add('canvas-pinned');
         }
