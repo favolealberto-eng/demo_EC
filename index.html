@@ -140,6 +140,97 @@
             width: 100%;
             margin-top: 10px;
         }
+
+        /* --- STILI NUOVO CALENDARIO --- */
+        #calendar-view {
+            display: none;
+            width: 90%;
+            max-width: 500px;
+            height: 80vh;
+            background: #ffffff;
+            border-radius: 20px;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+        }
+
+        .cal-header {
+            background: #0f172a;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .cal-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+        }
+
+        .cal-tabs {
+            display: flex;
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .cal-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            color: #94a3b8;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 6px;
+        }
+
+        .cal-tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .cal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8fafc;
+            position: relative;
+        }
+
+        .time-slot {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            height: 60px;
+        }
+
+        .time-label {
+            width: 50px;
+            color: #64748b;
+            font-size: 14px;
+            text-align: right;
+            padding-right: 10px;
+            transform: translateY(-10px);
+        }
+
+        .time-content {
+            flex: 1;
+            position: relative;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .cal-event {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            color: #1e3a8a;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
@@ -159,57 +250,26 @@
             <div id="detail-chart-container"><canvas id="chart-canvas"></canvas></div>
             <button class="btn-back-detail" onclick="chiudiDettaglio()">⬅ Torna al Cruscotto</button>
         </div>
+        <div id="calendar-view">
+            <div class="cal-header">
+                <h2 id="cal-room-name">Nome Sala</h2>
+                <div class="cal-tabs">
+                    <div class="cal-tab active" onclick="alert('Demo: Sei già nella vista Giorno!')">Giorno</div>
+                    <div class="cal-tab"
+                        onclick="alert('Demo: Qui si caricherebbe la vista Settimanale (Lunedì-Venerdì)')">Settimana
+                    </div>
+                </div>
+            </div>
+            <div class="cal-body" id="cal-timeline">
+            </div>
+            <div style="padding: 15px;">
+                <button class="btn-back-detail" onclick="chiudiDettaglio()">⬅ Torna al Cruscotto</button>
+            </div>
+        </div>
     </div>
 
-    <canvas id="canvas-0" class="hidden-canvas"></canvas>
-    <canvas id="canvas-1" class="hidden-canvas"></canvas>
-    <canvas id="canvas-2" class="hidden-canvas"></canvas>
-    <canvas id="canvas-3" class="hidden-canvas"></canvas>
-    <canvas id="canvas-4" class="hidden-canvas"></canvas>
-
-    <a-scene embedded
+    <a-scene id="ar-scene" embedded
         arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;">
-
-        <a-marker class="ar-marker" type="barcode" value="0" id="marker-0" smooth="true" smoothCount="10"
-            smoothTolerance="0.05" smoothThreshold="2">
-            <a-entity id="content-0" rotation="-75 0 0">
-                <a-plane id="plane-0" position="0 1.5 0"
-                    material="src: #canvas-0; shader: flat; transparent: true"></a-plane>
-            </a-entity>
-        </a-marker>
-
-        <a-marker class="ar-marker" type="barcode" value="1" id="marker-1" smooth="true" smoothCount="10"
-            smoothTolerance="0.05" smoothThreshold="2">
-            <a-entity id="content-1" rotation="-75 0 0">
-                <a-plane id="plane-1" position="0 1.5 0"
-                    material="src: #canvas-1; shader: flat; transparent: true"></a-plane>
-            </a-entity>
-        </a-marker>
-
-        <a-marker class="ar-marker" type="barcode" value="2" id="marker-2" smooth="true" smoothCount="10"
-            smoothTolerance="0.05" smoothThreshold="2">
-            <a-entity id="content-2" rotation="-75 0 0">
-                <a-plane id="plane-2" position="0 1.5 0"
-                    material="src: #canvas-2; shader: flat; transparent: true"></a-plane>
-            </a-entity>
-        </a-marker>
-
-        <a-marker class="ar-marker" type="barcode" value="3" id="marker-3" smooth="true" smoothCount="10"
-            smoothTolerance="0.05" smoothThreshold="2">
-            <a-entity id="content-3" rotation="-75 0 0">
-                <a-plane id="plane-3" position="0 1.5 0"
-                    material="src: #canvas-3; shader: flat; transparent: true"></a-plane>
-            </a-entity>
-        </a-marker>
-
-        <a-marker class="ar-marker" type="barcode" value="4" id="marker-4" smooth="true" smoothCount="10"
-            smoothTolerance="0.05" smoothThreshold="2">
-            <a-entity id="content-4" rotation="-75 0 0">
-                <a-plane id="plane-4" position="0 1.5 0"
-                    material="src: #canvas-4; shader: flat; transparent: true"></a-plane>
-            </a-entity>
-        </a-marker>
-
         <a-entity camera></a-entity>
     </a-scene>
 
@@ -226,44 +286,93 @@
         const uiControls = document.getElementById('ui-controls');
 
         // CARICAMENTO JSON
+        // CARICAMENTO JSON E GENERAZIONE AUTOMATICA
         fetch('registro.json?nocache=' + new Date().getTime())
             .then(res => res.json())
             .then(dati => {
                 registroMacchinari = dati;
                 console.log("✅ JSON caricato con successo!");
+
+                // --- INIZIO GENERAZIONE AUTOMATICA ---
+                const scene = document.getElementById('ar-scene');
+
+                // Per ogni ID (0, 1, 7, 8, ecc.) presente nel JSON:
+                Object.keys(registroMacchinari).forEach(id => {
+
+                    // 1. Crea il Canvas invisibile
+                    const canvas = document.createElement('canvas');
+                    canvas.id = `canvas-${id}`;
+                    canvas.className = 'hidden-canvas';
+                    document.body.appendChild(canvas);
+
+                    // 2. Crea il Marker
+                    const marker = document.createElement('a-marker');
+                    marker.className = 'ar-marker';
+                    marker.setAttribute('type', 'barcode');
+                    marker.setAttribute('value', id);
+                    marker.setAttribute('id', `marker-${id}`);
+                    marker.setAttribute('smooth', 'true');
+                    marker.setAttribute('smoothCount', '10');
+                    marker.setAttribute('smoothTolerance', '0.05');
+                    marker.setAttribute('smoothThreshold', '2');
+
+                    // 3. Crea l'Entità contenitore
+                    const entity = document.createElement('a-entity');
+                    entity.setAttribute('id', `content-${id}`);
+                    entity.setAttribute('rotation', '-75 0 0');
+
+                    // 4. Crea il Piano Olografico
+                    const plane = document.createElement('a-plane');
+                    plane.setAttribute('id', `plane-${id}`);
+                    plane.setAttribute('position', '0 1.5 0');
+                    plane.setAttribute('material', `src: #canvas-${id}; shader: flat; transparent: true`);
+
+                    // 5. Assembla tutto come le matrioske e inseriscilo nella Scena 3D
+                    entity.appendChild(plane);
+                    marker.appendChild(entity);
+                    scene.appendChild(marker);
+
+                    // 6. Inizializza il livello di zoom base per questo marker
+                    zoomLevels[id] = 1.0;
+                });
+
+                // Adesso che i marker esistono nel DOM, attacchiamo i "sensori" per il riconoscimento
+                attivaRiconoscimentoMarker();
             })
             .catch(err => alert("❌ Errore caricamento JSON: " + err.message));
 
         // GESTIONE MARKER
-        document.querySelectorAll('.ar-marker').forEach(markerEl => {
-            markerEl.addEventListener('markerFound', () => {
-                const id = markerEl.getAttribute('value');
-                currentMarkerId = id;
-                const config = registroMacchinari[id];
+        function attivaRiconoscimentoMarker() {
+            document.querySelectorAll('.ar-marker').forEach(markerEl => {
+                markerEl.addEventListener('markerFound', () => {
+                    const id = markerEl.getAttribute('value');
+                    currentMarkerId = id;
+                    const config = registroMacchinari[id];
 
-                if (!config) return;
+                    if (!config) return;
 
-                const script = document.createElement('script');
-                script.src = config.file;
+                    const script = document.createElement('script');
+                    script.src = config.file;
 
-                script.onload = () => {
-                    config.template = window[config.oggetto];
-                    startRenderLoop(id, config);
-                    if (!isPinned) uiControls.style.display = 'flex';
-                };
+                    script.onload = () => {
+                        config.template = window[config.oggetto];
+                        startRenderLoop(id, config);
+                        if (!isPinned) uiControls.style.display = 'flex';
+                    };
 
-                document.head.appendChild(script);
+                    document.head.appendChild(script);
+                });
+
+                markerEl.addEventListener('markerLost', () => {
+                    const id = markerEl.getAttribute('value');
+                    if (!isPinned && currentMarkerId === id) {
+                        uiControls.style.display = 'none';
+                        if (renderLoop) clearInterval(renderLoop);
+                        currentMarkerId = null;
+                    }
+                });
             });
-
-            markerEl.addEventListener('markerLost', () => {
-                const id = markerEl.getAttribute('value');
-                if (!isPinned && currentMarkerId === id) {
-                    uiControls.style.display = 'none';
-                    if (renderLoop) clearInterval(renderLoop);
-                    currentMarkerId = null;
-                }
-            });
-        });
+        }
 
         // LOOP DI DISEGNO SPECIFICO
         function startRenderLoop(id, config) {
@@ -343,7 +452,7 @@
                 uiControls.style.display = 'flex';
             } else {
                 if (renderLoop) clearInterval(renderLoop);
-                
+
                 // Se il marker è stato perso mentre eravamo nel modale, nascondiamo e sblocchiamo
                 if (content3D) content3D.setAttribute('visible', 'false');
                 currentMarkerId = null;
