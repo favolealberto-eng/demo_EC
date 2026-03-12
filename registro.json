@@ -28,5 +28,19 @@
     "nome": "Ufficio 3",
     "file": "layouts/layout_estintore.js",
     "oggetto": "LayoutEstintore"
+  },
+  "5": {
+    "tipo": "sala",
+    "nome": "Sala Newton",
+    "id_sala": "newton",
+    "file": "layouts/layout_sala.js",
+    "oggetto": "LayoutSala"
+  },
+  "6": {
+    "tipo": "sala",
+    "nome": "Sala Curie",
+    "id_sala": "curie",
+    "file": "layouts/layout_sala.js",
+    "oggetto": "LayoutSala"
   }
 }
