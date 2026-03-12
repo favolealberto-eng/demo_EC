@@ -17,7 +17,8 @@ window.LayoutSala = {
         let agendaSettimana = [];
 
         // Generiamo dati diversi per le due sale
-        if (this.currentIdSala === "newton") {
+        let idSala = window.currentConfig ? window.currentConfig.id_sala : null;
+        if (idSala === "newton") {
             datiSala = {
                 stato: "OCCUPATA",
                 messaggio: "Occupata fino alle 14:30",
@@ -61,7 +62,7 @@ window.LayoutSala = {
 
         // Header (Nome Sala)
         ctx.fillStyle = '#0f172a';
-        ctx.beginPath(); ctx.roundRect(10, 10, 780, 150, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(10, 10, 780, 150, [40, 40, 0, 0]); ctx.fill();
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 60px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(config.nome.toUpperCase(), 400, 105);
