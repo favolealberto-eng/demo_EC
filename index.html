@@ -231,6 +231,54 @@
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        /* VISTA SETTIMANALE */
+        .cal-week-grid {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .week-col {
+            flex: 1;
+            border-right: 1px solid #e2e8f0;
+            position: relative;
+            background: #ffffff;
+            min-height: 600px; /* Assicura lo scroll */
+        }
+        
+        .week-col:last-child {
+            border-right: none;
+        }
+
+        .week-day-header {
+            text-align: center;
+            padding: 10px 0;
+            background: #f1f5f9;
+            font-weight: bold;
+            color: #475569;
+            border-bottom: 2px solid #cbd5e1;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .week-event {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            background: #fef08a; /* Giallo post-it */
+            border-left: 3px solid #eab308;
+            color: #854d0e;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 11px;
+            line-height: 1.2;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 
@@ -254,10 +302,8 @@
             <div class="cal-header">
                 <h2 id="cal-room-name">Nome Sala</h2>
                 <div class="cal-tabs">
-                    <div class="cal-tab active" onclick="alert('Demo: Sei già nella vista Giorno!')">Giorno</div>
-                    <div class="cal-tab"
-                        onclick="alert('Demo: Qui si caricherebbe la vista Settimanale (Lunedì-Venerdì)')">Settimana
-                    </div>
+                    <div id="tab-giorno" class="cal-tab active" onclick="mostraVistaGiorno()">Giorno</div>
+                    <div id="tab-settimana" class="cal-tab" onclick="mostraVistaSettimana()">Settimana</div>
                 </div>
             </div>
             <div class="cal-body" id="cal-timeline">
@@ -491,13 +537,22 @@
             document.getElementById('calendar-view').style.display = 'flex';
 
             document.getElementById('cal-room-name').innerText = currentConfig.nome;
-            const timeline = document.getElementById('cal-timeline');
-            timeline.innerHTML = ''; // Pulisce lo storico
+            mostraVistaGiorno(); // Carica tab giorno di default
+        }
 
-            // Genera la griglia oraria dalle 8:00 alle 18:00
+        function mostraVistaGiorno() {
+            document.getElementById('tab-giorno').classList.add('active');
+            document.getElementById('tab-settimana').classList.remove('active');
+            
+            const timeline = document.getElementById('cal-timeline');
+            timeline.innerHTML = ''; // Pulisce
+            timeline.style.padding = '20px'; // Ripristina padding giorno
+            timeline.classList.remove('cal-week-grid'); // Rimuove griglia se presente
+
+            // Genera la griglia oraria singola
             const oreInizio = 8;
             const oreFine = 18;
-            const altezzaOra = 60; // Altezza di un'ora in pixel
+            const altezzaOra = 60;
 
             for (let i = oreInizio; i <= oreFine; i++) {
                 const slot = document.createElement('div');
@@ -506,7 +561,7 @@
                 timeline.appendChild(slot);
             }
 
-            // Inserisce gli eventi presi dall'ultimo fetchDati
+            // Inserisce gli eventi del Giorno
             if (lastFetchedData.agendaGiorno) {
                 lastFetchedData.agendaGiorno.forEach(evento => {
                     const topPos = (evento.inizio - oreInizio) * altezzaOra;
@@ -518,7 +573,6 @@
                     divEvento.style.top = `${topPos + 1}px`;
                     divEvento.style.height = `${altezza - 2}px`;
 
-                    // Converte i decimali in minuti (es. 14.5 -> 14:30)
                     const formattaOra = (num) => {
                         const h = Math.floor(num);
                         const m = (num % 1 === 0.5) ? "30" : "00";
@@ -526,8 +580,61 @@
                     };
 
                     divEvento.innerHTML = `<strong>${evento.titolo}</strong><br><span style="font-weight:normal; font-size:12px;">${formattaOra(evento.inizio)} - ${formattaOra(evento.fine)}</span>`;
-                    document.getElementById(`ora-${oreInizio}`).appendChild(divEvento);
+                    document.getElementById(`ora-${oreInizio}`).appendChild(divEvento); // Appende tutti alla prima ora come base relativa
                 });
+            }
+        }
+
+        function mostraVistaSettimana() {
+            document.getElementById('tab-settimana').classList.add('active');
+            document.getElementById('tab-giorno').classList.remove('active');
+            
+            const timeline = document.getElementById('cal-timeline');
+            timeline.innerHTML = ''; 
+            timeline.style.padding = '0'; // Togliamo il padding per far aderire i bordi
+            timeline.classList.add('cal-week-grid');
+
+            const giorni = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì"];
+            const oreInizio = 8;
+            const altezzaOra = 60;
+
+            if (lastFetchedData.agendaSettimana) {
+                giorni.forEach(giorno => {
+                    const col = document.createElement('div');
+                    col.className = 'week-col';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'week-day-header';
+                    header.innerText = giorno.substring(0, 3).toUpperCase(); // Es: LUN, MAR
+                    col.appendChild(header);
+
+                    // Aggiungiamo le linee guida orarie per sfondo
+                    for(let i=oreInizio; i<=18; i++) {
+                        const line = document.createElement('div');
+                        line.style.cssText = `position:absolute; top:${(i-oreInizio)*altezzaOra + 40}px; width:100%; border-top:1px dashed #e2e8f0; pointer-events:none;`;
+                        col.appendChild(line);
+                    }
+
+                    // Aggiungiamo i pillolini degli eventi
+                    const eventiDelGiorno = lastFetchedData.agendaSettimana[giorno] || [];
+                    eventiDelGiorno.forEach(evento => {
+                        const topPos = (evento.inizio - oreInizio) * altezzaOra + 40; // +40 per via dell'header sticky
+                        const durata = evento.fine - evento.inizio;
+                        const altezza = durata * altezzaOra;
+
+                        const divEvento = document.createElement('div');
+                        divEvento.className = 'week-event';
+                        divEvento.style.top = `${topPos}px`;
+                        divEvento.style.height = `${altezza - 2}px`;
+                        divEvento.innerText = evento.titolo;
+                        
+                        col.appendChild(divEvento);
+                    });
+
+                    timeline.appendChild(col);
+                });
+            } else {
+                timeline.innerHTML = "<div style='padding:20px; text-align:center; width:100%; color:#94a3b8;'>Dati della settimana non disponibili.</div>";
             }
         }
 

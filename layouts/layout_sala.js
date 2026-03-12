@@ -31,6 +31,13 @@ window.LayoutSala = {
                 { inizio: 12, fine: 14.5, titolo: "Riunione CdA" }, // 14.5 = 14:30
                 { inizio: 16, fine: 18, titolo: "Brainstorming" }
             ];
+            agendaSettimana = {
+                "Lunedì": [{ inizio: 9, fine: 11, titolo: "Marketing" }, { inizio: 12, fine: 14.5, titolo: "Riunione CdA" }],
+                "Martedì": [{ inizio: 10, fine: 12, titolo: "Call Esterna" }],
+                "Mercoledì": [{ inizio: 14, fine: 18, titolo: "Workshop Design" }],
+                "Giovedì": [{ inizio: 9, fine: 18, titolo: "Hackathon Interno" }],
+                "Venerdì": [{ inizio: 11, fine: 13, titolo: "All Hands" }]
+            };
         } else {
             datiSala = {
                 stato: "LIBERA",
@@ -43,9 +50,17 @@ window.LayoutSala = {
                 { inizio: 8, fine: 10, titolo: "Colloqui HR" },
                 { inizio: 15, fine: 16, titolo: "Call Cliente" }
             ];
+            agendaSettimana = {
+                "Lunedì": [{ inizio: 8, fine: 10, titolo: "Colloq. HR" }],
+                "Martedì": [],
+                "Mercoledì": [{ inizio: 14, fine: 15, titolo: "1:1 Manager" }],
+                "Giovedì": [{ inizio: 16, fine: 18, titolo: "Corso Sicurezza" }],
+                "Venerdì": [{ inizio: 9, fine: 10, titolo: "Sync Team" }]
+            };
         }
 
         datiSala.agendaGiorno = agendaGiorno;
+        datiSala.agendaSettimana = agendaSettimana;
         callback(datiSala);
     },
 
