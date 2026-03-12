@@ -3,413 +3,79 @@
 
 <head>
     <meta charset="utf-8">
-    <title>EURIX - AR Core Engine (DEMO_EC)</title>
-
+    <title>Tabula Rasa AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: sans-serif;
-        }
-
-        #ui-controls {
-            position: fixed;
-            bottom: 30px;
-            right: 20px;
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .btn-minimal {
-            background: rgba(15, 23, 42, 0.6);
-            color: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            font-size: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-pin {
-            background: rgba(249, 115, 22, 0.8);
-        }
-
-        #hud-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 999999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #ef4444;
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 10000;
-        }
-
-        /* FIX DEFINTIVO: I canvas sono invisibili ma tecnicamente "in campo" e renderizzati */
-        .canvas-core {
-            position: absolute;
-            top: -9999px;
-            left: -9999px;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .canvas-pinned {
-            opacity: 1 !important;
-            pointer-events: auto !important;
-            position: static !important;
-            display: block !important;
-            width: 90% !important;
-            max-width: 600px !important;
-            height: auto !important;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
-            cursor: pointer;
-        }
-
-        #detail-view {
-            display: none;
-            width: 90%;
-            max-width: 600px;
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 25px;
-            box-sizing: border-box;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        #detail-title {
-            text-align: center;
-            color: #334155;
-            margin-top: 0;
-            font-size: 24px;
-            text-transform: uppercase;
-        }
-
-        #detail-chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-
-        .btn-back-detail {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-    </style>
 </head>
 
-<body>
+<body style="margin: 0; overflow: hidden;">
 
-    <div id="ui-controls">
-        <button class="btn-minimal" onclick="cambiaZoom(1)">➕</button>
-        <button class="btn-minimal" onclick="cambiaZoom(-1)">➖</button>
-        <button class="btn-minimal btn-pin" onclick="pinToScreen()">📌</button>
-    </div>
-
-    <div id="hud-modal">
-        <button class="btn-close" onclick="unpinFromScreen()">✖</button>
-        <div id="main-view-container"></div>
-        <div id="detail-view">
-            <h2 id="detail-title">Andamento</h2>
-            <div id="detail-chart-container">
-                <canvas id="chart-canvas"></canvas>
-            </div>
-            <button class="btn-back-detail" onclick="chiudiDettaglio()">⬅ Torna al Cruscotto</button>
-        </div>
-    </div>
-
-    <!-- Canvas separati per ogni marker -->
-    <canvas id="canvas-0" class="canvas-core"></canvas>
-    <canvas id="canvas-1" class="canvas-core"></canvas>
+    <canvas id="canvas-0" width="500" height="500" style="display: none;"></canvas>
+    <canvas id="canvas-1" width="500" height="500" style="display: none;"></canvas>
 
     <a-scene embedded
-        arjs="sourceType: webcam; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
-        renderer="antialias: true; logarithmicDepthBuffer: true; alpha: true;">
+        arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;">
 
-        <!-- Definizioni statiche per ogni marker, con i propri a-plane e a-entity -->
-        <a-marker id="marker-0" class="ar-marker" type="barcode" value="0" emitevents="true" smooth="true"
-            smoothCount="7" smoothTolerance="0.02" smoothThreshold="5">
-            <a-entity id="content-0" rotation="-75 0 0" visible="false">
-                <a-plane id="plane-0" position="0 1.5 0"
-                    material="src: #canvas-0; shader: flat; transparent: true"></a-plane>
-            </a-entity>
+        <a-marker type="barcode" value="0" id="marker-0">
+            <a-plane position="0 0.5 0" rotation="-90 0 0" width="2" height="2" material="src: #canvas-0"></a-plane>
         </a-marker>
 
-        <a-marker id="marker-1" class="ar-marker" type="barcode" value="1" emitevents="true" smooth="true"
-            smoothCount="7" smoothTolerance="0.02" smoothThreshold="5">
-            <a-entity id="content-1" rotation="-75 0 0" visible="false">
-                <a-plane id="plane-1" position="0 1.5 0"
-                    material="src: #canvas-1; shader: flat; transparent: true"></a-plane>
-            </a-entity>
+        <a-marker type="barcode" value="1" id="marker-1">
+            <a-plane position="0 0.5 0" rotation="-90 0 0" width="2" height="2" material="src: #canvas-1"></a-plane>
         </a-marker>
 
-        <a-entity id="main-camera" camera look-controls="enabled: false" wasd-controls="enabled: false"></a-entity>
+        <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-        // ==========================================
-        // 1. DATABASE LOCALE
-        // ==========================================
-        const registroMacchinari = {
-            "0": {
-                "tipo": "iaq",
-                "nome": "SENSORE IAQ 1",
-                "template_file": "layouts/layout_iaq.js",
-                "template_obj": "LayoutIAQ"
-            },
-            "1": {
-                "tipo": "iaq",
-                "nome": "SENSORE IAQ 2",
-                "template_file": "layouts/layout_iaq.js",
-                "template_obj": "LayoutIAQ"
-            }
-        };
+        // 1. Appena si apre la pagina, scarico il JSON (aggiungo nocache per sicurezza)
+        fetch('registro.json?nocache=' + new Date().getTime())
+            .then(response => response.json())
+            .then(registro => {
+                console.log("✅ JSON Caricato:", registro);
+                avviaRiconoscimento(registro);
+            })
+            .catch(errore => alert("❌ Errore caricamento JSON: " + errore));
 
-        function caricaTemplateJS(urlFile, nomeOggetto) {
-            return new Promise((resolve, reject) => {
-                if (window[nomeOggetto]) return resolve(window[nomeOggetto]);
+        // 2. Funzione che si attiva solo se il JSON è stato caricato
+        function avviaRiconoscimento(registro) {
 
-                const script = document.createElement('script');
-                script.src = urlFile;
-                script.onload = () => resolve(window[nomeOggetto]);
-                script.onerror = () => reject(new Error(`File ${urlFile} non trovato`));
-                document.head.appendChild(script);
-            });
-        }
+            // Per ogni marker presente sulla scena...
+            document.querySelectorAll('a-marker').forEach(marker => {
+                marker.addEventListener('markerFound', () => {
 
-        let activeMarkerId = null; // Memorizza il marker attualmente inquadrato
-        const renderLoops = {};    // Registra i cicli di render per non sdoppiarli
+                    const id = marker.getAttribute('value');
+                    const config = registro[id];
 
-        function forceUpdate(planeId) {
-            const plane = document.getElementById(planeId);
-            if (plane && plane.getObject3D('mesh')) {
-                plane.getObject3D('mesh').material.map.needsUpdate = true;
-            }
-        }
+                    if (!config) return; // Se il marker non è nel JSON, ignora
 
-        function startRenderLoop(markerId, config) {
-            const canvas = document.getElementById(`canvas-${markerId}`);
-            const plane = document.getElementById(`plane-${markerId}`);
-            if (!canvas || !plane || !config.template) return;
+                    // 3. Scarica il file JavaScript esterno
+                    const script = document.createElement('script');
+                    script.src = config.file;
 
-            const ctx = canvas.getContext('2d');
-            canvas.width = config.template.config.canvasW;
-            canvas.height = config.template.config.canvasH;
-            plane.setAttribute('width', config.template.config.planeW);
-            plane.setAttribute('height', config.template.config.planeH);
+                    script.onload = () => {
+                        console.log(`✅ File ${config.file} caricato per il Marker ${id}`);
 
-            // Pulizia vecchio ciclo se esiste
-            if (renderLoops[markerId]) clearInterval(renderLoops[markerId]);
+                        // 4. Prendi il Canvas giusto, l'oggetto JS giusto e fallo disegnare
+                        const canvas = document.getElementById('canvas-' + id);
+                        const ctx = canvas.getContext('2d');
 
-            function tick() {
-                config.template.fetchDati((dati) => {
-                    config.template.draw(ctx, dati, config);
-                    forceUpdate(`plane-${markerId}`);
-                });
-            }
+                        const layoutObj = window[config.oggetto];
+                        layoutObj.disegna(ctx);
 
-            tick();
-            renderLoops[markerId] = setInterval(tick, 1000);
-        }
-
-        let isPinned = false;
-        const uiControls = document.getElementById('ui-controls');
-        // Zoom levels per ogni marker, come in esempio.txt
-        let zoomLevels = { "0": 1.0, "1": 1.0 };
-
-        function applicaZoom(markerId) {
-            const content = document.getElementById(`content-${markerId}`);
-            if (content && !isPinned) {
-                const z = zoomLevels[markerId];
-                content.setAttribute('scale', `${z} ${z} ${z}`);
-            }
-        }
-
-        function cambiaZoom(direzione) {
-            if (activeMarkerId !== null && !isPinned) {
-                // Modifica di 0.25 a step, limitato tra 0.5 e 2.0
-                zoomLevels[activeMarkerId] += (direzione * 0.25);
-                if (zoomLevels[activeMarkerId] < 0.5) zoomLevels[activeMarkerId] = 0.5;
-                if (zoomLevels[activeMarkerId] > 2.0) zoomLevels[activeMarkerId] = 2.0;
-
-                applicaZoom(activeMarkerId);
-            }
-        }
-
-        // --- GESTIONE DEI MARKER COME IN ESEMPIO.TXT ---
-        // Vengono ciclati tutti i marker esplicitamente dal registro
-        Object.keys(registroMacchinari).forEach(markerId => {
-            const markerEl = document.getElementById(`marker-${markerId}`);
-            if (markerEl) {
-                markerEl.addEventListener('markerFound', async () => {
-                    const config = registroMacchinari[markerId];
-                    if (!config) return;
-
-                    try {
-                        const templateObj = await caricaTemplateJS(config.template_file, config.template_obj);
-                        config.template = templateObj;
-
-                        const content3D = document.getElementById(`content-${markerId}`);
-                        if (content3D) content3D.setAttribute('visible', 'true');
-
-                        startRenderLoop(markerId, config);
-
-                        if (!isPinned) {
-                            activeMarkerId = markerId;
-                            uiControls.style.display = 'flex';
-                            applicaZoom(markerId);
+                        // 5. Avvisa la scheda video di aggiornare l'ologramma
+                        const plane = marker.querySelector('a-plane');
+                        if (plane.getObject3D('mesh')) {
+                            plane.getObject3D('mesh').material.map.needsUpdate = true;
                         }
+                    };
 
-                    } catch (errore) {
-                        console.error(`⚠️ Errore caricamento grafico per marker ${markerId}:`, errore);
-                    }
+                    // Se il file è già stato caricato prima, Javascript non lo ricarica e dà un warning innocuo, 
+                    // ma per questo test tabula rasa andrà benissimo ricaricarlo.
+                    document.head.appendChild(script);
                 });
-
-                markerEl.addEventListener('markerLost', () => {
-                    if (!isPinned && activeMarkerId === markerId) {
-                        const content3D = document.getElementById(`content-${markerId}`);
-                        if (content3D) content3D.setAttribute('visible', 'false');
-
-                        activeMarkerId = null;
-                        uiControls.style.display = 'none';
-                    }
-                });
-            }
-        });
-
-        // --- Logica Pin e Grafici ---
-        function pinToScreen() {
-            if (activeMarkerId === null) return;
-            isPinned = true;
-            uiControls.style.display = 'none';
-            document.getElementById('hud-modal').style.display = 'flex';
-
-            const content3D = document.getElementById(`content-${activeMarkerId}`);
-            if (content3D) content3D.setAttribute('visible', 'false');
-
-            const activeCanvas = document.getElementById(`canvas-${activeMarkerId}`);
-            document.getElementById('main-view-container').appendChild(activeCanvas);
-            activeCanvas.classList.add('canvas-pinned');
-        }
-
-        function unpinFromScreen() {
-            if (activeMarkerId === null) return;
-            isPinned = false;
-            document.getElementById('hud-modal').style.display = 'none';
-            chiudiDettaglio();
-
-            const activeCanvas = document.getElementById(`canvas-${activeMarkerId}`);
-            document.body.appendChild(activeCanvas);
-            activeCanvas.classList.remove('canvas-pinned');
-
-            const content3D = document.getElementById(`content-${activeMarkerId}`);
-            if (content3D) content3D.setAttribute('visible', 'true');
-
-            const marker = document.getElementById(`marker-${activeMarkerId}`);
-            if (marker && marker.object3D.visible) {
-                uiControls.style.display = 'flex';
-            } else {
-                if (content3D) content3D.setAttribute('visible', 'false');
-                activeMarkerId = null;
-            }
-        }
-
-        // Deleghiamo i click su tutti i canvas registrati
-        document.addEventListener('click', (event) => {
-            if (!isPinned || activeMarkerId === null) return;
-
-            const activeCanvas = document.getElementById(`canvas-${activeMarkerId}`);
-            if (event.target !== activeCanvas) return; // ignora click altrove
-
-            const config = registroMacchinari[activeMarkerId];
-            if (!config || !config.template) return;
-
-            const rect = activeCanvas.getBoundingClientRect();
-            const scaleX = activeCanvas.width / rect.width;
-            const scaleY = activeCanvas.height / rect.height;
-            const clickX = (event.clientX - rect.left) * scaleX;
-            const clickY = (event.clientY - rect.top) * scaleY;
-            const hitboxes = config.template.hitboxes || [];
-
-            for (let box of hitboxes) {
-                if (clickX >= box.x && clickX <= box.x + box.w && clickY >= box.y && clickY <= box.y + box.h) {
-                    apriDettaglio(box.id);
-                    break;
-                }
-            }
-        });
-
-        let detailChart = null;
-        function apriDettaglio(metricaId) {
-            document.getElementById('main-view-container').style.display = 'none';
-            document.getElementById('detail-view').style.display = 'flex';
-            let titolo = metricaId.toUpperCase();
-            if (metricaId === 'iaq_score') titolo = "QUALITA' DELL'ARIA";
-            document.getElementById('detail-title').innerText = "Andamento: " + titolo;
-            let baseVal = 0, variazione = 0, unita = "";
-            if (metricaId === 'temperatura') { baseVal = 19; variazione = 4; unita = "°C"; }
-            else if (metricaId === 'umidita') { baseVal = 40; variazione = 15; unita = "%"; }
-            else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; unita = "dB"; }
-            else if (metricaId === 'luce') { baseVal = 400; variazione = 150; unita = "lux"; }
-            else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 0.8; unita = "Punti"; }
-            const fakeData = [];
-            for (let i = 0; i < 10; i++) {
-                const trend = Math.sin(i / 9 * Math.PI) * variazione;
-                const rumoreDiff = (Math.random() * variazione * 0.3) - (variazione * 0.15);
-                fakeData.push((baseVal + trend + rumoreDiff).toFixed(1));
-            }
-            const labels = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 'Ora'];
-            const ctxChart = document.getElementById('chart-canvas').getContext('2d');
-            if (detailChart) detailChart.destroy();
-            detailChart = new Chart(ctxChart, {
-                type: 'line', data: { labels: labels, datasets: [{ label: metricaId, data: fakeData, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.2)', fill: true, tension: 0.4, borderWidth: 4, pointRadius: 6 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { title: { display: true, text: unita, font: { size: 14, weight: 'bold' } }, ticks: { maxTicksLimit: 6 }, beginAtZero: false } } }
             });
         }
-        function chiudiDettaglio() { document.getElementById('detail-view').style.display = 'none'; document.getElementById('main-view-container').style.display = 'block'; }
     </script>
 </body>
 
