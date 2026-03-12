@@ -257,15 +257,15 @@
 
         document.querySelectorAll('.ar-marker').forEach(markerEl => {
             markerEl.addEventListener('markerFound', async (e) => {
-                const markerId = e.target.getAttribute('value');
-
-                // Evita crash se il JSON sta ancora caricando
-                if (Object.keys(registroMacchinari).length === 0) return;
+                // Prendi il markerId in modo sicuro (stringa ed elimina spazi accidentali)
+                const markerId = String(markerEl.getAttribute('value') || '').trim();
 
                 const config = registroMacchinari[markerId];
 
+                // CATCH SILENZIOSO: AR.js spesso "allucina" barcode inesistenti nel video (falsi positivi).
+                // Un alert() blocca tutto il thread del browser! Usiamo console.warn per ignorarlo in sicurezza.
                 if (!config) {
-                    alert(`⚠️ Rilevato Marker ID ${markerId}, ma non esiste all'interno del file registro.json!`);
+                    console.warn(`⚠️ Rilevato Marker ID "${markerId}", ma non esiste in anagrafica. Ignorato silenziosamente.`);
                     return;
                 }
 
