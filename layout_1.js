@@ -1,4 +1,4 @@
-const LayoutUno = {
+window.LayoutUno = {
     disegna: function (ctx) {
         ctx.fillStyle = "#3b82f6"; // Blu
         ctx.fillRect(0, 0, 500, 500);

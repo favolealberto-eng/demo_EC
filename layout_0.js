@@ -1,4 +1,4 @@
-const LayoutZero = {
+window.LayoutZero = {
     disegna: function (ctx) {
         ctx.fillStyle = "#ef4444"; // Rosso
         ctx.fillRect(0, 0, 500, 500);
