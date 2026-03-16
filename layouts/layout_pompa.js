@@ -98,9 +98,9 @@ window.LayoutPompa = {
         // --- SFONDO SCURO GLASSMORPHISM ---
         const W = 800; const H = 1100;
         const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-        bgGrad.addColorStop(0, 'rgba(13, 31, 60, 0.85)');
-        bgGrad.addColorStop(0.5, 'rgba(15, 45, 31, 0.85)');
-        bgGrad.addColorStop(1, 'rgba(13, 31, 60, 0.85)');
+        bgGrad.addColorStop(0, 'rgba(13, 31, 60, 0.97)');
+        bgGrad.addColorStop(0.5, 'rgba(15, 45, 31, 0.97)');
+        bgGrad.addColorStop(1, 'rgba(13, 31, 60, 0.97)');
         ctx.fillStyle = bgGrad;
         ctx.beginPath(); ctx.roundRect(0, 0, W, H, 40); ctx.fill();
 
@@ -115,16 +115,16 @@ window.LayoutPompa = {
         hdrGrad.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
         ctx.fillStyle = hdrGrad;
         ctx.beginPath(); ctx.roundRect(0, 0, W, 130, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
-        
+
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 38px Inter, sans-serif'; ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
         ctx.fillText(`${dati.nome} ID ${dati.id}`, 400, 70);
         ctx.shadowBlur = 0;
-        
+
         ctx.font = '24px Inter, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.fillText(dati.luogo.toUpperCase(), 400, 110);
-        
+
         // Linea separatrice bottom header
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
         ctx.beginPath(); ctx.moveTo(0, 130); ctx.lineTo(W, 130); ctx.stroke();
@@ -143,7 +143,7 @@ window.LayoutPompa = {
         ctx.fillStyle = 'rgba(6,182,212,0.9)';
         ctx.font = 'bold 28px Inter';
         ctx.fillText("PARAMETRI OPERATIVI", 40, 190);
-        
+
         ctx.fillStyle = 'rgba(6,182,212,0.35)';
         ctx.fillRect(40, 205, 320, 3);
 
@@ -160,7 +160,7 @@ window.LayoutPompa = {
             ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 28px Inter';
             ctx.textAlign = 'right';
             ctx.fillText(`${param.att} `, 570, y);
-            
+
             // [Nominale unità] - allineato a sinistra del centro
             ctx.fillStyle = 'rgba(148,163,184,0.7)'; ctx.font = '22px Inter';
             ctx.textAlign = 'left';
@@ -189,7 +189,7 @@ window.LayoutPompa = {
         ctx.fillStyle = 'rgba(6,182,212,0.9)';
         ctx.font = 'bold 28px Inter';
         ctx.fillText("CHECKLIST DIAGNOSTICA", 40, 520);
-        
+
         ctx.fillStyle = 'rgba(6,182,212,0.35)';
         ctx.fillRect(40, 535, 340, 3);
 
@@ -220,7 +220,7 @@ window.LayoutPompa = {
         ctx.shadowBlur = 15;
         ctx.beginPath(); ctx.roundRect(40, btnY, 720, 100, 20); ctx.fill();
         ctx.restore();
-        
+
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
         ctx.fillText("✉ RICHIEDI ASSISTENZA", 400, btnY + 60);
@@ -255,7 +255,7 @@ window.LayoutPompa = {
         ctx.restore();
 
         // BOX TESTO (Istruzioni)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'; 
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.beginPath(); ctx.roundRect(40, 720, 720, 200, 20); ctx.fill();
         ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
 
@@ -285,7 +285,7 @@ window.LayoutPompa = {
         ctx.beginPath(); ctx.roundRect(40, btnY, 720, 100, 20); ctx.fill();
         ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke();
         ctx.restore();
-        
+
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
         ctx.fillText("⬅ TORNA AL PANNELLO", 400, btnY + 60);
