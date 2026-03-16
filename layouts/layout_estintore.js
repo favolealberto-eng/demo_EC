@@ -38,7 +38,7 @@ window.LayoutEstintore = {
         ctx.beginPath(); ctx.roundRect(0, 0, W, H, 40); ctx.fill();
 
         // Bordo ambra
-        ctx.strokeStyle = 'rgba(245,158,11,0.35)';
+        ctx.strokeStyle = 'rgba(6,182,212,0.35)';
         ctx.lineWidth = 3;
         ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 39); ctx.stroke();
 
@@ -53,7 +53,7 @@ window.LayoutEstintore = {
             statoColore = "#eab308";
             testoStato = "SCADENZA IMMINENTE";
             dati.scadenza_polvere = "10/04/2026";
-            dateColorBase = "#fde68a";
+            dateColorBase = "#67e8f9";
         } else if (nomeUpper.includes("UFFICIO 3")) {
             statoColore = "#ef4444";
             testoStato = "MANUTENZIONE SCADUTA";
@@ -64,8 +64,8 @@ window.LayoutEstintore = {
 
         // --- HEADER STRIP con gradiente ambra→arancio ---
         const hdrGrad = ctx.createLinearGradient(10, 10, 1590, 10);
-        hdrGrad.addColorStop(0, '#f59e0b');
-        hdrGrad.addColorStop(1, '#ea580c');
+        hdrGrad.addColorStop(0, '#06b6d4');
+        hdrGrad.addColorStop(1, '#0891b2');
         ctx.fillStyle = hdrGrad;
         ctx.beginPath(); ctx.roundRect(10, 10, W - 20, 120, [30, 30, 0, 0]); ctx.fill();
 
@@ -89,16 +89,16 @@ window.LayoutEstintore = {
         ctx.shadowBlur = 0;
 
         // --- LINEA SEPARATRICE ---
-        ctx.strokeStyle = 'rgba(245,158,11,0.3)';
+        ctx.strokeStyle = 'rgba(6,182,212,0.3)';
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(60, 155); ctx.lineTo(1540, 155); ctx.stroke();
 
         // --- COLONNA SINISTRA: PIANO MANUTENTIVO ---
         // Label sezione
-        ctx.fillStyle = 'rgba(245,158,11,0.9)';
+        ctx.fillStyle = 'rgba(6,182,212,0.9)';
         ctx.font = 'bold 40px sans-serif'; ctx.textAlign = 'left';
         ctx.fillText("PIANO MANUTENTIVO", 70, 235);
-        ctx.fillStyle = 'rgba(245,158,11,0.35)';
+        ctx.fillStyle = 'rgba(6,182,212,0.35)';
         ctx.fillRect(70, 242, 330, 3);
 
         // Righe dati
@@ -130,10 +130,10 @@ window.LayoutEstintore = {
         ctx.lineWidth = 1.5; ctx.stroke();
 
         // Titolo checklist
-        ctx.fillStyle = 'rgba(245,158,11,0.9)';
+        ctx.fillStyle = 'rgba(6,182,212,0.9)';
         ctx.font = 'bold 36px sans-serif'; ctx.textAlign = 'left';
         ctx.fillText("CHECKLIST ISPEZIONE", 1020, 252);
-        ctx.fillStyle = 'rgba(245,158,11,0.35)';
+        ctx.fillStyle = 'rgba(6,182,212,0.35)';
         ctx.fillRect(1020, 258, 320, 2);
 
         // Funzione helper checkbox (logica invariata)
@@ -167,7 +167,7 @@ window.LayoutEstintore = {
         drawCheckItem(530, "Tubo e Lancia Intatti",      dati.tubo_ok);
 
         // --- FOOTER ---
-        ctx.strokeStyle = 'rgba(245,158,11,0.20)';
+        ctx.strokeStyle = 'rgba(6,182,212,0.20)';
         ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(60, 775); ctx.lineTo(1540, 775); ctx.stroke();
 

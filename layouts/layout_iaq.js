@@ -50,7 +50,7 @@ window.LayoutIAQ = {
         ctx.beginPath(); ctx.roundRect(0, 0, W, H, 50); ctx.fill();
 
         // Bordo ambra
-        ctx.strokeStyle = 'rgba(245,158,11,0.35)';
+        ctx.strokeStyle = 'rgba(6,182,212,0.35)';
         ctx.lineWidth = 3;
         ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 49); ctx.stroke();
 
@@ -58,7 +58,7 @@ window.LayoutIAQ = {
         const titolo = config && config.nome ? config.nome.toUpperCase().replace('_', ' ') : "QUALITÀ DELL'ARIA";
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 54px sans-serif'; ctx.textAlign = 'center';
-        ctx.shadowColor = 'rgba(245,158,11,0.4)'; ctx.shadowBlur = 12;
+        ctx.shadowColor = 'rgba(6,182,212,0.4)'; ctx.shadowBlur = 12;
         ctx.fillText(titolo, W / 2, 110);
         ctx.shadowBlur = 0;
 
@@ -69,7 +69,7 @@ window.LayoutIAQ = {
         ctx.fillText(`Aggiornato: ${orario}`, W / 2, 170);
 
         // Linea separatrice
-        ctx.strokeStyle = 'rgba(245,158,11,0.25)';
+        ctx.strokeStyle = 'rgba(6,182,212,0.25)';
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(60, 200); ctx.lineTo(840, 200); ctx.stroke();
 
@@ -158,10 +158,10 @@ window.LayoutIAQ = {
         ctx.lineWidth = 1.5; ctx.stroke();
 
         // Titolo card
-        ctx.fillStyle = 'rgba(245,158,11,0.9)';
+        ctx.fillStyle = 'rgba(6,182,212,0.9)';
         ctx.font = 'bold 30px sans-serif'; ctx.textAlign = 'left';
         ctx.fillText('DATI SENSORI AMBIENTALI', 75, 855);
-        ctx.fillStyle = 'rgba(245,158,11,0.35)';
+        ctx.fillStyle = 'rgba(6,182,212,0.35)';
         ctx.fillRect(75, 862, 370, 2);
 
         ctx.textAlign = 'left';

@@ -35,7 +35,7 @@ window.LayoutMacchina = {
         ctx.beginPath();
         ctx.roundRect(0, 0, w, h, 40);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
         ctx.lineWidth = 4;
         ctx.stroke();
 
@@ -44,7 +44,7 @@ window.LayoutMacchina = {
         ctx.beginPath();
         ctx.roundRect(0, 0, w, 150, { tl: 40, tr: 40, bl: 0, br: 0 });
         ctx.fill();
-        ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
         ctx.beginPath();
         ctx.moveTo(0, 150);
         ctx.lineTo(w, 150);
@@ -58,8 +58,8 @@ window.LayoutMacchina = {
         
         // Sottotitolo
         const gradient = ctx.createLinearGradient(60, 0, 800, 0);
-        gradient.addColorStop(0, '#f59e0b');
-        gradient.addColorStop(1, '#ea580c');
+        gradient.addColorStop(0, '#06b6d4');
+        gradient.addColorStop(1, '#0891b2');
         ctx.fillStyle = gradient;
         ctx.font = 'bold 30px Inter';
         ctx.fillText("ISO 50001 · MONITORAGGIO ENERGETICO", 60, 130);
@@ -127,7 +127,7 @@ window.LayoutMacchina = {
         ctx.font = '24px Inter';
         ctx.fillText("Energy Performance Indicator", 1190, 300);
 
-        ctx.fillStyle = '#f59e0b';
+        ctx.fillStyle = '#06b6d4';
         ctx.font = 'bold 90px Inter';
         ctx.fillText(dati.enpi_attuale, 1190, 420);
         
@@ -145,10 +145,10 @@ window.LayoutMacchina = {
         const btnBox = this.hitboxes[0];
         ctx.save();
         const btnGrad = ctx.createLinearGradient(btnBox.x, btnBox.y, btnBox.x + btnBox.w, btnBox.y + btnBox.h);
-        btnGrad.addColorStop(0, '#f59e0b');
-        btnGrad.addColorStop(1, '#ea580c');
+        btnGrad.addColorStop(0, '#06b6d4');
+        btnGrad.addColorStop(1, '#0891b2');
         ctx.fillStyle = btnGrad;
-        ctx.shadowColor = 'rgba(245, 158, 11, 0.4)';
+        ctx.shadowColor = 'rgba(6, 182, 212, 0.4)';
         ctx.shadowBlur = 20;
         ctx.beginPath();
         ctx.roundRect(btnBox.x, btnBox.y, btnBox.w, btnBox.h, 24);

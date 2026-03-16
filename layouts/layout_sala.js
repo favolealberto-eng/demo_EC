@@ -81,13 +81,13 @@ window.LayoutSala = {
 
         // Bordo sottile ambra
         ctx.lineWidth = 3;
-        ctx.strokeStyle = 'rgba(245,158,11,0.35)';
+        ctx.strokeStyle = 'rgba(6,182,212,0.35)';
         ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 39); ctx.stroke();
 
         // --- HEADER con gradiente ambra→arancio ---
         const hdrGrad = ctx.createLinearGradient(10, 10, 790, 10);
-        hdrGrad.addColorStop(0, '#f59e0b');
-        hdrGrad.addColorStop(1, '#ea580c');
+        hdrGrad.addColorStop(0, '#06b6d4');
+        hdrGrad.addColorStop(1, '#0891b2');
         ctx.fillStyle = hdrGrad;
         ctx.beginPath(); ctx.roundRect(10, 10, W - 20, 145, [34, 34, 0, 0]); ctx.fill();
 
@@ -125,17 +125,17 @@ window.LayoutSala = {
         ctx.fillText(dati.messaggio, 155, 325);
 
         // --- SEPARATORE ---
-        ctx.strokeStyle = 'rgba(245,158,11,0.25)';
+        ctx.strokeStyle = 'rgba(6,182,212,0.25)';
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(50, 380); ctx.lineTo(750, 380); ctx.stroke();
 
         // --- SEZIONE INFO ---
         ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(245,158,11,0.85)';
+        ctx.fillStyle = 'rgba(6,182,212,0.85)';
         ctx.font = 'bold 30px sans-serif';
         ctx.fillText('INFO SALA', 50, 430);
         // Underline
-        ctx.fillStyle = 'rgba(245,158,11,0.4)';
+        ctx.fillStyle = 'rgba(6,182,212,0.4)';
         ctx.fillRect(50, 438, 160, 3);
 
         // Card info
@@ -158,20 +158,20 @@ window.LayoutSala = {
         });
 
         // --- SEPARATORE ---
-        ctx.strokeStyle = 'rgba(245,158,11,0.20)';
+        ctx.strokeStyle = 'rgba(6,182,212,0.20)';
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(50, 788); ctx.lineTo(750, 788); ctx.stroke();
 
         // --- BOTTONE CALENDARIO (brand gradient) ---
         const btnY = 810;
         const btnGrad = ctx.createLinearGradient(50, btnY, 750, btnY);
-        btnGrad.addColorStop(0, '#f59e0b');
-        btnGrad.addColorStop(1, '#ea580c');
+        btnGrad.addColorStop(0, '#06b6d4');
+        btnGrad.addColorStop(1, '#0891b2');
         ctx.fillStyle = btnGrad;
         ctx.beginPath(); ctx.roundRect(50, btnY, 700, 118, 20); ctx.fill();
 
         // Glow del bottone
-        ctx.shadowColor = 'rgba(245,158,11,0.45)';
+        ctx.shadowColor = 'rgba(6,182,212,0.45)';
         ctx.shadowBlur = 22;
         ctx.beginPath(); ctx.roundRect(50, btnY, 700, 118, 20); ctx.fill();
         ctx.shadowBlur = 0;
