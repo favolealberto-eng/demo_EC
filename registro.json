@@ -58,5 +58,11 @@
     "soglia_kw": 30,
     "file": "layouts/layout_macchina.js",
     "oggetto": "LayoutMacchina"
+  },
+  "9": {
+    "tipo": "pompa",
+    "nome": "Pompa Centrifuga",
+    "file": "layouts/layout_pompa.js",
+    "oggetto": "LayoutPompa"
   }
 }

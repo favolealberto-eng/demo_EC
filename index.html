@@ -564,7 +564,7 @@
     =========================== -->
     <div id="login-screen">
         <div class="login-card">
-            <img src="eurix_logo.png" alt="Eurix" class="login-logo">
+            <img src="images/loghi/eurix_logo.png" alt="Eurix" class="login-logo">
             <h1>Accesso al Sistema AR</h1>
             <p class="subtitle">Inserisci le tue credenziali per continuare</p>
 
@@ -895,14 +895,21 @@
             const clickY = (event.clientY - rect.top) * scaleY;
 
             const hitboxes = currentConfig.template.hitboxes || [];
+            // Sostituisci il ciclo for esistente con questo:
             for (let box of hitboxes) {
                 if (clickX >= box.x && clickX <= box.x + box.w && clickY >= box.y && clickY <= box.y + box.h) {
 
-                    // <-- FONDAMENTALE: Smistamento del Click -->
-                    if (box.id === "calendario") {
-                        apriCalendario();
-                    } else {
-                        apriDettaglio(box.id);
+                    // Se il template ha una sua funzione personale per i click, usala!
+                    if (currentConfig.template.processClick) {
+                        currentConfig.template.processClick(box.id);
+                    }
+                    // Altrimenti usa la logica standard
+                    else {
+                        if (box.id === "calendario") {
+                            apriCalendario();
+                        } else {
+                            apriDettaglio(box.id);
+                        }
                     }
                     break;
                 }
