@@ -13,6 +13,7 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -722,19 +723,19 @@
                     marker.setAttribute('value', id);
                     marker.setAttribute('id', `marker-${id}`);
                     marker.setAttribute('smooth', 'true');
-                    marker.setAttribute('smoothCount', '10');
-                    marker.setAttribute('smoothTolerance', '0.05');
-                    marker.setAttribute('smoothThreshold', '2');
+                    marker.setAttribute('smoothCount', '5');
+                    marker.setAttribute('smoothTolerance', '0.01');
+                    marker.setAttribute('smoothThreshold', '5');
 
                     // 3. Crea l'Entità contenitore
                     const entity = document.createElement('a-entity');
                     entity.setAttribute('id', `content-${id}`);
-                    entity.setAttribute('rotation', '-75 0 0');
+                    entity.setAttribute('look-at', '[camera]');
+                    entity.setAttribute('position', '0 1.5 0');
 
                     // 4. Crea il Piano Olografico
                     const plane = document.createElement('a-plane');
                     plane.setAttribute('id', `plane-${id}`);
-                    plane.setAttribute('position', '0 1.5 0');
                     plane.setAttribute('material', `src: #canvas-${id}; shader: flat; transparent: true`);
 
                     // 5. Assembla tutto e inseriscilo nella Scena 3D
