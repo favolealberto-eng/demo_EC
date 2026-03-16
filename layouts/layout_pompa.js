@@ -81,10 +81,10 @@ window.LayoutPompa = {
         // Assegno le hitbox dinamicamente per evitare click fantasma dell'altra vista
         if (this.vistaCorrente === 'main') {
             this.hitboxes = [
-                { id: "step_0", x: 40, y: 480, w: 720, h: 70 },
-                { id: "step_1", x: 40, y: 560, w: 720, h: 70 },
-                { id: "step_2", x: 40, y: 640, w: 720, h: 70 },
-                { id: "step_3", x: 40, y: 720, w: 720, h: 70 },
+                { id: "step_0", x: 40, y: 530, w: 720, h: 90 },
+                { id: "step_1", x: 40, y: 610, w: 720, h: 90 },
+                { id: "step_2", x: 40, y: 690, w: 720, h: 90 },
+                { id: "step_3", x: 40, y: 770, w: 720, h: 90 },
                 { id: "assistenza", x: 40, y: 950, w: 720, h: 100 }
             ];
         } else {
