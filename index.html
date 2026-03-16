@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>EURIX - AR Core (Stable Architecture)</title>
 
+    <!-- Forzatura Anti-Cache per i browser Mobile -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -12,6 +13,7 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -46,6 +48,7 @@
             pointer-events: none;
         }
 
+        /* Animated background shapes */
         #login-screen::before {
             content: '';
             position: absolute;
@@ -453,6 +456,7 @@
             position: relative;
         }
 
+        /* Scrollbar sottile brand */
         .cal-body::-webkit-scrollbar {
             width: 4px;
         }
@@ -550,35 +554,14 @@
             overflow: hidden;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
         }
-
-        @keyframes shake {
-
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-
-            20% {
-                transform: translateX(-10px);
-            }
-
-            40% {
-                transform: translateX(10px);
-            }
-
-            60% {
-                transform: translateX(-8px);
-            }
-
-            80% {
-                transform: translateX(8px);
-            }
-        }
     </style>
 </head>
 
 <body>
 
+    <!-- ===========================
+         LOGIN SCREEN OVERLAY
+    =========================== -->
     <div id="login-screen">
         <div class="login-card">
             <img src="eurix_logo.png" alt="Eurix" class="login-logo">
@@ -672,41 +655,48 @@
             });
         });
 
-        // =========================================================
-        // MOTORE AR
-        // =========================================================
+    </script>
+
+    <style>
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-10px);
+            }
+
+            40% {
+                transform: translateX(10px);
+            }
+
+            60% {
+                transform: translateX(-8px);
+            }
+
+            80% {
+                transform: translateX(8px);
+            }
+        }
+    </style>
+
+    <script>
         let registroMacchinari = {};
+
+        // VARIABILI DI STATO
         let currentMarkerId = null;
         let currentConfig = null;
         let renderLoop = null;
         let isPinned = false;
-        let zoomLevels = {};
+        let zoomLevels = {}; // Si popolerà in automatico!
+
+        // NUOVA VARIABILE: Salva gli ultimi dati ricevuti per usarli nel calendario
         let lastFetchedData = {};
 
         const uiControls = document.getElementById('ui-controls');
-
-        // REGISTRAZIONE COMPONENTE BILLBOARD (DEVE ESSERE QUI FUORI!)
-        AFRAME.registerComponent('soft-billboard', {
-            tick: function () {
-                if (isPinned) return;
-
-                const cameraObj = this.el.sceneEl.camera;
-                if (!cameraObj) return;
-
-                const cameraPos = new THREE.Vector3();
-                cameraObj.getWorldPosition(cameraPos);
-
-                const worldPos = new THREE.Vector3();
-                this.el.object3D.getWorldPosition(worldPos);
-
-                const tempObj = new THREE.Object3D();
-                tempObj.position.copy(worldPos);
-                tempObj.lookAt(cameraPos);
-
-                // Damping morbido dello 0.05
-                this.el.object3D.quaternion.slerp(tempObj.quaternion, 0.05);
-            }
-        });
 
         // CARICAMENTO JSON E GENERAZIONE AUTOMATICA
         fetch('registro.json?nocache=' + new Date().getTime())
@@ -717,43 +707,47 @@
 
                 const scene = document.getElementById('ar-scene');
 
+                // Per ogni ID presente nel JSON (Generatore Matrioska):
                 Object.keys(registroMacchinari).forEach(id => {
+
+                    // 1. Crea il Canvas invisibile
                     const canvas = document.createElement('canvas');
                     canvas.id = `canvas-${id}`;
                     canvas.className = 'hidden-canvas';
                     document.body.appendChild(canvas);
 
+                    // 2. Crea il Marker
                     const marker = document.createElement('a-marker');
                     marker.className = 'ar-marker';
                     marker.setAttribute('type', 'barcode');
                     marker.setAttribute('value', id);
                     marker.setAttribute('id', `marker-${id}`);
-
-                    // PARAMETRI D'ORO PER LO SMOOTHING
                     marker.setAttribute('smooth', 'true');
-                    marker.setAttribute('smoothCount', '5');
-                    marker.setAttribute('smoothTolerance', '0.01');
-                    marker.setAttribute('smoothThreshold', '5');
+                    marker.setAttribute('smoothCount', '10');
+                    marker.setAttribute('smoothTolerance', '0.008');
+                    marker.setAttribute('smoothThreshold', '10');
 
+                    // 3. Crea l'Entità contenitore
                     const entity = document.createElement('a-entity');
                     entity.setAttribute('id', `content-${id}`);
-                    entity.classList.add('billboard');
-
-                    // AGGANCIO DEL COMPONENTE SOFT-BILLBOARD ALL'ENTITA'
-                    entity.setAttribute('soft-billboard', '');
+                    entity.setAttribute('look-at', '[camera]');
                     entity.setAttribute('position', '0 1.5 0');
 
+                    // 4. Crea il Piano Olografico
                     const plane = document.createElement('a-plane');
                     plane.setAttribute('id', `plane-${id}`);
                     plane.setAttribute('material', `src: #canvas-${id}; shader: flat; transparent: true`);
 
+                    // 5. Assembla tutto e inseriscilo nella Scena 3D
                     entity.appendChild(plane);
                     marker.appendChild(entity);
                     scene.appendChild(marker);
 
+                    // 6. Inizializza il livello di zoom base
                     zoomLevels[id] = 1.0;
                 });
 
+                // Attacchiamo i "sensori" per il riconoscimento
                 attivaRiconoscimentoMarker();
             })
             .catch(err => alert("❌ Errore caricamento JSON: " + err.message));
@@ -762,6 +756,7 @@
         function attivaRiconoscimentoMarker() {
             document.querySelectorAll('.ar-marker').forEach(markerEl => {
                 markerEl.addEventListener('markerFound', () => {
+                    // SE SIAMO NELLA MODALE NON ACCETTIAMO CAMBI DI MARKER DA BACKGROUND CASCUALI
                     if (isPinned) return;
 
                     const id = markerEl.getAttribute('value');
@@ -771,15 +766,17 @@
                     if (!config) return;
 
                     const script = document.createElement('script');
+                    // Aggiungiamo il timestamp per forzare il download della versione piú recente del JS del layout (Cache-busting)
                     script.src = config.file + '?v=' + new Date().getTime();
 
                     script.onload = () => {
                         config.template = window[config.oggetto];
                         startRenderLoop(id, config);
 
+                        // FONDAMENTALE FORZATURA PER MARKER DINAMICI: Il bottone HUD DEVE apparire qui.
                         if (!isPinned) {
                             uiControls.style.display = 'flex';
-                            uiControls.style.zIndex = '10000';
+                            uiControls.style.zIndex = '10000'; // Assicura che sia sopra a tutto
                         }
                     };
 
@@ -816,7 +813,7 @@
                 if (!currentConfig || !currentConfig.template) return;
                 currentConfig.template.fetchDati((dati) => {
 
-                    lastFetchedData = dati;
+                    lastFetchedData = dati; // <-- FONDAMENTALE: Salva i dati per usarli nel Calendario!
 
                     currentConfig.template.draw(ctx, dati, currentConfig);
                     if (plane.getObject3D('mesh')) {
@@ -850,6 +847,7 @@
 
             const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
 
+            // Svuotiamo il contenitore per sicurezza (previene il glitch dei multi-pannelli)
             document.getElementById('main-view-container').innerHTML = '';
             document.getElementById('main-view-container').appendChild(activeCanvas);
 
@@ -871,6 +869,8 @@
             const content3D = document.getElementById('content-' + currentMarkerId);
             if (content3D) content3D.setAttribute('visible', 'true');
 
+            // Quando togliamo il pin, verifichiamo se il marker è ancora "in vista" basandoci sul loop
+            // Sui marker dinamici generati in JS, object3D potrebbe bloccarsi in cache, usiamo un fallback
             const marker = document.getElementById('marker-' + currentMarkerId);
             if (marker && marker.object3D && marker.object3D.visible) {
                 uiControls.style.display = 'flex';
@@ -881,7 +881,7 @@
             }
         }
 
-        // --- GESTIONE CLICK E SMISTAMENTO ---
+        // --- GESTIONE CLICK, GRAFICI E CALENDARIO ---
         document.addEventListener('click', (event) => {
             if (!isPinned || !currentConfig || !currentMarkerId) return;
 
@@ -898,6 +898,7 @@
             for (let box of hitboxes) {
                 if (clickX >= box.x && clickX <= box.x + box.w && clickY >= box.y && clickY <= box.y + box.h) {
 
+                    // <-- FONDAMENTALE: Smistamento del Click -->
                     if (box.id === "calendario") {
                         apriCalendario();
                     } else {
@@ -908,14 +909,14 @@
             }
         });
 
-        // --- FUNZIONE: APRI CALENDARIO HTML ---
+        // --- FUNZIONE NUOVA: APRI CALENDARIO HTML ---
         function apriCalendario() {
             document.getElementById('main-view-container').style.display = 'none';
             document.getElementById('detail-view').style.display = 'none';
             document.getElementById('calendar-view').style.display = 'flex';
 
             document.getElementById('cal-room-name').innerText = currentConfig.nome;
-            mostraVistaGiorno();
+            mostraVistaGiorno(); // Carica tab giorno di default
         }
 
         function mostraVistaGiorno() {
@@ -923,10 +924,11 @@
             document.getElementById('tab-settimana').classList.remove('active');
 
             const timeline = document.getElementById('cal-timeline');
-            timeline.innerHTML = '';
-            timeline.style.padding = '20px';
-            timeline.classList.remove('cal-week-grid');
+            timeline.innerHTML = ''; // Pulisce
+            timeline.style.padding = '20px'; // Ripristina padding giorno
+            timeline.classList.remove('cal-week-grid'); // Rimuove griglia se presente
 
+            // Genera la griglia oraria singola
             const oreInizio = 8;
             const oreFine = 18;
             const altezzaOra = 60;
@@ -938,6 +940,7 @@
                 timeline.appendChild(slot);
             }
 
+            // Inserisce gli eventi del Giorno
             if (lastFetchedData.agendaGiorno) {
                 lastFetchedData.agendaGiorno.forEach(evento => {
                     const topPos = (evento.inizio - oreInizio) * altezzaOra;
@@ -956,7 +959,7 @@
                     };
 
                     divEvento.innerHTML = `<strong>${evento.titolo}</strong><br><span style="font-weight:normal; font-size:12px;">${formattaOra(evento.inizio)} - ${formattaOra(evento.fine)}</span>`;
-                    document.getElementById(`ora-${oreInizio}`).appendChild(divEvento);
+                    document.getElementById(`ora-${oreInizio}`).appendChild(divEvento); // Appende tutti alla prima ora come base relativa
                 });
             }
         }
@@ -967,7 +970,7 @@
 
             const timeline = document.getElementById('cal-timeline');
             timeline.innerHTML = '';
-            timeline.style.padding = '0';
+            timeline.style.padding = '0'; // Togliamo il padding per far aderire i bordi
             timeline.classList.add('cal-week-grid');
 
             const giorni = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì"];
@@ -981,18 +984,20 @@
 
                     const header = document.createElement('div');
                     header.className = 'week-day-header';
-                    header.innerText = giorno.substring(0, 3).toUpperCase();
+                    header.innerText = giorno.substring(0, 3).toUpperCase(); // Es: LUN, MAR
                     col.appendChild(header);
 
+                    // Aggiungiamo le linee guida orarie per sfondo
                     for (let i = oreInizio; i <= 18; i++) {
                         const line = document.createElement('div');
                         line.style.cssText = `position:absolute; top:${(i - oreInizio) * altezzaOra + 40}px; width:100%; border-top:1px dashed rgba(255,255,255,0.08); pointer-events:none;`;
                         col.appendChild(line);
                     }
 
+                    // Aggiungiamo i pillolini degli eventi
                     const eventiDelGiorno = lastFetchedData.agendaSettimana[giorno] || [];
                     eventiDelGiorno.forEach(evento => {
-                        const topPos = (evento.inizio - oreInizio) * altezzaOra + 40;
+                        const topPos = (evento.inizio - oreInizio) * altezzaOra + 40; // +40 per via dell'header sticky
                         const durata = evento.fine - evento.inizio;
                         const altezza = durata * altezzaOra;
 
@@ -1012,11 +1017,11 @@
             }
         }
 
-        // --- FUNZIONI GRAFICI E CHIUSURA ---
+        // --- FUNZIONI GRAFICI (Esistenti) ---
         let detailChart = null;
         function apriDettaglio(metricaId) {
             document.getElementById('main-view-container').style.display = 'none';
-            document.getElementById('calendar-view').style.display = 'none';
+            document.getElementById('calendar-view').style.display = 'none'; // Nasconde eventuale calendario
             document.getElementById('detail-view').style.display = 'flex';
 
             let titolo = metricaId.toUpperCase();
@@ -1126,7 +1131,7 @@
 
         function chiudiDettaglio() {
             document.getElementById('detail-view').style.display = 'none';
-            document.getElementById('calendar-view').style.display = 'none';
+            document.getElementById('calendar-view').style.display = 'none'; // <-- FONDAMENTALE: Chiude anche il calendario
             document.getElementById('main-view-container').style.display = 'block';
         }
     </script>
