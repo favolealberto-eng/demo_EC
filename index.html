@@ -677,6 +677,13 @@
             document.getElementById('login-user').addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') eseguiLogin();
             });
+
+            // FIX: Previene il blocco dello scrolling nativo causato da A-Frame
+            const modal = document.getElementById('hud-modal');
+            if (modal) {
+                modal.addEventListener('touchmove', (e) => e.stopPropagation(), {passive: false});
+                modal.addEventListener('wheel', (e) => e.stopPropagation(), {passive: false});
+            }
         });
 
     </script>
@@ -1021,6 +1028,26 @@
             const altezzaOra = 60;
 
             if (lastFetchedData.agendaSettimana) {
+                // COLONNA ORARI Y-AXIS
+                const timeCol = document.createElement('div');
+                timeCol.className = 'week-col';
+                timeCol.style.flex = '0 0 45px';
+                timeCol.style.borderRight = '1px solid rgba(255, 255, 255, 0.1)';
+                timeCol.style.background = 'rgba(13, 31, 60, 0.3)';
+                
+                const timeHeader = document.createElement('div');
+                timeHeader.className = 'week-day-header';
+                timeHeader.innerText = 'ORA';
+                timeCol.appendChild(timeHeader);
+
+                for (let i = oreInizio; i <= 18; i++) {
+                    const label = document.createElement('div');
+                    label.style.cssText = `position:absolute; top:${(i - oreInizio) * altezzaOra + 40}px; right: 5px; color: #94a3b8; font-size: 11px; transform: translateY(-7px); font-weight: 600;`;
+                    label.innerText = `${i}:00`;
+                    timeCol.appendChild(label);
+                }
+                timeline.appendChild(timeCol);
+
                 giorni.forEach(giorno => {
                     const col = document.createElement('div');
                     col.className = 'week-col';

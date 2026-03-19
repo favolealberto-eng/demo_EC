@@ -71,5 +71,11 @@
     "id_macchina": "PR-01",
     "file": "layouts/layout_pannelli_radianti.js",
     "oggetto": "LayoutPannelliRadianti"
+  },
+  "11": {
+    "tipo": "ufficio",
+    "nome": "Ufficio Tecnico",
+    "file": "layouts/layout_ufficio.js",
+    "oggetto": "LayoutUfficio"
   }
 }
