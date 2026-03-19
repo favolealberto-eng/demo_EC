@@ -7,13 +7,20 @@ window.LayoutPannelliRadianti = {
     hitboxes: [],
 
     fetchDati: function (callback) {
-        // Simuliamo alcuni dati in tempo reale
+        const now = new Date();
+        const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
+        
+        const arrT = window.getMockDayData ? window.getMockDayData('temperatura') : [];
+        const tAmbiente = arrT.length > currentSlotIndex ? parseFloat(arrT[currentSlotIndex]) : 21.5;
+        
+        const arrU = window.getMockDayData ? window.getMockDayData('umidita') : [];
+        const umidita = arrU.length > currentSlotIndex ? parseFloat(arrU[currentSlotIndex]) : 45.0; 
+
+        // Simuliamo alcuni dati legati a quello realistico
         const isRiscaldamento = true; // es. Inverno
-        const tMandata = isRiscaldamento ? 35.5 : 15.0;
-        const tRitorno = isRiscaldamento ? 30.2 : 18.2;
-        const tAmbiente = 21.5;
-        const umidita = 45.0; // %
-        const dewPoint = tAmbiente - ((100 - umidita) / 5); // Approssimazione di Dew Point
+        const tMandata = isRiscaldamento ? (tAmbiente + 14).toFixed(1) : (tAmbiente - 5).toFixed(1);
+        const tRitorno = isRiscaldamento ? (tAmbiente + 9).toFixed(1) : (tAmbiente - 2).toFixed(1);
+        const dewPoint = tAmbiente - ((100 - umidita) / 5); 
         const rischioCondensa = tAmbiente - dewPoint; 
         
         let statoCondensa = 0; // 0: Verde, 1: Giallo, 2: Rosso
@@ -22,6 +29,11 @@ window.LayoutPannelliRadianti = {
             else if (rischioCondensa < 4) statoCondensa = 1;
         }
 
+        const h_sync = Math.floor(currentSlotIndex / 4).toString().padStart(2, '0');
+        const m_sync = ((currentSlotIndex % 4) * 15).toString().padStart(2, '0');
+        const str_ora_attuale = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const testoAggiornamento = `Dati Live: agg. ${h_sync}:${m_sync} (ora ${str_ora_attuale})`;
+
         const dati = {
             id: "PR-01",
             nome: "Pannello Radiante",
@@ -29,11 +41,12 @@ window.LayoutPannelliRadianti = {
             modalita: isRiscaldamento ? "RISCALDAMENTO" : "RAFFRESCAMENTO",
             tMandata: tMandata,
             tRitorno: tRitorno,
-            potenzaTermica: 1.2, // kW
-            tAmbiente: tAmbiente,
-            umidita: umidita,
+            potenzaTermica: (tAmbiente * 0.05).toFixed(1), // kW
+            tAmbiente: tAmbiente.toFixed(1),
+            umidita: umidita.toFixed(1),
             dewPoint: dewPoint.toFixed(1),
             statoCondensa: statoCondensa,
+            testo_aggiornamento: testoAggiornamento,
 
             // Dati diagnostica
             valvolaModulante: 75, // %
@@ -41,12 +54,6 @@ window.LayoutPannelliRadianti = {
             pressione: 1.8, // bar
             statoPompa: 0 // 0: OK
         };
-
-        // Facciamo variare un po' i dati per mostrare il tempo reale
-        const variazione = (Math.random() - 0.5) * 0.2;
-        dati.tAmbiente = (parseFloat(dati.tAmbiente) + variazione).toFixed(1);
-        dati.tMandata = (parseFloat(dati.tMandata) + variazione).toFixed(1);
-        dati.tRitorno = (parseFloat(dati.tRitorno) + variazione).toFixed(1);
         
         callback(dati);
     },
@@ -170,18 +177,10 @@ window.LayoutPannelliRadianti = {
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
         ctx.beginPath(); ctx.moveTo(0, 130); ctx.lineTo(W, 130); ctx.stroke();
 
-        const now = new Date();
-        const hr = String(now.getHours()).padStart(2, '0');
-        const min = String(now.getMinutes()).padStart(2, '0');
-        const sec = String(now.getSeconds()).padStart(2, '0');
-        const g = String(now.getDate()).padStart(2, '0');
-        const mo = String(now.getMonth() + 1).padStart(2, '0');
-        const year = now.getFullYear();
-        
         ctx.textAlign = 'right';
         ctx.font = '500 16px Inter, sans-serif';
         ctx.fillStyle = 'rgba(148, 163, 184, 0.9)';
-        ctx.fillText(`Dati Live: ${g}/${mo}/${year} ${hr}:${min}:${sec}`, 760, 155);
+        ctx.fillText(dati.testo_aggiornamento, 760, 155);
 
         if (this.vistaCorrente === 'main') {
             this.drawMain(ctx, dati);

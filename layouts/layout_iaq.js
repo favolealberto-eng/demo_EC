@@ -24,13 +24,33 @@ window.LayoutIAQ = {
     // 3. DATABASE FITTIZIO (Simulazione chiamata API)
     fetchDati: function (callback) {
         setTimeout(() => {
+            const now = new Date();
+            const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
+            
+            const getMock = (metrica) => {
+                const arr = window.getMockDayData ? window.getMockDayData(metrica) : [];
+                return arr.length > currentSlotIndex ? parseFloat(arr[currentSlotIndex]) : null;
+            };
+
+            const score = getMock('iaq_score') || 8.5;
+            const temperatura = getMock('temperatura') || 22.5;
+            const umidita = getMock('umidita') || 45;
+            const rumore = getMock('rumore') || 40;
+            const luce = getMock('luce') || 450;
+
+            const h_sync = Math.floor(currentSlotIndex / 4).toString().padStart(2, '0');
+            const m_sync = ((currentSlotIndex % 4) * 15).toString().padStart(2, '0');
+            const str_ora_attuale = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+            const testoAggiornamento = `Ultimo agg. ore ${h_sync}:${m_sync} (attuale ${str_ora_attuale})`;
+
             const mockData = {
-                timestamp: new Date(),
-                score: (Math.random() * 2 + 7.5).toFixed(1),
-                temperatura: (22.5 + Math.random() * 0.5).toFixed(1),
-                umidita: (45 + Math.random() * 2).toFixed(0),
-                rumore: (40 + Math.random() * 5).toFixed(0),
-                luce: (450 + Math.random() * 20).toFixed(0)
+                timestamp: now,
+                testo_aggiornamento: testoAggiornamento,
+                score: score.toFixed(1),
+                temperatura: temperatura.toFixed(1),
+                umidita: umidita.toFixed(0),
+                rumore: rumore.toFixed(0),
+                luce: luce.toFixed(0)
             };
             callback(mockData);
         }, 200);
@@ -63,10 +83,9 @@ window.LayoutIAQ = {
         ctx.shadowBlur = 0;
 
         // Sottotitolo orario
-        const orario = dati.timestamp.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         ctx.fillStyle = 'rgba(148,163,184,0.85)';
         ctx.font = '34px sans-serif';
-        ctx.fillText(`Aggiornato: ${orario}`, W / 2, 170);
+        ctx.fillText(dati.testo_aggiornamento, W / 2, 170);
 
         // Linea separatrice
         ctx.strokeStyle = 'rgba(6,182,212,0.25)';

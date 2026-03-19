@@ -9,19 +9,29 @@ window.LayoutMacchina = {
         { id: "benchmark_energia", x: 50, y: 1420, w: 800, h: 120 }
     ],
     fetchDati: function(callback) {
-        // Dati simulati realistici fluttuanti
-        const potenza_kw = (Math.random() * 20 + 30).toFixed(1); // 30-50
-        const efficienza = (Math.random() * 10 + 85).toFixed(1); // 85-95
-        const consumo = (potenza_kw * 8).toFixed(1);
-        const ore = (Math.random() * 2 + 6).toFixed(1); // 6-8
+        const now = new Date();
+        const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
+        const pArray = window.getMockDayData ? window.getMockDayData('benchmark_energia') : [];
+        const basePotenza = pArray.length > currentSlotIndex ? parseFloat(pArray[currentSlotIndex]) : 13.0;
         
+        const potenza_kw = (basePotenza * 3).toFixed(1); 
+        const efficienza = (85 + (basePotenza % 5)).toFixed(1); 
+        const consumo = Math.round(basePotenza * 8).toFixed(1);
+        const ore = 8.5; 
+        
+        const h_sync = Math.floor(currentSlotIndex / 4).toString().padStart(2, '0');
+        const m_sync = ((currentSlotIndex % 4) * 15).toString().padStart(2, '0');
+        const str_ora_attuale = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        const testoAggiornamento = `Ultimo agg. ore ${h_sync}:${m_sync} (attuale ${str_ora_attuale})`;
+
         callback({
             potenza_kw: parseFloat(potenza_kw),
             consumo_giornaliero_kwh: parseFloat(consumo),
             efficienza_perc: parseFloat(efficienza),
             ore_operative: parseFloat(ore),
             baseline_enpi: 12.5,
-            enpi_attuale: (Math.random() * 2 + 11).toFixed(1) // 11-13
+            enpi_attuale: (basePotenza).toFixed(1),
+            testo_aggiornamento: testoAggiornamento
         });
     },
     draw: function(ctx, dati, currentConfig) {
@@ -61,8 +71,8 @@ window.LayoutMacchina = {
         gradient.addColorStop(0, '#06b6d4');
         gradient.addColorStop(1, '#0891b2');
         ctx.fillStyle = gradient;
-        ctx.font = 'bold 28px Inter';
-        ctx.fillText("ISO 50001 · MONITORAGGIO ENERGETICO", 50, 160);
+        ctx.font = 'bold 24px Inter';
+        ctx.fillText(dati.testo_aggiornamento, 50, 150);
 
         // Spia di Allarme
         const soglia = currentConfig.soglia_kw || 45;

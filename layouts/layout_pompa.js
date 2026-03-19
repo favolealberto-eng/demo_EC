@@ -11,17 +11,34 @@ window.LayoutPompa = {
     hitboxes: [],
 
     fetchDati: function (callback) {
+        const now = new Date();
+        const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
+        // Usiamo i dati del benchmark energia scalati per avere un profilo giornaliero realistico
+        const pArray = window.getMockDayData ? window.getMockDayData('benchmark_energia') : [];
+        const baseP = pArray.length > currentSlotIndex ? parseFloat(pArray[currentSlotIndex]) : 13.0;
+
+        const portata = (baseP * 6).toFixed(0); 
+        const prevalenza = (baseP * 2.5).toFixed(0);
+        const pressione = (baseP * 0.2).toFixed(1);
+        const potenza = (baseP * 1.4).toFixed(1); // Scaliamo la potenza in base al carico
+        
+        const h_sync = Math.floor(currentSlotIndex / 4).toString().padStart(2, '0');
+        const m_sync = ((currentSlotIndex % 4) * 15).toString().padStart(2, '0');
+        const str_ora_attuale = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        const testoAgg = `Ultimo agg. ore ${h_sync}:${m_sync} (attuale ${str_ora_attuale})`;
+
         const datiPompa = {
             id: "PMP-7822",
             nome: "Pompa Centrifuga",
             luogo: "Sala Macchine B",
+            testo_aggiornamento: testoAgg,
 
             // Valori [Attuale, Nominale, Stato] (Stato: 0=OK, 1=Warning, 2=Allarme)
             parametri: [
-                { nome: "Portata (Q)", att: 85, nom: 120, unita: "m³/h", stato: 2 },
-                { nome: "Prevalenza (H)", att: 32, nom: 45, unita: "m", stato: 2 },
-                { nome: "Pressione (P)", att: 3.0, nom: 4.5, unita: "bar", stato: 2 },
-                { nome: "Potenza (P.att)", att: 14.2, nom: 18.5, unita: "kW", stato: 1 },
+                { nome: "Portata (Q)", att: portata, nom: 120, unita: "m³/h", stato: baseP > 15 ? 2 : 0 },
+                { nome: "Prevalenza (H)", att: prevalenza, nom: 45, unita: "m", stato: baseP > 15 ? 2 : 0 },
+                { nome: "Pressione (P)", att: pressione, nom: 4.5, unita: "bar", stato: baseP > 15 ? 2 : 0 },
+                { nome: "Potenza (P.att)", att: potenza, nom: 18.5, unita: "kW", stato: baseP > 14 ? 1 : 0 },
                 { nome: "Cos φ", att: 0.72, nom: 0.85, unita: "", stato: 1 }
             ],
 
@@ -123,7 +140,7 @@ window.LayoutPompa = {
         ctx.shadowBlur = 0;
 
         ctx.font = '24px Inter, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.fillText(dati.luogo.toUpperCase(), 400, 110);
+        ctx.fillText(dati.testo_aggiornamento, 400, 110);
 
         // Linea separatrice bottom header
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';

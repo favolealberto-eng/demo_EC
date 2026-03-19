@@ -10,17 +10,6 @@ window.LayoutQuadroEl = {
     ],
     
     fetchDati: function(callback) {
-        const potenzaAttuale = (Math.random() * 40 + 100).toFixed(1);
-        const tensione = (Math.random() * 5 + 395).toFixed(1); 
-        const corrente = (potenzaAttuale * 1000 / (Math.sqrt(3) * tensione * 0.9)).toFixed(1); 
-        
-        let stato_allarme = parseFloat(potenzaAttuale) > 135 ? 'CRITICO' : (parseFloat(potenzaAttuale) > 125 ? 'ATTENZIONE' : 'NORMALE');
-        
-        const line1 = parseFloat((potenzaAttuale * 0.4).toFixed(1));
-        const line2 = parseFloat((potenzaAttuale * 0.25).toFixed(1));
-        const line3 = parseFloat((potenzaAttuale * 0.15).toFixed(1));
-        const line4 = parseFloat((potenzaAttuale * 0.2).toFixed(1));
-
         if (!window.QuadroElGlobalState) {
             const history = [];
             const hL1 = [], hL2 = [], hL3 = [], hL4 = [];
@@ -58,19 +47,32 @@ window.LayoutQuadroEl = {
         
         const state = window.QuadroElGlobalState;
         
-        // Estraiamo lo storico fisso fino ad ora per disegnare la curva statica passata
-        state.storicoGlobale = state.curvaIdealeGlobale.slice(0, currentSlotIndex);
-        state.storicoLinee.l1 = state.curvaIdealeLinee.l1.slice(0, currentSlotIndex);
-        state.storicoLinee.l2 = state.curvaIdealeLinee.l2.slice(0, currentSlotIndex);
-        state.storicoLinee.l3 = state.curvaIdealeLinee.l3.slice(0, currentSlotIndex);
-        state.storicoLinee.l4 = state.curvaIdealeLinee.l4.slice(0, currentSlotIndex);
+        // Lo storico fisso comprende gli slot fino all'orario attuale compreso
+        state.storicoGlobale = state.curvaIdealeGlobale.slice(0, currentSlotIndex + 1);
+        state.storicoLinee.l1 = state.curvaIdealeLinee.l1.slice(0, currentSlotIndex + 1);
+        state.storicoLinee.l2 = state.curvaIdealeLinee.l2.slice(0, currentSlotIndex + 1);
+        state.storicoLinee.l3 = state.curvaIdealeLinee.l3.slice(0, currentSlotIndex + 1);
+        state.storicoLinee.l4 = state.curvaIdealeLinee.l4.slice(0, currentSlotIndex + 1);
         
-        // Aggiungiamo il picco in tempo reale per l'istante attuale
-        state.storicoGlobale.push(parseFloat(potenzaAttuale));
-        state.storicoLinee.l1.push(line1);
-        state.storicoLinee.l2.push(line2);
-        state.storicoLinee.l3.push(line3);
-        state.storicoLinee.l4.push(line4);
+        // Preleviamo coerentemente i valori dell'istante i-esimo (corrente al 15 min mark)
+        const potenzaAttuale = state.curvaIdealeGlobale[currentSlotIndex].toFixed(1);
+        const line1 = state.curvaIdealeLinee.l1[currentSlotIndex].toFixed(1);
+        const line2 = state.curvaIdealeLinee.l2[currentSlotIndex].toFixed(1);
+        const line3 = state.curvaIdealeLinee.l3[currentSlotIndex].toFixed(1);
+        const line4 = state.curvaIdealeLinee.l4[currentSlotIndex].toFixed(1);
+
+        const tensione = (398.5).toFixed(1); 
+        const corrente = (potenzaAttuale * 1000 / (Math.sqrt(3) * tensione * 0.9)).toFixed(1); 
+        
+        let stato_allarme = parseFloat(potenzaAttuale) > 135 ? 'CRITICO' : (parseFloat(potenzaAttuale) > 120 ? 'ATTENZIONE' : 'NORMALE');
+
+        // Calcolo testo dell'aggiornamento (es: Ultimo aggiornamento ore 16:30, ora attuale 16:36)
+        const h_sync = Math.floor(currentSlotIndex / 4).toString().padStart(2, '0');
+        const m_sync = ((currentSlotIndex % 4) * 15).toString().padStart(2, '0');
+        const str_ultimo_aggiornamento = `${h_sync}:${m_sync}`;
+        const str_ora_attuale = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        
+        const testoAggiornamento = `Ultimo agg. ore ${str_ultimo_aggiornamento} (attuale ${str_ora_attuale})`;
 
         callback({
             potenza_kw: parseFloat(potenzaAttuale),
@@ -78,12 +80,12 @@ window.LayoutQuadroEl = {
             corrente_a: parseFloat(corrente),
             cos_phi: 0.92,
             stato_allarme: stato_allarme,
-            ora_ultimo_aggiornamento: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+            testo_aggiornamento: testoAggiornamento,
             linee: [
-                { nome: 'Linea Produzione 1', p: line1, alert: line1 > 50 },
-                { nome: 'Condizionamento / HVAC', p: line2, alert: line2 > 35 },
-                { nome: 'Prese e Illuminazione', p: line3, alert: line3 > 25 },
-                { nome: 'Servizi Ausiliari / Altro', p: line4, alert: line4 > 30 }
+                { nome: 'Linea Produzione 1', p: parseFloat(line1), alert: parseFloat(line1) > 50 },
+                { nome: 'Condizionamento / HVAC', p: parseFloat(line2), alert: parseFloat(line2) > 35 },
+                { nome: 'Prese e Illuminazione', p: parseFloat(line3), alert: parseFloat(line3) > 25 },
+                { nome: 'Servizi Ausiliari / Altro', p: parseFloat(line4), alert: parseFloat(line4) > 30 }
             ]
         });
     },
@@ -117,11 +119,11 @@ window.LayoutQuadroEl = {
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 85px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText("QUADRO ELETTRICO", w/2, 120);
+        ctx.fillText("QUADRO ELETTRICO", w/2, 110);
         
         ctx.fillStyle = '#06b6d4';
-        ctx.font = 'bold 45px Inter';
-        ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  ${dati.ora_ultimo_aggiornamento}`, w/2, 200);
+        ctx.font = 'bold 36px Inter';
+        ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  ${dati.testo_aggiornamento}`, w/2, 190);
 
         // INDICATORE ALLARME
         let colorAllarme = '#22c55e';
@@ -233,14 +235,27 @@ window.LayoutQuadroEl = {
         ctx.strokeStyle = '#334155';
         ctx.lineWidth = 4;
         ctx.beginPath();
+        // Asse X
         ctx.moveTo(gX, gY + gH);
         ctx.lineTo(gX + gW, gY + gH);
+        // Asse Y principale
+        ctx.moveTo(gX, gY);
+        ctx.lineTo(gX, gY + gH);
         ctx.stroke();
+
+        // Nomi degli assi
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 30px Inter';
+        ctx.textAlign = 'right';
+        ctx.fillText("Potenza [kW]", gX - 30, gY - 20); // Etichetta Asse Y
+        
+        ctx.textAlign = 'center';
+        ctx.fillText("Ore della giornata", gX + gW/2, gY + gH + 90); // Etichetta Asse X
 
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.fillStyle = '#64748b';
-        ctx.font = '30px Inter';
+        ctx.font = '28px Inter';
         
         let minVal = 0;
         let maxVal = state.vistaSingoleLinee ? 80 : 160;
