@@ -52,10 +52,13 @@ window.LayoutPannelliRadianti = {
     },
 
     processClick: function (id) {
+        let changed = false;
         if (id === "btn_diagnostica") {
             this.vistaCorrente = "diagnostica";
+            changed = true;
         } else if (id === "btn_back") {
             this.vistaCorrente = "main";
+            changed = true;
         } else if (id === "btn_pompa") {
             try {
                 const pumpId = "9";
@@ -93,9 +96,26 @@ window.LayoutPannelliRadianti = {
                 console.error("Link alla pompa fallito", e);
             }
         }
+
+        if (changed && this.ultimoCtx && this.ultimiDati && this.ultimoConfig) {
+            this.draw(this.ultimoCtx, this.ultimiDati, this.ultimoConfig);
+        }
     },
 
     draw: function (ctx, dati, config) {
+        this.ultimoCtx = ctx;
+        this.ultimiDati = dati;
+        this.ultimoConfig = config;
+
+        try {
+            if (typeof window.currentMarkerId !== 'undefined' && window.currentMarkerId !== null) {
+                const c3d = document.getElementById('content-' + window.currentMarkerId);
+                if (c3d && !window.isPinned) {
+                    c3d.setAttribute('visible', 'true');
+                }
+            }
+        } catch(e) {}
+
         if (this.vistaCorrente === 'main') {
             this.hitboxes = [
                 { id: "btn_diagnostica", x: 40, y: 950, w: 720, h: 100 }
@@ -142,6 +162,19 @@ window.LayoutPannelliRadianti = {
         // Linea separatrice bottom header
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
         ctx.beginPath(); ctx.moveTo(0, 130); ctx.lineTo(W, 130); ctx.stroke();
+
+        const now = new Date();
+        const hr = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const sec = String(now.getSeconds()).padStart(2, '0');
+        const g = String(now.getDate()).padStart(2, '0');
+        const mo = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        
+        ctx.textAlign = 'right';
+        ctx.font = '500 16px Inter, sans-serif';
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.9)';
+        ctx.fillText(`Dati Live: ${g}/${mo}/${year} ${hr}:${min}:${sec}`, 760, 155);
 
         if (this.vistaCorrente === 'main') {
             this.drawMain(ctx, dati);
