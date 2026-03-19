@@ -1,30 +1,64 @@
 window.LayoutQuadroEl = {
     config: {
-        canvasW: 2400,
-        canvasH: 1600,
-        planeW: 4.8,
-        planeH: 3.2
+        canvasW: 1500,
+        canvasH: 2400,
+        planeW: 3.0,
+        planeH: 4.8
     },
     hitboxes: [
-        { id: "grafico_potenza", x: 100, y: 1350, w: 650, h: 120 },
-        { id: "reset_allarmi", x: 800, y: 1350, w: 650, h: 120 },
-        { id: "diagnostica", x: 1500, y: 1350, w: 650, h: 120 },
-        // Hitbox generica sul grafico per aprire il grafico esterno
-        { id: "benchmark_energia", x: 100, y: 750, w: 2200, h: 550 }
+        { id: "toggle_grafico", x: 50, y: 2150, w: 1400, h: 180 }
     ],
+    
     fetchDati: function(callback) {
-        // Simulazione potenza (es. 100-150 kW)
         const potenzaAttuale = (Math.random() * 40 + 100).toFixed(1);
-        const tensione = (Math.random() * 5 + 395).toFixed(1); // 395-400 V
-        const corrente = (potenzaAttuale * 1000 / (Math.sqrt(3) * tensione * 0.9)).toFixed(1); // I = P / (sqrt(3)*V*cosPhi)
+        const tensione = (Math.random() * 5 + 395).toFixed(1); 
+        const corrente = (potenzaAttuale * 1000 / (Math.sqrt(3) * tensione * 0.9)).toFixed(1); 
         
-        // Generazione storico della giornata (24 punti orari)
-        const storicoPotenza = [];
-        let pBase = 80; // Potenza notturna
-        for(let i=0; i<24; i++) {
-            if (i > 7 && i < 18) pBase = 120; // Orario lavorativo
-            else pBase = 80;
-            storicoPotenza.push(pBase + Math.random()*30);
+        let stato_allarme = parseFloat(potenzaAttuale) > 135 ? 'CRITICO' : (parseFloat(potenzaAttuale) > 125 ? 'ATTENZIONE' : 'NORMALE');
+        
+        const line1 = parseFloat((potenzaAttuale * 0.4).toFixed(1));
+        const line2 = parseFloat((potenzaAttuale * 0.25).toFixed(1));
+        const line3 = parseFloat((potenzaAttuale * 0.15).toFixed(1));
+        const line4 = parseFloat((potenzaAttuale * 0.2).toFixed(1));
+
+        // Inizializza lo stato persistente una sola volta nel context Window
+        if (!window.QuadroElGlobalState) {
+            const oraAttuale = new Date().getHours();
+            const history = [];
+            const hL1 = [], hL2 = [], hL3 = [], hL4 = [];
+            
+            // Generiamo i punti orari passati del giorno
+            for(let i=0; i<=oraAttuale; i++) {
+                let pBase = (i > 7 && i < 18) ? 120 : 80;
+                let v = pBase + Math.random()*20;
+                history.push(v);
+                hL1.push(v * 0.4);
+                hL2.push(v * 0.25);
+                hL3.push(v * 0.15);
+                hL4.push(v * 0.2);
+            }
+            
+            window.QuadroElGlobalState = {
+                storicoGlobale: history,
+                storicoLinee: { l1: hL1, l2: hL2, l3: hL3, l4: hL4 },
+                vistaSingoleLinee: false
+            };
+        }
+
+        // Aggiungi un punto per ogni istante in cui si guarda (come richiesto)
+        window.QuadroElGlobalState.storicoGlobale.push(parseFloat(potenzaAttuale));
+        window.QuadroElGlobalState.storicoLinee.l1.push(line1);
+        window.QuadroElGlobalState.storicoLinee.l2.push(line2);
+        window.QuadroElGlobalState.storicoLinee.l3.push(line3);
+        window.QuadroElGlobalState.storicoLinee.l4.push(line4);
+
+        // Limita a 200 punti per evitare che il grafico si schiacci troppo e diventi illeggibile
+        if(window.QuadroElGlobalState.storicoGlobale.length > 200) {
+            window.QuadroElGlobalState.storicoGlobale.shift();
+            window.QuadroElGlobalState.storicoLinee.l1.shift();
+            window.QuadroElGlobalState.storicoLinee.l2.shift();
+            window.QuadroElGlobalState.storicoLinee.l3.shift();
+            window.QuadroElGlobalState.storicoLinee.l4.shift();
         }
 
         callback({
@@ -32,11 +66,17 @@ window.LayoutQuadroEl = {
             tensione_v: parseFloat(tensione),
             corrente_a: parseFloat(corrente),
             cos_phi: 0.92,
-            storico_giornaliero: storicoPotenza,
-            stato_allarme: parseFloat(potenzaAttuale) > 135 ? 'CRITICO' : (parseFloat(potenzaAttuale) > 125 ? 'ATTENZIONE' : 'NORMALE'),
-            ora_ultimo_aggiornamento: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            stato_allarme: stato_allarme,
+            ora_ultimo_aggiornamento: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+            linee: [
+                { nome: 'Linea Produzione 1', p: line1, alert: line1 > 50 },
+                { nome: 'Condizionamento / HVAC', p: line2, alert: line2 > 35 },
+                { nome: 'Prese e Illuminazione', p: line3, alert: line3 > 25 },
+                { nome: 'Servizi Ausiliari / Altro', p: line4, alert: line4 > 30 }
+            ]
         });
     },
+
     draw: function(ctx, dati, currentConfig) {
         const w = this.config.canvasW;
         const h = this.config.canvasH;
@@ -44,7 +84,7 @@ window.LayoutQuadroEl = {
         ctx.clearRect(0, 0, w, h);
         
         // Sfondo dark glassmorphism
-        ctx.fillStyle = 'rgba(13, 31, 60, 0.9)';
+        ctx.fillStyle = 'rgba(13, 31, 60, 0.92)';
         ctx.beginPath();
         ctx.roundRect(0, 0, w, h, 60);
         ctx.fill();
@@ -52,29 +92,27 @@ window.LayoutQuadroEl = {
         ctx.lineWidth = 6;
         ctx.stroke();
 
-        // Header
+        // 1. HEADER (Vertical)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.beginPath();
-        ctx.roundRect(0, 0, w, 220, { tl: 60, tr: 60, bl: 0, br: 0 });
+        ctx.roundRect(0, 0, w, 260, { tl: 60, tr: 60, bl: 0, br: 0 });
         ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
         ctx.beginPath();
-        ctx.moveTo(0, 220);
-        ctx.lineTo(w, 220);
+        ctx.moveTo(0, 260);
+        ctx.lineTo(w, 260);
         ctx.stroke();
 
-        // Titolo
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 80px Inter';
-        ctx.textAlign = 'left';
-        ctx.fillText(currentConfig.nome.toUpperCase(), 100, 110);
+        ctx.font = 'bold 85px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText("QUADRO ELETTRICO", w/2, 120);
         
-        // Sottotitolo con l'orario
         ctx.fillStyle = '#06b6d4';
         ctx.font = 'bold 45px Inter';
-        ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  LIVE DATA: ${dati.ora_ultimo_aggiornamento}`, 100, 180);
+        ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  ${dati.ora_ultimo_aggiornamento}`, w/2, 200);
 
-        // INDICATORE ALLARME (In alto a dx)
+        // INDICATORE ALLARME
         let colorAllarme = '#22c55e';
         let glowAllarme = 'rgba(34, 197, 94, 0.6)';
         let testAllarme = "SISTEMA OK";
@@ -82,106 +120,104 @@ window.LayoutQuadroEl = {
         if (dati.stato_allarme === 'CRITICO') {
             colorAllarme = '#ef4444';
             glowAllarme = 'rgba(239, 68, 68, 0.8)';
-            testAllarme = "SOVRACCARICO!";
+            testAllarme = "SOVRACCARICO";
         } else if (dati.stato_allarme === 'ATTENZIONE') {
-            colorAllarme = '#eab308'; // Teal warning? No, warning should be yellow/orange. We use standard yellow. Wait, user from conversation b75f1dac wanted to remove orange/amber. Teal/cyan is requested. Let's use #facc15 yellow, or maybe #06b6d4 for everything but critical. Let's stick to real alarm colors (Red=Crit, Yellow=Warning, Green=Ok). A real electrical panel uses Yellow for warning.
-            glowAllarme = 'rgba(234, 179, 8, 0.6)';
-            testAllarme = "ATTENZIONE POTENZA ALTA";
+            colorAllarme = '#facc15'; 
+            glowAllarme = 'rgba(250, 204, 21, 0.6)';
+            testAllarme = "ATTENZIONE POTENZA";
         }
 
-        // Cerchio spia
-        ctx.save();
-        ctx.shadowColor = glowAllarme;
-        ctx.shadowBlur = 60;
-        ctx.fillStyle = colorAllarme;
-        ctx.beginPath();
-        ctx.arc(w - 200, 110, 60, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-        
-        // Testo stato a fianco della spia
-        ctx.textAlign = 'right';
-        ctx.fillStyle = colorAllarme;
-        ctx.font = 'bold 50px Inter';
-        ctx.fillText(testAllarme, w - 300, 130);
-        ctx.textAlign = 'left';
-
-        // PANNELLO VALORI ISTANTANEI (Colonna SX)
+        // 2. PANNELLO POTENZA (Vertical Layout)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
-        ctx.roundRect(100, 280, 750, 420, 30);
+        ctx.roundRect(50, 310, 1400, 480, 40);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
 
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '40px Inter';
-        ctx.fillText("Potenza Attiva (P)", 140, 350);
+        ctx.font = '45px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText("Potenza Attiva (P)", w/2, 400);
+        
+        // FIX: Unità di misura sovrapposta
+        const valText = dati.potenza_kw.toString();
+        ctx.font = 'bold 220px Inter';
+        const valWidth = ctx.measureText(valText).width;
         
         ctx.fillStyle = dati.stato_allarme === 'NORMALE' ? '#06b6d4' : colorAllarme;
-        ctx.font = 'bold 150px Inter';
-        ctx.fillText(dati.potenza_kw, 140, 490);
-        ctx.font = '60px Inter';
-        ctx.fillText("kW", 140 + ctx.measureText(dati.potenza_kw).width + 30, 490);
+        ctx.textAlign = 'right';
+        ctx.fillText(valText, w/2 + valWidth/2, 580);
+        
+        ctx.font = 'bold 70px Inter';
+        ctx.textAlign = 'left';
+        ctx.fillText("kW", w/2 + valWidth/2 + 20, 580);
 
-        // Soglia
+        ctx.textAlign = 'center';
         ctx.fillStyle = '#64748b';
-        ctx.font = '35px Inter';
-        ctx.fillText(`Soglia Critica: ${currentConfig.soglia_kw || 135} kW`, 140, 560);
+        ctx.font = '40px Inter';
+        ctx.fillText(`Soglia: ${currentConfig.soglia_kw || 135} kW  |  Stato: ${testAllarme}`, w/2, 670);
         
         ctx.fillStyle = '#94a3b8';
-        ctx.fillText(`Tens: ${dati.tensione_v} V  |  Corr: ${dati.corrente_a} A`, 140, 620);
-        ctx.fillText(`Cos φ: ${dati.cos_phi}`, 140, 670);
+        ctx.font = '35px Inter';
+        ctx.fillText(`U: ${dati.tensione_v} V   |   I: ${dati.corrente_a} A   |   Cos φ: ${dati.cos_phi}`, w/2, 740);
 
-        // DISTRIBUZIONE CARICHI (DX)
+
+        // 3. DISTRIBUZIONE CARICHI CON SPIE
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
-        ctx.roundRect(900, 280, 1400, 420, 30);
+        ctx.roundRect(50, 830, 1400, 440, 40);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
 
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 45px Inter';
-        ctx.fillText("DISTRIBUZIONE CARICHI", 950, 350);
+        ctx.font = 'bold 50px Inter';
+        ctx.fillText("DISTRIBUZIONE CARICHI", w/2, 920);
         
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '35px Inter';
-        const carichi = [
-            {n: 'Linea Produzione 1', p: (dati.potenza_kw * 0.4).toFixed(1) },
-            {n: 'Condizionamento / HVAC', p: (dati.potenza_kw * 0.25).toFixed(1) },
-            {n: 'Prese e Illuminazione', p: (dati.potenza_kw * 0.15).toFixed(1) },
-            {n: 'Servizi Ausiliari / Altro', p: (dati.potenza_kw * 0.2).toFixed(1) }
-        ];
+        let cy = 1000;
+        dati.linee.forEach(linea => {
+            // Spia colorata
+            const dotColor = linea.alert ? '#facc15' : '#22c55e';
+            ctx.save();
+            ctx.shadowColor = dotColor;
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = dotColor;
+            ctx.beginPath();
+            ctx.arc(150, cy - 12, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
 
-        let cy = 440;
-        carichi.forEach(c => {
-            ctx.fillText(c.n, 950, cy);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '40px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText(linea.nome, 200, cy);
+            
             ctx.fillStyle = '#06b6d4';
             ctx.textAlign = 'right';
-            ctx.fillText(`${c.p} kW`, 2250, cy);
-            ctx.textAlign = 'left';
-            ctx.fillStyle = '#94a3b8';
-            cy += 65;
+            ctx.fillText(`${linea.p} kW`, 1350, cy);
+            
+            cy += 70;
         });
 
-        // GRAFICO GIORNALIERO IN BASSO
+        // 4. GRAFICO EVOLUTIVO
         ctx.fillStyle = 'rgba(4, 15, 30, 0.5)';
         ctx.beginPath();
-        ctx.roundRect(100, 750, 2200, 550, 30);
+        ctx.roundRect(50, 1310, 1400, 780, 40);
         ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.3)';
         ctx.stroke();
 
+        const state = window.QuadroElGlobalState;
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 45px Inter';
-        ctx.fillText("ANDAMENTO POTENZA (00:00 - 24:00)", 150, 820);
+        ctx.font = 'bold 50px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", w/2, 1400);
 
-        // Disegno Assi
-        let gX = 220;
-        let gY = 880;
-        let gW = 1950;
-        let gH = 350;
+        let gX = 180;
+        let gY = 1460;
+        let gW = 1200;
+        let gH = 500;
 
         ctx.strokeStyle = '#334155';
         ctx.lineWidth = 4;
@@ -190,14 +226,13 @@ window.LayoutQuadroEl = {
         ctx.lineTo(gX + gW, gY + gH);
         ctx.stroke();
 
-        // Linee di griglia
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.fillStyle = '#64748b';
-        ctx.font = '28px Inter';
+        ctx.font = '30px Inter';
         
         let minVal = 0;
-        let maxVal = 160;
+        let maxVal = state.vistaSingoleLinee ? 80 : 160;
         let numSteps = 4;
         
         for(let i=0; i<=numSteps; i++) {
@@ -210,14 +245,14 @@ window.LayoutQuadroEl = {
             ctx.stroke();
             
             ctx.textAlign = 'right';
-            ctx.fillText(`${val} kW`, gX - 20, y + 10);
+            ctx.fillText(`${val}`, gX - 20, y + 10);
         }
 
-        // Curva Valori storici
-        const dataPoints = dati.storico_giornaliero;
-        if(dataPoints && dataPoints.length > 0) {
+        // Funzione per disegnare una singola linea dati
+        const drawHistoryLine = (dataPoints, color, thickness, fill) => {
+            if(!dataPoints || dataPoints.length === 0) return;
             ctx.beginPath();
-            let stepX = gW / (dataPoints.length - 1);
+            let stepX = gW / Math.max(1, dataPoints.length - 1);
             for(let i=0; i<dataPoints.length; i++) {
                 let px = gX + i * stepX;
                 let valToDraw = Math.min(dataPoints[i], maxVal);
@@ -225,62 +260,69 @@ window.LayoutQuadroEl = {
                 if(i===0) ctx.moveTo(px, py);
                 else ctx.lineTo(px, py);
             }
-            ctx.strokeStyle = '#06b6d4';
-            ctx.lineWidth = 6;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = thickness;
             ctx.stroke();
             
-            ctx.lineTo(gX + gW, gY + gH);
-            ctx.lineTo(gX, gY + gH);
-            ctx.closePath();
-            const fillGrad = ctx.createLinearGradient(0, gY, 0, gY + gH);
-            fillGrad.addColorStop(0, 'rgba(6, 182, 212, 0.4)');
-            fillGrad.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
-            ctx.fillStyle = fillGrad;
-            ctx.fill();
-        }
-        
-        // Asse X (Ore)
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#64748b';
-        let stepX = gW / 23;
-        for(let i=0; i<24; i+=3) {
-            let px = gX + i * stepX;
-            ctx.fillText(`${i.toString().padStart(2, '0')}:00`, px, gY + gH + 50);
-        }
-        ctx.textAlign = 'left';
-
-        // PULSANTI (Interattivi)
-        const drawBtn = (boxId, testo, bgColor, borderColor) => {
-            const box = this.hitboxes.find(h => h.id === boxId);
-            if(box) {
-                ctx.save();
-                ctx.fillStyle = bgColor;
-                ctx.beginPath();
-                ctx.roundRect(box.x, box.y, box.w, box.h, 24);
+            if (fill) {
+                ctx.lineTo(gX + gW, gY + gH);
+                ctx.lineTo(gX, gY + gH);
+                ctx.closePath();
+                const fillGrad = ctx.createLinearGradient(0, gY, 0, gY + gH);
+                fillGrad.addColorStop(0, color);
+                fillGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = fillGrad;
                 ctx.fill();
-                ctx.strokeStyle = borderColor;
-                ctx.lineWidth = 4;
-                ctx.stroke();
-                
-                ctx.fillStyle = '#fff';
-                ctx.textAlign = 'center';
-                ctx.font = 'bold 36px Inter';
-                ctx.fillText(testo, box.x + box.w/2, box.y + box.h/2 + 12);
-                ctx.restore();
             }
         };
 
-        drawBtn("grafico_potenza", "📊 DETTAGLIO GRAFICO", 'rgba(13, 31, 60, 0.8)', 'rgba(6, 182, 212, 0.5)');
-        drawBtn("reset_allarmi", "🔄 RESET ALLARMI", 'rgba(13, 31, 60, 0.8)', 'rgba(239, 68, 68, 0.6)');
-        drawBtn("diagnostica", "⚙️ DIAGNOSTICA AVANZATA", 'rgba(13, 31, 60, 0.8)', 'rgba(6, 182, 212, 0.5)');
+        if (state.vistaSingoleLinee) {
+            drawHistoryLine(state.storicoLinee.l1, '#ef4444', 5, false); // Rosso
+            drawHistoryLine(state.storicoLinee.l2, '#3b82f6', 5, false); // Blu
+            drawHistoryLine(state.storicoLinee.l3, '#eab308', 5, false); // Giallo
+            drawHistoryLine(state.storicoLinee.l4, '#22c55e', 5, false); // Verde
+            
+            // Legenda
+            ctx.font = '28px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ef4444'; ctx.fillText("L1", gX + 200, gY + gH + 60);
+            ctx.fillStyle = '#3b82f6'; ctx.fillText("L2", gX + 450, gY + gH + 60);
+            ctx.fillStyle = '#eab308'; ctx.fillText("L3", gX + 700, gY + gH + 60);
+            ctx.fillStyle = '#22c55e'; ctx.fillText("L4", gX + 950, gY + gH + 60);
+        } else {
+            drawHistoryLine(state.storicoGlobale, '#06b6d4', 7, true); // Ciano
+            ctx.fillStyle = '#64748b';
+            ctx.font = '30px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText("Passato", gX + 100, gY + gH + 60);
+            ctx.fillText("Presente", gX + gW - 100, gY + gH + 60);
+        }
+
+        // 5. PULSANTE TOGGLE GRAFICO
+        const box = this.hitboxes[0];
+        ctx.save();
+        const btnGrad = ctx.createLinearGradient(box.x, box.y, box.x + box.w, box.y + box.h);
+        btnGrad.addColorStop(0, '#06b6d4');
+        btnGrad.addColorStop(1, '#0891b2');
+        ctx.fillStyle = btnGrad;
+        ctx.shadowColor = 'rgba(6, 182, 212, 0.4)';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.roundRect(box.x, box.y, box.w, box.h, 40);
+        ctx.fill();
+        ctx.restore();
+        
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 50px Inter';
+        ctx.fillText(state.vistaSingoleLinee ? "🔄 TORNA A GRAFICO GLOBALE" : "📈 VEDI STORICO SINGOLE LINEE", box.x + box.w/2, box.y + box.h/2 + 18);
     },
+    
     processClick: function(boxId) {
-        if (boxId === "grafico_potenza" || boxId === "benchmark_energia") {
-            if (typeof apriDettaglio === 'function') apriDettaglio('benchmark_energia');
-        } else if (boxId === "reset_allarmi") {
-            alert("Comando RESET ALLARMI inviato al quadro elettrico.");
-        } else if (boxId === "diagnostica") {
-            alert("Avvio Diagnostica Avanzata sul quadro principale in corso...");
+        if (boxId === "toggle_grafico") {
+            if (window.QuadroElGlobalState) {
+                window.QuadroElGlobalState.vistaSingoleLinee = !window.QuadroElGlobalState.vistaSingoleLinee;
+            }
         }
     }
 };

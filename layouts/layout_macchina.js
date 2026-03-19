@@ -1,12 +1,12 @@
 window.LayoutMacchina = {
     config: {
-        canvasW: 1600,
-        canvasH: 900,
-        planeW: 3.2,
-        planeH: 1.8
+        canvasW: 900,
+        canvasH: 1600,
+        planeW: 1.8,
+        planeH: 3.2
     },
     hitboxes: [
-        { id: "benchmark_energia", x: 100, y: 750, w: 1400, h: 100 }
+        { id: "benchmark_energia", x: 50, y: 1420, w: 800, h: 120 }
     ],
     fetchDati: function(callback) {
         // Dati simulati realistici fluttuanti
@@ -42,27 +42,27 @@ window.LayoutMacchina = {
         // Header
         ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.beginPath();
-        ctx.roundRect(0, 0, w, 150, { tl: 40, tr: 40, bl: 0, br: 0 });
+        ctx.roundRect(0, 0, w, 220, { tl: 40, tr: 40, bl: 0, br: 0 });
         ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
         ctx.beginPath();
-        ctx.moveTo(0, 150);
-        ctx.lineTo(w, 150);
+        ctx.moveTo(0, 220);
+        ctx.lineTo(w, 220);
         ctx.stroke();
 
         // Titolo Macchina
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 60px Inter';
+        ctx.font = 'bold 55px Inter';
         ctx.textAlign = 'left';
-        ctx.fillText(currentConfig.nome, 60, 80);
+        ctx.fillText(currentConfig.nome, 50, 90);
         
         // Sottotitolo
-        const gradient = ctx.createLinearGradient(60, 0, 800, 0);
+        const gradient = ctx.createLinearGradient(50, 0, 800, 0);
         gradient.addColorStop(0, '#06b6d4');
         gradient.addColorStop(1, '#0891b2');
         ctx.fillStyle = gradient;
-        ctx.font = 'bold 30px Inter';
-        ctx.fillText("ISO 50001 · MONITORAGGIO ENERGETICO", 60, 130);
+        ctx.font = 'bold 28px Inter';
+        ctx.fillText("ISO 50001 · MONITORAGGIO ENERGETICO", 50, 160);
 
         // Spia di Allarme
         const soglia = currentConfig.soglia_kw || 45;
@@ -73,22 +73,28 @@ window.LayoutMacchina = {
             colorSemaforo = '#ef4444'; // Rosso (oltre 90%)
             glowSemaforo = 'rgba(239, 68, 68, 0.5)';
         } else if (perc >= 0.7) {
-            colorSemaforo = '#eab308'; // Giallo (70-90%)
-            glowSemaforo = 'rgba(234, 179, 8, 0.5)';
+            colorSemaforo = '#facc15'; // Giallo (70-90%)
+            glowSemaforo = 'rgba(250, 204, 21, 0.5)';
         }
         ctx.save();
         ctx.shadowColor = glowSemaforo;
         ctx.shadowBlur = 40;
         ctx.fillStyle = colorSemaforo;
         ctx.beginPath();
-        ctx.arc(w - 100, 75, 40, 0, Math.PI * 2);
+        ctx.arc(w - 90, 100, 45, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
-        // Colonna SX - KPI Energetici
+        // SEZIONE 1: KPI Energetici
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+        ctx.beginPath();
+        ctx.roundRect(50, 260, 800, 400, 24);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.stroke();
+
         ctx.textAlign = 'left';
-        
-        let offsetY = 250;
+        let offsetY = 320;
         const kpis = [
             { label: "Potenza Istantanea:", value: dati.potenza_kw + " kW" },
             { label: "Consumo Giornaliero:", value: dati.consumo_giornaliero_kwh + " kWh" },
@@ -102,46 +108,49 @@ window.LayoutMacchina = {
             ctx.fillText(kpi.label, 80, offsetY);
             ctx.fillStyle = '#f1f5f9';
             ctx.font = 'bold 45px Inter';
-            ctx.fillText(kpi.value, 460, offsetY + 2);
-            offsetY += 100;
+            ctx.textAlign = 'right';
+            ctx.fillText(kpi.value, 820, offsetY + 2);
+            ctx.textAlign = 'left';
+            offsetY += 80;
         });
 
         // Informazione extra sotto i KPI sulla soglia di allarme
         ctx.fillStyle = '#64748b';
         ctx.font = 'italic 24px Inter';
-        ctx.fillText(`*Soglia allarme impostata a: ${soglia} kW`, 80, 680);
+        ctx.textAlign = 'center';
+        ctx.fillText(`*Soglia allarme impostata a: ${soglia} kW`, w/2, 630);
 
-        // Colonna DX - Benchmark Card
+        // SEZIONE 2: Benchmark Card
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
-        ctx.roundRect(850, 200, 680, 500, 24);
+        ctx.roundRect(50, 700, 800, 680, 24);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
 
         ctx.fillStyle = '#f1f5f9';
         ctx.textAlign = 'center';
-        ctx.font = 'bold 36px Inter';
-        ctx.fillText("BENCHMARK EnPI", 1190, 260);
+        ctx.font = 'bold 42px Inter';
+        ctx.fillText("BENCHMARK EnPI", w/2, 780);
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '24px Inter';
-        ctx.fillText("Energy Performance Indicator", 1190, 300);
+        ctx.font = '28px Inter';
+        ctx.fillText("Energy Performance Indicator", w/2, 840);
 
         ctx.fillStyle = '#06b6d4';
-        ctx.font = 'bold 90px Inter';
-        ctx.fillText(dati.enpi_attuale, 1190, 420);
+        ctx.font = 'bold 160px Inter';
+        ctx.fillText(dati.enpi_attuale, w/2, 1050);
         
         ctx.fillStyle = '#22c55e';
-        ctx.font = 'bold 32px Inter';
-        ctx.fillText(`Baseline ISO 50001: ${dati.baseline_enpi}`, 1190, 500);
+        ctx.font = 'bold 36px Inter';
+        ctx.fillText(`Baseline ISO 50001: ${dati.baseline_enpi}`, w/2, 1180);
 
         let diff = (dati.enpi_attuale - dati.baseline_enpi).toFixed(1);
         let statusText = diff > 0 ? `+${diff} (Sopra Baseline)` : `${diff} (Sotto Baseline)`;
         ctx.fillStyle = diff > 0 ? '#ef4444' : '#22c55e';
-        ctx.font = 'bold 28px Inter';
-        ctx.fillText(statusText, 1190, 560);
+        ctx.font = 'bold 32px Inter';
+        ctx.fillText(statusText, w/2, 1260);
 
-        // Bottone
+        // SEZIONE 3: Bottone
         const btnBox = this.hitboxes[0];
         ctx.save();
         const btnGrad = ctx.createLinearGradient(btnBox.x, btnBox.y, btnBox.x + btnBox.w, btnBox.y + btnBox.h);
@@ -158,6 +167,6 @@ window.LayoutMacchina = {
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
         ctx.font = 'bold 36px Inter';
-        ctx.fillText("📊 DETTAGLIO CONSUMI & PREDIZIONE", btnBox.x + btnBox.w/2, btnBox.y + 64);
+        ctx.fillText("📊 DETTAGLIO GRAFICO", btnBox.x + btnBox.w/2, btnBox.y + 70);
     }
 };
