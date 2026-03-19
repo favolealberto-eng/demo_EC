@@ -1088,10 +1088,47 @@
         }
 
         // --- FUNZIONI GRAFICI (Esistenti) ---
+        // Helpers per generare l'array fisso di 96 valori fittizi (1 ogni quarto d'ora)
+        function getMockDayData(metricaId) {
+            if (!window.MockDayDataCache) window.MockDayDataCache = {};
+            if (window.MockDayDataCache[metricaId]) return window.MockDayDataCache[metricaId];
+
+            const result = [];
+            let baseVal = 0, variazione = 0;
+            if (metricaId === 'benchmark_energia') { baseVal = lastFetchedData && lastFetchedData.baseline_enpi ? parseFloat(lastFetchedData.baseline_enpi) : 12.5; variazione = 4; }
+            else if (metricaId === 'temperatura') { baseVal = 19; variazione = 4; }
+            else if (metricaId === 'umidita') { baseVal = 40; variazione = 15; }
+            else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; }
+            else if (metricaId === 'luce') { baseVal = 200; variazione = 300; }
+            else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 1.0; }
+            else { baseVal = 50; variazione = 20; }
+
+            for (let i = 0; i < 96; i++) {
+                const hour = i / 4;
+                let val = baseVal;
+                // Profilo giornaliero tipico
+                const isWorkingHour = (hour >= 8 && hour <= 18);
+                const isEvening = (hour > 18 && hour <= 22);
+                
+                if (isWorkingHour) val += variazione * (0.5 + Math.random() * 0.5);
+                else if (isEvening) val += variazione * (0.1 + Math.random() * 0.3);
+                else val -= variazione * (0.2 + Math.random() * 0.2); // Notte, più basso
+                
+                // Smoothing per evitare salti netti e sembrare una curva reale
+                if (i > 0) {
+                    val = parseFloat(result[i-1]) * 0.7 + val * 0.3; 
+                }
+                
+                result.push(val.toFixed(1));
+            }
+            window.MockDayDataCache[metricaId] = result;
+            return result;
+        }
+
         let detailChart = null;
         function apriDettaglio(metricaId) {
             document.getElementById('main-view-container').style.display = 'none';
-            document.getElementById('calendar-view').style.display = 'none'; // Nasconde eventuale calendario
+            document.getElementById('calendar-view').style.display = 'none'; 
             document.getElementById('detail-view').style.display = 'flex';
 
             let titolo = metricaId.toUpperCase();
@@ -1100,33 +1137,40 @@
             document.getElementById('detail-title').innerText = "Andamento: " + titolo;
 
             let theDatasets = [];
-            const labels = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 'Ora'];
+            const theLabels = [];
+            
+            // Calcolo slot corrente (0-95 in base a ora:minuti attuali)
+            const now = new Date();
+            const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
+
+            for (let i = 0; i <= currentSlotIndex; i++) {
+                const h = Math.floor(i / 4).toString().padStart(2, '0');
+                const m = ((i % 4) * 15).toString().padStart(2, '0');
+                theLabels.push(`${h}:${m}`);
+            }
+
             let unita = "";
+            const mockFullDay = getMockDayData(metricaId);
+            const fakeDataSliced = mockFullDay.slice(0, currentSlotIndex + 1);
 
             if (metricaId === 'benchmark_energia') {
                 unita = "kWh";
-                const fakeData = [];
-                const baselineData = [];
-                const baseline = lastFetchedData && lastFetchedData.baseline_enpi ? lastFetchedData.baseline_enpi : 12.5;
-                for (let i = 0; i < 10; i++) {
-                    baselineData.push(baseline);
-                    const diff = (Math.random() * 4) - 1.5;
-                    fakeData.push((baseline + diff).toFixed(1));
-                }
+                const baseline = lastFetchedData && lastFetchedData.baseline_enpi ? parseFloat(lastFetchedData.baseline_enpi) : 12.5;
+                const baselineData = Array(currentSlotIndex + 1).fill(baseline);
 
                 theDatasets = [
                     {
                         label: 'Consumo Reale',
-                        data: fakeData,
+                        data: fakeDataSliced,
                         borderColor: '#06b6d4',
                         backgroundColor: 'rgba(6,182,212,0.12)',
                         fill: true,
                         tension: 0.4,
                         borderWidth: 3,
-                        pointRadius: 5,
+                        pointRadius: 2,
                         pointBackgroundColor: '#06b6d4',
                         pointBorderColor: 'rgba(255,255,255,0.3)',
-                        pointBorderWidth: 2
+                        pointBorderWidth: 1
                     },
                     {
                         label: 'Baseline ISO 50001',
@@ -1141,32 +1185,24 @@
                     }
                 ];
             } else {
-                let baseVal = 0, variazione = 0;
-                if (metricaId === 'temperatura') { baseVal = 19; variazione = 4; unita = "°C"; }
-                else if (metricaId === 'umidita') { baseVal = 40; variazione = 15; unita = "%"; }
-                else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; unita = "dB"; }
-                else if (metricaId === 'luce') { baseVal = 400; variazione = 150; unita = "lux"; }
-                else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 0.8; unita = "Punti"; }
-
-                const fakeData = [];
-                for (let i = 0; i < 10; i++) {
-                    const trend = Math.sin(i / 9 * Math.PI) * variazione;
-                    const rumoreDiff = (Math.random() * variazione * 0.3) - (variazione * 0.15);
-                    fakeData.push((baseVal + trend + rumoreDiff).toFixed(1));
-                }
+                if (metricaId === 'temperatura') { unita = "°C"; }
+                else if (metricaId === 'umidita') { unita = "%"; }
+                else if (metricaId === 'rumore') { unita = "dB"; }
+                else if (metricaId === 'luce') { unita = "lux"; }
+                else if (metricaId === 'iaq_score') { unita = "Punti"; }
 
                 theDatasets = [{
                     label: metricaId,
-                    data: fakeData,
+                    data: fakeDataSliced,
                     borderColor: '#06b6d4',
                     backgroundColor: 'rgba(6,182,212,0.12)',
                     fill: true,
                     tension: 0.4,
                     borderWidth: 3,
-                    pointRadius: 5,
+                    pointRadius: 2,
                     pointBackgroundColor: '#06b6d4',
                     pointBorderColor: 'rgba(255,255,255,0.3)',
-                    pointBorderWidth: 2
+                    pointBorderWidth: 1
                 }];
             }
 
@@ -1176,7 +1212,7 @@
             detailChart = new Chart(ctxChart, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: theLabels,
                     datasets: theDatasets
                 },
                 options: {

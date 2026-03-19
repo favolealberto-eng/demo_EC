@@ -21,16 +21,22 @@ window.LayoutQuadroEl = {
         const line3 = parseFloat((potenzaAttuale * 0.15).toFixed(1));
         const line4 = parseFloat((potenzaAttuale * 0.2).toFixed(1));
 
-        // Inizializza lo stato persistente una sola volta nel context Window
         if (!window.QuadroElGlobalState) {
-            const oraAttuale = new Date().getHours();
             const history = [];
             const hL1 = [], hL2 = [], hL3 = [], hL4 = [];
             
-            // Generiamo i punti orari passati del giorno
-            for(let i=0; i<=oraAttuale; i++) {
-                let pBase = (i > 7 && i < 18) ? 120 : 80;
-                let v = pBase + Math.random()*20;
+            // Genera la curva giornaliera di 96 quarti d'ora (24h * 4)
+            for (let i = 0; i < 96; i++) {
+                const hour = i / 4; 
+                let pBase = 50;
+                
+                if (hour >= 6 && hour < 9) pBase = 50 + (110 - 50) * ((hour - 6) / 3);
+                else if (hour >= 9 && hour < 17) pBase = 120 + Math.random() * 20;
+                else if (hour >= 17 && hour < 20) pBase = 110 - (110 - 80) * ((hour - 17) / 3);
+                else if (hour >= 20) pBase = 80 - (80 - 50) * ((hour - 20) / 4);
+
+                let v = pBase + (Math.random() * 5 - 2.5);
+
                 history.push(v);
                 hL1.push(v * 0.4);
                 hL2.push(v * 0.25);
@@ -39,27 +45,32 @@ window.LayoutQuadroEl = {
             }
             
             window.QuadroElGlobalState = {
-                storicoGlobale: history,
-                storicoLinee: { l1: hL1, l2: hL2, l3: hL3, l4: hL4 },
+                curvaIdealeGlobale: history,
+                curvaIdealeLinee: { l1: hL1, l2: hL2, l3: hL3, l4: hL4 },
+                storicoGlobale: [],
+                storicoLinee: { l1: [], l2: [], l3: [], l4: [] },
                 vistaSingoleLinee: false
             };
         }
 
-        // Aggiungi un punto per ogni istante in cui si guarda (come richiesto)
-        window.QuadroElGlobalState.storicoGlobale.push(parseFloat(potenzaAttuale));
-        window.QuadroElGlobalState.storicoLinee.l1.push(line1);
-        window.QuadroElGlobalState.storicoLinee.l2.push(line2);
-        window.QuadroElGlobalState.storicoLinee.l3.push(line3);
-        window.QuadroElGlobalState.storicoLinee.l4.push(line4);
-
-        // Limita a 200 punti per evitare che il grafico si schiacci troppo e diventi illeggibile
-        if(window.QuadroElGlobalState.storicoGlobale.length > 200) {
-            window.QuadroElGlobalState.storicoGlobale.shift();
-            window.QuadroElGlobalState.storicoLinee.l1.shift();
-            window.QuadroElGlobalState.storicoLinee.l2.shift();
-            window.QuadroElGlobalState.storicoLinee.l3.shift();
-            window.QuadroElGlobalState.storicoLinee.l4.shift();
-        }
+        const now = new Date();
+        const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
+        
+        const state = window.QuadroElGlobalState;
+        
+        // Estraiamo lo storico fisso fino ad ora per disegnare la curva statica passata
+        state.storicoGlobale = state.curvaIdealeGlobale.slice(0, currentSlotIndex);
+        state.storicoLinee.l1 = state.curvaIdealeLinee.l1.slice(0, currentSlotIndex);
+        state.storicoLinee.l2 = state.curvaIdealeLinee.l2.slice(0, currentSlotIndex);
+        state.storicoLinee.l3 = state.curvaIdealeLinee.l3.slice(0, currentSlotIndex);
+        state.storicoLinee.l4 = state.curvaIdealeLinee.l4.slice(0, currentSlotIndex);
+        
+        // Aggiungiamo il picco in tempo reale per l'istante attuale
+        state.storicoGlobale.push(parseFloat(potenzaAttuale));
+        state.storicoLinee.l1.push(line1);
+        state.storicoLinee.l2.push(line2);
+        state.storicoLinee.l3.push(line3);
+        state.storicoLinee.l4.push(line4);
 
         callback({
             potenza_kw: parseFloat(potenzaAttuale),
@@ -248,11 +259,14 @@ window.LayoutQuadroEl = {
             ctx.fillText(`${val}`, gX - 20, y + 10);
         }
 
-        // Funzione per disegnare una singola linea dati
+        // Funzione per disegnare una singola linea dati (fissata su 96 step (24hx4))
         const drawHistoryLine = (dataPoints, color, thickness, fill) => {
             if(!dataPoints || dataPoints.length === 0) return;
             ctx.beginPath();
-            let stepX = gW / Math.max(1, dataPoints.length - 1);
+            
+            // Usiamo 96 come asse fisso per l'intera giornata in modo che la linea si "interrompa" all'orario attuale.
+            let stepX = gW / 96; 
+            
             for(let i=0; i<dataPoints.length; i++) {
                 let px = gX + i * stepX;
                 let valToDraw = Math.min(dataPoints[i], maxVal);
@@ -265,7 +279,9 @@ window.LayoutQuadroEl = {
             ctx.stroke();
             
             if (fill) {
-                ctx.lineTo(gX + gW, gY + gH);
+                // Rientro giù sulla x dell'ultimo punto calcolato
+                const lastX = gX + (dataPoints.length - 1) * stepX;
+                ctx.lineTo(lastX, gY + gH);
                 ctx.lineTo(gX, gY + gH);
                 ctx.closePath();
                 const fillGrad = ctx.createLinearGradient(0, gY, 0, gY + gH);
