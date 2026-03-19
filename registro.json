@@ -77,5 +77,13 @@
     "nome": "Ufficio Tecnico",
     "file": "layouts/layout_ufficio.js",
     "oggetto": "LayoutUfficio"
+  },
+  "12": {
+    "tipo": "quadroEl",
+    "nome": "Quadro Elettrico Principale",
+    "id_macchina": "QE-01",
+    "soglia_kw": 135,
+    "file": "layouts/layout_quadroEl.js",
+    "oggetto": "LayoutQuadroEl"
   }
 }
