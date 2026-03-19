@@ -64,5 +64,12 @@
     "nome": "Pompa Centrifuga",
     "file": "layouts/layout_pompa.js",
     "oggetto": "LayoutPompa"
+  },
+  "10": {
+    "tipo": "pannelli_radianti",
+    "nome": "Pannello Radiante",
+    "id_macchina": "PR-01",
+    "file": "layouts/layout_pannelli_radianti.js",
+    "oggetto": "LayoutPannelliRadianti"
   }
 }
