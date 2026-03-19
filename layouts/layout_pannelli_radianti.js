@@ -69,9 +69,9 @@ window.LayoutPannelliRadianti = {
                         script.src = pumpConfig.file + '?v=' + new Date().getTime();
                         script.onload = () => {
                             pumpConfig.template = window[pumpConfig.oggetto];
-                            window.currentMarkerId = pumpId;
-                            window.startRenderLoop(pumpId, pumpConfig);
-                            if(window.isPinned) {
+                            currentMarkerId = pumpId;
+                            startRenderLoop(pumpId, pumpConfig);
+                            if(isPinned) {
                                 const activeCanvas = document.getElementById('canvas-' + pumpId);
                                 const container = document.getElementById('main-view-container');
                                 Array.from(container.children).forEach(c => {
@@ -89,9 +89,9 @@ window.LayoutPannelliRadianti = {
                         };
                         document.head.appendChild(script);
                     } else {
-                        window.currentMarkerId = pumpId;
-                        window.startRenderLoop(pumpId, pumpConfig);
-                        if(window.isPinned) {
+                        currentMarkerId = pumpId;
+                        startRenderLoop(pumpId, pumpConfig);
+                        if(isPinned) {
                             const activeCanvas = document.getElementById('canvas-' + pumpId);
                             const container = document.getElementById('main-view-container');
                             Array.from(container.children).forEach(c => {
