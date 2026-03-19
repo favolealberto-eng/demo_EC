@@ -69,24 +69,40 @@ window.LayoutPannelliRadianti = {
                         script.src = pumpConfig.file + '?v=' + new Date().getTime();
                         script.onload = () => {
                             pumpConfig.template = window[pumpConfig.oggetto];
-                            currentMarkerId = pumpId;
-                            startRenderLoop(pumpId, pumpConfig);
-                            if(isPinned) {
+                            window.currentMarkerId = pumpId;
+                            window.startRenderLoop(pumpId, pumpConfig);
+                            if(window.isPinned) {
                                 const activeCanvas = document.getElementById('canvas-' + pumpId);
-                                document.getElementById('main-view-container').innerHTML = '';
-                                document.getElementById('main-view-container').appendChild(activeCanvas);
+                                const container = document.getElementById('main-view-container');
+                                Array.from(container.children).forEach(c => {
+                                    if(c.tagName === 'CANVAS') {
+                                        c.classList.remove('canvas-pinned');
+                                        c.classList.add('hidden-canvas');
+                                        document.body.appendChild(c);
+                                    }
+                                });
+                                container.innerHTML = '';
+                                container.appendChild(activeCanvas);
                                 activeCanvas.classList.remove('hidden-canvas');
                                 activeCanvas.classList.add('canvas-pinned');
                             }
                         };
                         document.head.appendChild(script);
                     } else {
-                        currentMarkerId = pumpId;
-                        startRenderLoop(pumpId, pumpConfig);
-                        if(isPinned) {
+                        window.currentMarkerId = pumpId;
+                        window.startRenderLoop(pumpId, pumpConfig);
+                        if(window.isPinned) {
                             const activeCanvas = document.getElementById('canvas-' + pumpId);
-                            document.getElementById('main-view-container').innerHTML = '';
-                            document.getElementById('main-view-container').appendChild(activeCanvas);
+                            const container = document.getElementById('main-view-container');
+                            Array.from(container.children).forEach(c => {
+                                if(c.tagName === 'CANVAS') {
+                                    c.classList.remove('canvas-pinned');
+                                    c.classList.add('hidden-canvas');
+                                    document.body.appendChild(c);
+                                }
+                            });
+                            container.innerHTML = '';
+                            container.appendChild(activeCanvas);
                             activeCanvas.classList.remove('hidden-canvas');
                             activeCanvas.classList.add('canvas-pinned');
                         }
@@ -106,15 +122,6 @@ window.LayoutPannelliRadianti = {
         this.ultimoCtx = ctx;
         this.ultimiDati = dati;
         this.ultimoConfig = config;
-
-        try {
-            if (typeof window.currentMarkerId !== 'undefined' && window.currentMarkerId !== null) {
-                const c3d = document.getElementById('content-' + window.currentMarkerId);
-                if (c3d && !window.isPinned) {
-                    c3d.setAttribute('visible', 'true');
-                }
-            }
-        } catch(e) {}
 
         if (this.vistaCorrente === 'main') {
             this.hitboxes = [

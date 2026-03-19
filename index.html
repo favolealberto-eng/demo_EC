@@ -787,6 +787,10 @@
                     currentMarkerId = id;
                     const config = registroMacchinari[id];
 
+                    // FIX BUG RE-INQUADRAMENTO: Garantiamo che l'entità 3D si riaccenda sempre
+                    const content3D = document.getElementById('content-' + id);
+                    if (content3D) content3D.setAttribute('visible', 'true');
+
                     if (!config) return;
 
                     const script = document.createElement('script');
@@ -871,9 +875,17 @@
 
             const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
 
-            // Svuotiamo il contenitore per sicurezza (previene il glitch dei multi-pannelli)
-            document.getElementById('main-view-container').innerHTML = '';
-            document.getElementById('main-view-container').appendChild(activeCanvas);
+            const container = document.getElementById('main-view-container');
+            // Salviamo i vecchi canvas rimettendoli nel body prima di svuotare, evitando la loro distruzione!
+            Array.from(container.children).forEach(child => {
+                if(child.tagName === 'CANVAS') {
+                    child.classList.remove('canvas-pinned');
+                    child.classList.add('hidden-canvas');
+                    document.body.appendChild(child);
+                }
+            });
+            container.innerHTML = '';
+            container.appendChild(activeCanvas);
 
             activeCanvas.classList.remove('hidden-canvas');
             activeCanvas.classList.add('canvas-pinned');
