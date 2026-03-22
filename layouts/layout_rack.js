@@ -5,18 +5,8 @@ window.LayoutRack = {
         planeW: 1.8,
         planeH: 3.2
     },
-    hitboxes: [
-        { id: "traffico_rack", x: 50, y: 360, w: 380, h: 220 },
-        { id: "temperatura", x: 470, y: 360, w: 380, h: 220 },
-        { id: "assistenza", x: 50, y: 1420, w: 800, h: 120 },
-        // Hitboxes for 5 devices (we'll calculate these inside draw but static defining helps if we handle clicks manually)
-        { id: "dev_0", x: 50, y: 700, w: 800, h: 120 },
-        { id: "dev_1", x: 50, y: 830, w: 800, h: 120 },
-        { id: "dev_2", x: 50, y: 960, w: 800, h: 120 },
-        { id: "dev_3", x: 50, y: 1090, w: 800, h: 120 },
-        { id: "dev_4", x: 50, y: 1220, w: 800, h: 120 },
-        { id: "chiudi_detail", x: 740, y: 720, w: 80, h: 60 }
-    ],
+    hitboxes: [], // Defined dynamically in draw() based on state
+
     // State to hold which device is currently expanded in inline detail
     state: {
         selectedDeviceIndex: null
@@ -30,12 +20,7 @@ window.LayoutRack = {
 
         if (hitboxId.startsWith("dev_")) {
             const index = parseInt(hitboxId.split("_")[1], 10);
-            if (this.state.selectedDeviceIndex === index) {
-                // Toggle off if already open
-                this.state.selectedDeviceIndex = null;
-            } else {
-                this.state.selectedDeviceIndex = index;
-            }
+            this.state.selectedDeviceIndex = index;
             return;
         }
 
@@ -84,6 +69,27 @@ window.LayoutRack = {
     },
 
     draw: function(ctx, dati, currentConfig) {
+        // Update hitboxes dynamically to avoid overlapping clicks
+        if (this.state.selectedDeviceIndex !== null) {
+            this.hitboxes = [
+                { id: "traffico_rack", x: 50, y: 410, w: 380, h: 220 },
+                { id: "temperatura", x: 470, y: 410, w: 380, h: 220 },
+                { id: "assistenza", x: 50, y: 1420, w: 800, h: 120 },
+                { id: "chiudi_detail", x: 740, y: 720, w: 80, h: 60 }
+            ];
+        } else {
+            this.hitboxes = [
+                { id: "traffico_rack", x: 50, y: 410, w: 380, h: 220 },
+                { id: "temperatura", x: 470, y: 410, w: 380, h: 220 },
+                { id: "assistenza", x: 50, y: 1420, w: 800, h: 120 },
+                { id: "dev_0", x: 50, y: 700, w: 800, h: 120 },
+                { id: "dev_1", x: 50, y: 830, w: 800, h: 120 },
+                { id: "dev_2", x: 50, y: 960, w: 800, h: 120 },
+                { id: "dev_3", x: 50, y: 1090, w: 800, h: 120 },
+                { id: "dev_4", x: 50, y: 1220, w: 800, h: 120 }
+            ];
+        }
+
         const w = this.config.canvasW;
         const h = this.config.canvasH;
 
@@ -123,7 +129,7 @@ window.LayoutRack = {
 
         // S1: GENERAL INDICATORS
         // Draw 4 circular indicators evenly spaced horizontally
-        const indCenterY = 280;
+        const indCenterY = 310;
         const indicators = [
             { label: "PWR", val: dati.powerStatus, status: dati.powerStatus === "Normal" ? 1 : 0 },
             { label: "TEMP", val: dati.temp + "°C", status: dati.temp < 28 ? 1 : 2 },
@@ -174,7 +180,7 @@ window.LayoutRack = {
         // S2: MINI CHARTS AREA
         // Traffic Chart Mini Box
         let boxX = 50;
-        let boxY = 380;
+        let boxY = 410;
         let boxW = 380;
         let boxH = 220;
         
