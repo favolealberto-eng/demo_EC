@@ -1101,6 +1101,7 @@
             else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; }
             else if (metricaId === 'luce') { baseVal = 200; variazione = 300; }
             else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 1.0; }
+            else if (metricaId === 'acs' || metricaId === 'afs' || metricaId === 'riscaldamento') { baseVal = 0; variazione = 0; }
             else { baseVal = 50; variazione = 20; }
 
             for (let i = 0; i < 96; i++) {
@@ -1110,13 +1111,21 @@
                 const isWorkingHour = (hour >= 8 && hour <= 18);
                 const isEvening = (hour > 18 && hour <= 22);
                 
-                if (isWorkingHour) val += variazione * (0.5 + Math.random() * 0.5);
-                else if (isEvening) val += variazione * (0.1 + Math.random() * 0.3);
-                else val -= variazione * (0.2 + Math.random() * 0.2); // Notte, più basso
-                
-                // Smoothing per evitare salti netti e sembrare una curva reale
-                if (i > 0) {
-                    val = parseFloat(result[i-1]) * 0.7 + val * 0.3; 
+                if (metricaId === 'acs') {
+                    val = (i > 0 ? parseFloat(result[i-1]) : 0) + (isWorkingHour ? 1 + Math.random() : 0.2 + Math.random()*0.5);
+                } else if (metricaId === 'afs') {
+                    val = (i > 0 ? parseFloat(result[i-1]) : 0) + (isWorkingHour ? 2 + Math.random()*2 : 0.5 + Math.random());
+                } else if (metricaId === 'riscaldamento') {
+                    val = (i > 0 ? parseFloat(result[i-1]) : 0) + (isWorkingHour ? 0.2 + Math.random()*0.1 : 0.05 + Math.random()*0.05);
+                } else {
+                    if (isWorkingHour) val += variazione * (0.5 + Math.random() * 0.5);
+                    else if (isEvening) val += variazione * (0.1 + Math.random() * 0.3);
+                    else val -= variazione * (0.2 + Math.random() * 0.2); // Notte, più basso
+                    
+                    // Smoothing per evitare salti netti e sembrare una curva reale
+                    if (i > 0) {
+                        val = parseFloat(result[i-1]) * 0.7 + val * 0.3; 
+                    }
                 }
                 
                 result.push(val.toFixed(1));
@@ -1134,6 +1143,9 @@
             let titolo = metricaId.toUpperCase();
             if (metricaId === 'iaq_score') titolo = "QUALITÀ DELL'ARIA";
             if (metricaId === 'benchmark_energia') titolo = "CONSUMO REALE VS BASELINE";
+            if (metricaId === 'acs') titolo = "CONSUMO ACQUA CALDA (ACS)";
+            if (metricaId === 'afs') titolo = "CONSUMO ACQUA FREDDA (AFS)";
+            if (metricaId === 'riscaldamento') titolo = "CONSUMO RISCALDAMENTO";
             document.getElementById('detail-title').innerText = "Andamento: " + titolo;
 
             let theDatasets = [];
@@ -1190,6 +1202,9 @@
                 else if (metricaId === 'rumore') { unita = "dB"; }
                 else if (metricaId === 'luce') { unita = "lux"; }
                 else if (metricaId === 'iaq_score') { unita = "Punti"; }
+                else if (metricaId === 'acs') { unita = "Litri Totali"; }
+                else if (metricaId === 'afs') { unita = "Litri Totali"; }
+                else if (metricaId === 'riscaldamento') { unita = "kWh Totali"; }
 
                 theDatasets = [{
                     label: metricaId,
@@ -1221,6 +1236,7 @@
                     plugins: { legend: { display: false } },
                     scales: {
                         x: {
+                            title: { display: true, text: 'Ore della giornata (HH:mm)', color: '#94a3b8', font: { size: 13, weight: '600' } },
                             ticks: { color: '#94a3b8', font: { size: 11 } },
                             grid: { color: 'rgba(255,255,255,0.06)' }
                         },

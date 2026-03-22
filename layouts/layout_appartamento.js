@@ -21,15 +21,20 @@ window.LayoutAppartamento = {
         const m_sync = ((currentSlotIndex % 4) * 15).toString().padStart(2, '0');
         const str_ora_attuale = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
-        // Calcoliamo i dati mock
-        const acsConsumo = Math.round(45 + (currentSlotIndex * 1.5) + Math.random() * 5); // litri
-        const acsPicco = Math.round(15 + Math.random() * 5); // litri
-        const acsTrend = 5.2; // % su rispetto scorsa sett
+        // Recuperiamo i dati mock stabili validi per l'intera giornata
+        const mockACS = typeof getMockDayData === 'function' ? getMockDayData('acs') : [];
+        const mockAFS = typeof getMockDayData === 'function' ? getMockDayData('afs') : [];
+        const mockRSC = typeof getMockDayData === 'function' ? getMockDayData('riscaldamento') : [];
 
-        const afsConsumo = Math.round(120 + (currentSlotIndex * 3) + Math.random() * 10); // litri
-        const afsAnomalia = (now.getHours() > 8 && Math.random() > 0.8) ? true : false; // Simulazione perdita
+        // Estraiamo il valore cumulato coerente con l'ora attuale
+        const acsConsumo = mockACS.length > currentSlotIndex ? Math.round(mockACS[currentSlotIndex]) : Math.round(45 + (currentSlotIndex * 1.5));
+        const acsPicco = Math.round(acsConsumo * 0.15 + 2); // Picco derivato stabilmente
+        const acsTrend = 5.2; 
+
+        const afsConsumo = mockAFS.length > currentSlotIndex ? Math.round(mockAFS[currentSlotIndex]) : Math.round(120 + (currentSlotIndex * 3));
+        const afsAnomalia = (now.getHours() >= 9 && now.getHours() <= 11) ? true : false; // Alert fisso in mattinata per non fliccherare
         
-        const rscConsumo = (2.5 + (currentSlotIndex * 0.1) + Math.random() * 0.2).toFixed(1); // kWh
+        const rscConsumo = mockRSC.length > currentSlotIndex ? parseFloat(mockRSC[currentSlotIndex]).toFixed(1) : (2.5 + (currentSlotIndex * 0.1)).toFixed(1);
         const rscMediaSet = 18.5; 
         const rscIsUp = parseFloat(rscConsumo) > (rscMediaSet / 7);
 
@@ -82,7 +87,7 @@ window.LayoutAppartamento = {
         } else if (id === 'btn_info_afs') {
             if (typeof apriDettaglio === 'function') apriDettaglio('afs');
         } else if (id === 'btn_info_rsc') {
-            if (typeof apriDettaglio === 'function') apriDettaglio('benchmark_energia'); // per avere linea con baseline
+            if (typeof apriDettaglio === 'function') apriDettaglio('riscaldamento');
         } else if (id === 'btn_diagnostica') {
             this.vistaCorrente = 'diagnostica';
         } else if (id === 'btn_back_main') {
