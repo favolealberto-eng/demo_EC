@@ -85,5 +85,11 @@
     "soglia_kw": 135,
     "file": "layouts/layout_quadroEl.js",
     "oggetto": "LayoutQuadroEl"
+  },
+  "13": {
+    "tipo": "appartamento",
+    "nome": "Appartamento 101",
+    "file": "layouts/layout_appartamento.js",
+    "oggetto": "LayoutAppartamento"
   }
 }
