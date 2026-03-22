@@ -262,8 +262,8 @@ window.LayoutQuadroEl = {
         // Nomi degli assi
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'bold 30px Inter';
-        ctx.textAlign = 'right';
-        ctx.fillText("Potenza [kW]", gX - 30, gY - 20); // Etichetta Asse Y
+        ctx.textAlign = 'left';
+        ctx.fillText("Potenza [kW]", gX - 80, gY - 30); // Etichetta Asse Y superiore
         
         ctx.textAlign = 'center';
         ctx.fillText("Ore della giornata", gX + gW/2, gY + gH + 90); // Etichetta Asse X
