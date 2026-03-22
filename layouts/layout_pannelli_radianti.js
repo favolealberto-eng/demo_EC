@@ -1,11 +1,22 @@
+/**
+ * LayoutPannelliRadianti - Cruscotto termomeccanico per il condizionamento a pannelli.
+ * 
+ * Espone le metriche ambientali (T, UR) per calcolare dinamicamente il Dew Point
+ * e determinare il rischio di condensa. Prevede una "Vista Main" e una "Vista Diagnostica" 
+ * per ispezionare valvole modulanti, pressioni di circuito e collegamenti fisici alle Pompe.
+ */
 window.LayoutPannelliRadianti = {
     config: {
         canvasW: 800, canvasH: 1100, planeW: 2.4, planeH: 3.3
     },
 
-    vistaCorrente: 'main',
+    vistaCorrente: 'main', // Stato del router UI
     hitboxes: [],
 
+    /**
+     * fetchDati - Integra array ambientali (da getMockDayData) e calcola 
+     * il punto di rugiada (Dew Point) basato su Temperatura e Umidità Realtiva.
+     */
     fetchDati: function (callback) {
         const now = new Date();
         const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
@@ -58,6 +69,11 @@ window.LayoutPannelliRadianti = {
         callback(dati);
     },
 
+    /**
+     * processClick - Gestore nodi interattivi (Hitboxes).
+     * Consente non solo di aprire sottomenu, ma esegue un "Hot-Swap" di marker, 
+     * reindirizzando l'utente alla vista live di un altro componente (la Pompa ID 9).
+     */
     processClick: function (id) {
         let changed = false;
         if (id === "btn_diagnostica") {
@@ -125,6 +141,10 @@ window.LayoutPannelliRadianti = {
         }
     },
 
+    /**
+     * draw - Engine grafico. Distribuisce le logiche di rendering nei sub-metodi
+     * drawMain e drawDiagnostic e calcola dinamicamente gli active hitboxes.
+     */
     draw: function (ctx, dati, config) {
         this.ultimoCtx = ctx;
         this.ultimiDati = dati;

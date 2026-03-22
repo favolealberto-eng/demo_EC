@@ -1,3 +1,10 @@
+/**
+ * LayoutPompa - Modulo Operativo per ispezione manutentiva pompe idrauliche.
+ * 
+ * Combina metriche in real-time (Portata, Prevalenza, Pressione) con un 
+ * sistema integrato di Checklist passo-passo. È in grado di visualizzare
+ * dinamicamente immagini o schemi tecnici pre-caricati associati ad ogni attività.
+ */
 window.LayoutPompa = {
     config: {
         canvasW: 800, canvasH: 1100, planeW: 2.4, planeH: 3.3
@@ -10,6 +17,10 @@ window.LayoutPompa = {
     // Le hitbox vengono ora gestite dinamicamente all'interno di draw()
     hitboxes: [],
 
+    /**
+     * fetchDati - Sfrutta la base di 'benchmark_energia' per simulare cicli di usura o sforzo.
+     * Costruisce payload interattivi inclusivi di checklist manutentive.
+     */
     fetchDati: function (callback) {
         const now = new Date();
         const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
@@ -82,7 +93,10 @@ window.LayoutPompa = {
         callback(datiPompa);
     },
 
-    // Funzione che gestisce i click interni di questo layout
+    /**
+     * processClick - Intercettore click. Include lo switch agli step checklist
+     * o triggera mail di assistenza in caso di anomalia idraulica.
+     */
     processClick: function (id) {
         if (id.startsWith("step_")) {
             this.vistaCorrente = id;
@@ -94,6 +108,10 @@ window.LayoutPompa = {
         }
     },
 
+    /**
+     * draw - Loop renderizzazione UI per AR. 
+     * Imposta gli hitbox a runtime per consentire sovrapposizione pulita delle viste (Main/Detail).
+     */
     draw: function (ctx, dati, config) {
         // Assegno le hitbox dinamicamente per evitare click fantasma dell'altra vista
         if (this.vistaCorrente === 'main') {

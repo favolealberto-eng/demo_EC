@@ -1,3 +1,10 @@
+/**
+ * LayoutQuadroEl - Dashboard Energetica per Quadro Elettrico Principale.
+ * 
+ * Simula i flussi di corrente (kW, Volts, Amperes) e disegna grafici storici 
+ * custom-built su Canvas API. Ha uno state controller interno (QuadroElGlobalState)
+ * per switchare tra vista globale e spacchettamento per singole linee produttive.
+ */
 window.LayoutQuadroEl = {
     config: {
         canvasW: 1500,
@@ -9,6 +16,11 @@ window.LayoutQuadroEl = {
         { id: "toggle_grafico", x: 50, y: 2150, w: 1400, h: 180 }
     ],
     
+    /**
+     * fetchDati - Inizializza o recupera lo state globale Singleton.
+     * Crea proceduralmente 96 slot di dati (quarti d'ora) spalmati sulle 24h
+     * simulando carichi realistici su 4 linee di distribuzione differenti.
+     */
     fetchDati: function(callback) {
         if (!window.QuadroElGlobalState) {
             const history = [];
@@ -89,7 +101,11 @@ window.LayoutQuadroEl = {
             ]
         });
     },
-
+    /**
+     * draw - Motore di tracciamento UI Canvas.
+     * Rendering intensivo per i grafici cartesiani lineari (drawHistoryLine)
+     * e gestione del toggle button per lo switch del grafico.
+     */
     draw: function(ctx, dati, currentConfig) {
         const w = this.config.canvasW;
         const h = this.config.canvasH;

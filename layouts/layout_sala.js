@@ -1,3 +1,10 @@
+/**
+ * LayoutSala - Modulo di Info-Reception per Sale Riunioni.
+ * 
+ * Collegato ai sistemi di booking aziendali (simulati). Mostra lo stato in tempo reale
+ * (OCCUPATA/LIBERA), la capacità, le dotazioni e permette di lanciare il layout globale
+ * "Calendario" iniettando i dati della sala in `index.html`.
+ */
 window.LayoutSala = {
     config: {
         canvasW: 800, canvasH: 1000, planeW: 2.4, planeH: 3.0
@@ -8,6 +15,11 @@ window.LayoutSala = {
         { id: "calendario", x: 50, y: 800, w: 700, h: 120 }
     ],
 
+    /**
+     * fetchDati - Motore di simulazione booking. 
+     * Ritorna slot calendarizzati ("agendaGiorno" e "agendaSettimana") differenti 
+     * a seconda dell'ID sala ('newton' vs altre).
+     */
     fetchDati: function (callback) {
         // Simuliamo i dati in base a quale sala stiamo inquadrando
         let datiSala = {};
@@ -63,7 +75,10 @@ window.LayoutSala = {
         datiSala.agendaSettimana = agendaSettimana;
         callback(datiSala);
     },
-
+    /**
+     * draw - Disegna lo stylesheet AR della Sala Riunioni (Pannello a muro).
+     * Mantiene un'estetica minimale per consentire una rapida lettura dello stato (Verde/Rosso).
+     */
     draw: function (ctx, dati, config) {
         // Salviamo l'ID per usarlo nel fetchDati
         this.currentIdSala = config.id_sala;

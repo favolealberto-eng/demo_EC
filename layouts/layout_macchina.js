@@ -1,3 +1,9 @@
+/**
+ * LayoutMacchina - Modulo AR per il monitoraggio energetico dei macchinari pesanti.
+ * 
+ * Basato sullo standard ISO 50001, confronta la Potenza Istantanea (kW) e il 
+ * consumo giornaliero simulato con le Baseline di Efficienza Energetica (EnPI).
+ */
 window.LayoutMacchina = {
     config: {
         canvasW: 900,
@@ -8,6 +14,11 @@ window.LayoutMacchina = {
     hitboxes: [
         { id: "benchmark_energia", x: 50, y: 1420, w: 800, h: 120 }
     ],
+
+    /**
+     * fetchDati - Wrapper di simulazione API MQTT/OPC-UA.
+     * Genera un profilo di potenza scalando un array base in base all'ora corrente.
+     */
     fetchDati: function(callback) {
         const now = new Date();
         const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
@@ -34,6 +45,11 @@ window.LayoutMacchina = {
             testo_aggiornamento: testoAggiornamento
         });
     },
+    /**
+     * draw - Rendering HUD industriale.
+     * Gestisce i livelli di Alert in base alla percentuale di Power Load 
+     * e disegna il cruscotto KPI per gli audit ISO 50001.
+     */
     draw: function(ctx, dati, currentConfig) {
         const w = this.config.canvasW;
         const h = this.config.canvasH;

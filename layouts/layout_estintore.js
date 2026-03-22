@@ -1,3 +1,10 @@
+/**
+ * LayoutEstintore - Modulo visualizzatore AR per la Scadenza e Controllo Sicurezza Estintori.
+ * 
+ * Differisce dagli altri componenti poiché si focalizza su metriche testuali di ispezione 
+ * piuttosto che su metriche a campionamento continuo (come energia o temperatura).
+ * Fornisce un piano manutentivo e una checklist operativa in formato AR.
+ */
 window.LayoutEstintore = {
     config: {
         canvasW: 900,
@@ -6,8 +13,11 @@ window.LayoutEstintore = {
         planeH: 3.2
     },
 
-    hitboxes: [], 
+    hitboxes: [],  // Nessuna interazione complessa prevista per questo layout (solo visivo)
 
+    /**
+     * fetchDati - Simula il caricamento di record anagrafici e ispettivi dal gestionale antincendio.
+     */
     fetchDati: function (callback) {
         setTimeout(() => {
             callback({
@@ -22,6 +32,11 @@ window.LayoutEstintore = {
         }, 100);
     },
 
+    /**
+     * draw - Rendering nativo HTML5 del layout Estintore.
+     * Disegna dinamicamente un bollino semaforico basato su un mini-rule engine interno 
+     * che simula scadenze imminenti differenziate per il "nome" identificativo del marker.
+     */
     draw: function (ctx, dati, config) {
         const W = this.config.canvasW, H = this.config.canvasH;
         ctx.clearRect(0, 0, W, H);

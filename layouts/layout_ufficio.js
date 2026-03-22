@@ -1,3 +1,12 @@
+/**
+ * LayoutUfficio - Directory e Smart-Working Router.
+ * 
+ * Pannello dedicato all'identificazione degli uffici. Mostra:
+ * - Orari flessibili ed effettivi di apertura settimanale
+ * - Elenco dei dipendenti assegnati con Ruolo e Avatar
+ * - Pulsanti d'interazione rapida per chiamare il Calendario di ogni singolo dipendente
+ *   o per generare un link mail to: precompilato.
+ */
 window.LayoutUfficio = {
     config: {
         canvasW: 800, canvasH: 1100, planeW: 2.4, planeH: 3.3
@@ -6,6 +15,11 @@ window.LayoutUfficio = {
     vistaCorrente: 'main',
     hitboxes: [],
 
+    /**
+     * fetchDati - Simula la connessione al database HR.
+     * Calcola gli orari d'apertura dinamicamente rispetto al current Date e 
+     * popola gli array delle Agende personali dei dipendenti.
+     */
     fetchDati: function (callback) {
         const giorniNomi = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
         const todayIdx = new Date().getDay();
@@ -69,7 +83,12 @@ window.LayoutUfficio = {
         };
         callback(dati);
     },
-
+    /**
+     * processClick - Smistatore di hot-action.
+     * Se l'id intercettato è "agenda_*", esegue un overriding della configurazione 
+     * globale per passare l'agenda del dipendente specifico all'UI Calendario di index.html.
+     * Se l'id è "mail_*", apre il client di posta dell'utente AR.
+     */
     processClick: function (id) {
         if (!this.ultimiDati) return;
 
@@ -112,7 +131,11 @@ window.LayoutUfficio = {
             }
         }
     },
-
+    /**
+     * draw - Logic & Render Method.
+     * Oltre al disegno Canvas, istruisce e dimensiona costantemente l'array `hitboxes`
+     * basandosi sul numero di dipendenti attivi restituiti dalla fetchDati.
+     */
     draw: function (ctx, dati, config) {
         this.ultimoCtx = ctx;
         this.ultimiDati = dati;

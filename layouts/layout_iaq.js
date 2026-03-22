@@ -1,10 +1,12 @@
 // ==========================================
 // TEMPLATE: PANNELLO IAQ (Qualità dell'Aria)
 // Risoluzione nativa: 900x1600 (Verticale 9:16)
+// Funzione: Fornisce un indicatore visuale con gauge circolare 
+// per uno score qualitativo ambientale, più 4 sotto-metri (temperatura, umidità etc).
 // ==========================================
 
 window.LayoutIAQ = {
-    // 1. PARAMETRI DI STRUTTURA
+    // 1. PARAMETRI DI STRUTTURA DEL CANVAS AR
     config: {
         canvasW: 900,
         canvasH: 1600,
@@ -21,7 +23,11 @@ window.LayoutIAQ = {
         { id: "luce", x: 80, y: 1300, w: 740, h: 100 }
     ],
 
-    // 3. DATABASE FITTIZIO (Simulazione chiamata API)
+    // 3. DATABASE FITTIZIO (Simulazione chiamata API globale o sensoristica Edge)
+    /**
+     * fetchDati - Wrapper di simulazione. Popola dinamicamente tramite la cache giornaliera 
+     * in `index.html` il loop dei parametri IAQ. 
+     */
     fetchDati: function (callback) {
         setTimeout(() => {
             const now = new Date();
@@ -57,6 +63,11 @@ window.LayoutIAQ = {
     },
 
     // 4. MOTORE GRAFICO SPECIFICO
+    /**
+     * draw - Routine di disegno principale richiamata ogni ~1000ms.
+     * Implementa la generazione nativa `canvas2D` di un arco graduato multi-stop
+     * (Rosso->Verde) calcolando trigonometricamente la rotazione della lancetta (Freccia).
+     */
     draw: function (ctx, dati, config) {
         const W = 900, H = 1600;
         ctx.clearRect(0, 0, W, H);

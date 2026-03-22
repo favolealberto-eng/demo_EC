@@ -783,7 +783,16 @@
             })
             .catch(err => alert("❌ Errore caricamento JSON: " + err.message));
 
-        // GESTIONE MARKER
+        // ==========================================
+        // 1. MOTORE AR (A-Frame + AR.js) - GESTIONE MARKER
+        // ==========================================
+        /** 
+         * activaRiconoscimentoMarker()
+         * Inizializza gli event listener sui tag <a-marker>.
+         * Gestisce la logica di transizione quando l'utente inquadra un QR code, caricando dinamicamente
+         * lo script JS associato al 'layout' (es. `layout_macchina.js`) tramite il registro,
+         * ed avvia il loop di rendering canvas con startRenderLoop().
+         */
         function attivaRiconoscimentoMarker() {
             document.querySelectorAll('.ar-marker').forEach(markerEl => {
                 markerEl.addEventListener('markerFound', () => {
@@ -829,7 +838,16 @@
             });
         }
 
-        // LOOP DI DISEGNO SPECIFICO
+        // ==========================================
+        // 2. MOTORE DI RENDERING 2D SU PANNELLI 3D
+        // ==========================================
+        /**
+         * startRenderLoop(id, config)
+         * Cuore pulsante dell'applicazione. Riceve la configurazione `window.Layout*` appena 
+         * caricata e invoca la function `fetchDati` specifica di quel layout in polling (1000ms).
+         * Successivamente chiama il suo metodo `draw()` fornendogli il contesto Canvas associato, i dati
+         * aggiornati e auto-forza l'update della "texture" 3D di A-Frame (mesh.material.map.needsUpdate).
+         */
         function startRenderLoop(id, config) {
             currentConfig = config;
 
@@ -861,7 +879,15 @@
             renderLoop = setInterval(tick, 1000);
         }
 
-        // --- INTERAZIONI: ZOOM E PIN ---
+        // ==========================================
+        // 3. INTERAZIONI AVANZATE HUD: ZOOM E PIN
+        // ==========================================
+        /**
+         * cambiaZoom() / pinToScreen() / unpinFromScreen()
+         * Modificano i parametri di scala 3D dell'entità o effettuano un "detach" del canvas
+         * dalla scena 3D spostandolo direttamente nel DOM HTML 2D (Modalità PIN), permettendo
+         * all'utente di ispezionare i dati anche distogliendo lo sguardo dal marker.
+         */
         function cambiaZoom(direzione) {
             if (currentMarkerId === null) return;
             zoomLevels[currentMarkerId] += direzione * 0.25;
@@ -924,7 +950,15 @@
             }
         }
 
-        // --- GESTIONE CLICK, GRAFICI E CALENDARIO ---
+        // ==========================================
+        // 4. EVENT DELEGATION SUL CANVAS (CLICK & HITBOX)
+        // ==========================================
+        /**
+         * Intercetta tutti i click sul tag Canvas attivo. Se il modulo Layout corrente possiede
+         * un array 'hitboxes' definiti tramite la routine `draw`, mappa il click dell'utente sulle
+         * coordinate (scalate) del layout e demanda la risoluzione al metodo `processClick` 
+         * iniettato dal componente layout in questione, per favorire decoupling architetturale.
+         */
         document.addEventListener('click', (event) => {
             if (!isPinned || !currentConfig || !currentMarkerId) return;
 
@@ -1095,13 +1129,15 @@
 
             const result = [];
             let baseVal = 0, variazione = 0;
+            // MOCK DATA GENERATOR: Aggiunto supporto per il LayoutRack. 
+            // In produzione questa funzione verrà sostituita da query reali al backend storico (es. InfluxDB/Prometheus).
             if (metricaId === 'benchmark_energia') { baseVal = lastFetchedData && lastFetchedData.baseline_enpi ? parseFloat(lastFetchedData.baseline_enpi) : 12.5; variazione = 4; }
             else if (metricaId === 'temperatura') { baseVal = 19; variazione = 4; }
             else if (metricaId === 'umidita') { baseVal = 40; variazione = 15; }
             else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; }
             else if (metricaId === 'luce') { baseVal = 200; variazione = 300; }
             else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 1.0; }
-            else if (metricaId === 'traffico_rack') { baseVal = 2.5; variazione = 5.0; }
+            else if (metricaId === 'traffico_rack') { baseVal = 2.5; variazione = 5.0; } // Traffico Network Rack in Gbps
             else { baseVal = 50; variazione = 20; }
 
             for (let i = 0; i < 96; i++) {
@@ -1155,6 +1191,7 @@
 
             let titolo = metricaId.toUpperCase();
             if (metricaId === 'iaq_score') titolo = "QUALITÀ DELL'ARIA";
+            // MAPPA DEI TITOLI: Gestione del titolo della modale dettagli in base all'id emesso dal pannello.
             if (metricaId === 'benchmark_energia') titolo = "CONSUMO REALE VS BASELINE";
             if (metricaId === 'acs') titolo = "CONSUMO ACQUA CALDA (ACS)";
             if (metricaId === 'afs') titolo = "CONSUMO ACQUA FREDDA (AFS)";
@@ -1216,10 +1253,11 @@
                 else if (metricaId === 'rumore') { unita = "dB"; }
                 else if (metricaId === 'luce') { unita = "lux"; }
                 else if (metricaId === 'iaq_score') { unita = "Punti"; }
+                // MAPPA DELLE UNITÀ DI MISURA: Vengono mostrate sull'asse Y e nei tooltip del grafico.
                 else if (metricaId === 'acs') { unita = "Litri (per 15 min)"; }
                 else if (metricaId === 'afs') { unita = "Litri (per 15 min)"; }
                 else if (metricaId === 'riscaldamento') { unita = "kWh (per 15 min)"; }
-                else if (metricaId === 'traffico_rack') { unita = "Gbps"; }
+                else if (metricaId === 'traffico_rack') { unita = "Gbps"; } // Integrazione Rete
 
                 theDatasets = [{
                     label: metricaId,

@@ -1,3 +1,13 @@
+/**
+ * LayoutAppartamento - Modulo di visualizzazione AR per il monitoraggio domestico.
+ * 
+ * Questo layout implementa un pannello interattivo strutturato in due viste principali:
+ * 1. 'main': Dashboard generale con i consumi di Acqua Calda (ACS), Fredda (AFS) e Riscaldamento.
+ * 2. 'diagnostica': Pannello di analisi tecnica con storico errori, stato dei contatori e soglie.
+ * 
+ * I dati sono generati tramite la funzione di mock globale e arricchiti con alert fittizi 
+ * (es. rilevamento perdite in fasce orarie specifiche).
+ */
 window.LayoutAppartamento = {
     config: {
         canvasW: 800, 
@@ -6,9 +16,15 @@ window.LayoutAppartamento = {
         planeH: 4.4
     },
 
-    vistaCorrente: 'main', // 'main' o 'diagnostica'
-    hitboxes: [],
+    vistaCorrente: 'main', // Determina il router interno: 'main' o 'diagnostica'
+    hitboxes: [],          // Array dinamico delle aree cliccabili gestito dal ciclo di draw()
 
+    /**
+     * fetchDati - Generatore di dati simulato per i consumi e la sensoristica dell'appartamento.
+     * Utilizza i pattern storici forniti in `index.html` calcolando cumulati e anomalie virtuali.
+     * 
+     * @param {function} callback - Funzione per ritornare i dati elaborati al motore AR.
+     */
     fetchDati: function (callback) {
         // Dati mockati
         const now = new Date();
@@ -87,7 +103,14 @@ window.LayoutAppartamento = {
         });
     },
 
+    /**
+     * processClick - Gestore degli eventi di interazione (click) sugli hitboxes registrati.
+     * Permette la navigazione tra le viste interne e l'attivazione dei modali di dettaglio.
+     * 
+     * @param {string} id - L'identificativo dell'hitbox premuto dall'utente.
+     */
     processClick: function (id) {
+        // Ignora i click prematuri se i dati non sono ancora stati renderizzati
         if (!this.ultimiDati) return;
 
         if (id === 'btn_info_acs') {
@@ -107,6 +130,15 @@ window.LayoutAppartamento = {
         }
     },
 
+    /**
+     * draw - Controller di rendering principale per il canvas.
+     * Svuota il contesto grafico e orchestra il disegno chiamando drawMain o drawDiagnostica
+     * in base alla variabile state `vistaCorrente`.
+     * 
+     * @param {CanvasRenderingContext2D} ctx - Contesto 2D su cui renderizzare.
+     * @param {object} dati - Payload JSON generato da fetchDati().
+     * @param {object} config - Configurazioni globali dal registro macchinari.
+     */
     draw: function (ctx, dati, config) {
         this.ultimoCtx = ctx;
         this.ultimiDati = dati;
@@ -134,8 +166,17 @@ window.LayoutAppartamento = {
         }
     },
 
+    /**
+     * drawMain - Renderizza la "Vista Principale" (Dashboard Operativa).
+     * Disegna i tre blocchi di consumo (ACS, AFS, RSC) e i relativi bottoni di interazione.
+     * 
+     * @param {CanvasRenderingContext2D} ctx - Contesto 2D.
+     * @param {object} dati - Dati telemetrici.
+     * @param {number} w - Larghezza canvas.
+     * @param {number} h - Altezza canvas.
+     */
     drawMain: function(ctx, dati, w, h) {
-        // --- HEADER ---
+        // --- HEADER LOGICA ---
         ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.beginPath();
         ctx.roundRect(0, 0, w, 180, { tl: 40, tr: 40, bl: 0, br: 0 });
@@ -315,8 +356,12 @@ window.LayoutAppartamento = {
         return y + hSec;
     },
 
+    /**
+     * drawDiagnostica - Renderizza la "Vista Diagnostica" (Dettaglio Tecnico).
+     * Fornisce informazioni orientate alla manutenzione: ping contatori, log errori e limiti di soglia.
+     */
     drawDiagnostica: function(ctx, dati, w, h) {
-        // --- HEADER ---
+        // --- HEADER STRUTTURA DIAGNOSTICA ---
         ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.beginPath(); ctx.roundRect(0, 0, w, 160, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)'; ctx.beginPath(); ctx.moveTo(0, 160); ctx.lineTo(w, 160); ctx.stroke();
