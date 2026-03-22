@@ -1101,7 +1101,6 @@
             else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; }
             else if (metricaId === 'luce') { baseVal = 200; variazione = 300; }
             else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 1.0; }
-            else if (metricaId === 'acs' || metricaId === 'afs' || metricaId === 'riscaldamento') { baseVal = 0; variazione = 0; }
             else { baseVal = 50; variazione = 20; }
 
             for (let i = 0; i < 96; i++) {
@@ -1110,13 +1109,26 @@
                 // Profilo giornaliero tipico
                 const isWorkingHour = (hour >= 8 && hour <= 18);
                 const isEvening = (hour > 18 && hour <= 22);
+                const isMorningRush = (hour >= 6 && hour <= 9);
+                const isEveningRush = (hour >= 18 && hour <= 21);
                 
                 if (metricaId === 'acs') {
-                    val = (i > 0 ? parseFloat(result[i-1]) : 0) + (isWorkingHour ? 1 + Math.random() : 0.2 + Math.random()*0.5);
+                    // Acqua Calda: Picchi mattina e sera, zero notte, quasi zero giorno
+                    if (isMorningRush) val = 8 + Math.random() * 8;
+                    else if (isEveningRush) val = 6 + Math.random() * 6;
+                    else if (isWorkingHour) val = Math.random() * 1.5;
+                    else val = Math.random() * 0.5;
                 } else if (metricaId === 'afs') {
-                    val = (i > 0 ? parseFloat(result[i-1]) : 0) + (isWorkingHour ? 2 + Math.random()*2 : 0.5 + Math.random());
+                    // Acqua Fredda: Picchi uguali ad ACS ma con consumo base più alto distribuito
+                    if (isMorningRush) val = 12 + Math.random() * 10;
+                    else if (isEveningRush) val = 10 + Math.random() * 8;
+                    else if (isWorkingHour) val = 3 + Math.random() * 4;
+                    else val = Math.random() * 1;
                 } else if (metricaId === 'riscaldamento') {
-                    val = (i > 0 ? parseFloat(result[i-1]) : 0) + (isWorkingHour ? 0.2 + Math.random()*0.1 : 0.05 + Math.random()*0.05);
+                    // Riscaldamento kWh: Più alto al mattino per scaldare, mantiene durante il giorno, basso notte
+                    if (isMorningRush) val = 0.6 + Math.random() * 0.3;
+                    else if (isWorkingHour || isEveningRush) val = 0.2 + Math.random() * 0.2;
+                    else val = 0.05 + Math.random() * 0.05;
                 } else {
                     if (isWorkingHour) val += variazione * (0.5 + Math.random() * 0.5);
                     else if (isEvening) val += variazione * (0.1 + Math.random() * 0.3);
@@ -1202,9 +1214,9 @@
                 else if (metricaId === 'rumore') { unita = "dB"; }
                 else if (metricaId === 'luce') { unita = "lux"; }
                 else if (metricaId === 'iaq_score') { unita = "Punti"; }
-                else if (metricaId === 'acs') { unita = "Litri Totali"; }
-                else if (metricaId === 'afs') { unita = "Litri Totali"; }
-                else if (metricaId === 'riscaldamento') { unita = "kWh Totali"; }
+                else if (metricaId === 'acs') { unita = "Litri (per 15 min)"; }
+                else if (metricaId === 'afs') { unita = "Litri (per 15 min)"; }
+                else if (metricaId === 'riscaldamento') { unita = "kWh (per 15 min)"; }
 
                 theDatasets = [{
                     label: metricaId,
@@ -1224,8 +1236,13 @@
             const ctxChart = document.getElementById('chart-canvas').getContext('2d');
             if (detailChart) detailChart.destroy();
 
+            let chartType = 'line';
+            if (metricaId === 'acs' || metricaId === 'afs') {
+                chartType = 'bar';
+            }
+
             detailChart = new Chart(ctxChart, {
-                type: 'line',
+                type: chartType,
                 data: {
                     labels: theLabels,
                     datasets: theDatasets

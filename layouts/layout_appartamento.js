@@ -27,14 +27,21 @@ window.LayoutAppartamento = {
         const mockRSC = typeof getMockDayData === 'function' ? getMockDayData('riscaldamento') : [];
 
         // Estraiamo il valore cumulato coerente con l'ora attuale
-        const acsConsumo = mockACS.length > currentSlotIndex ? Math.round(mockACS[currentSlotIndex]) : Math.round(45 + (currentSlotIndex * 1.5));
-        const acsPicco = Math.round(acsConsumo * 0.15 + 2); // Picco derivato stabilmente
+        const acsConsumo = mockACS.length > currentSlotIndex ? mockACS.slice(0, currentSlotIndex + 1).reduce((sum, val) => sum + parseFloat(val), 0).toFixed(0) : "45";
+        const acsPicco = Math.round(Number(acsConsumo) * 0.15 + 2); // Picco derivato stabilmente
         const acsTrend = 5.2; 
 
-        const afsConsumo = mockAFS.length > currentSlotIndex ? Math.round(mockAFS[currentSlotIndex]) : Math.round(120 + (currentSlotIndex * 3));
-        const afsAnomalia = (now.getHours() >= 9 && now.getHours() <= 11) ? true : false; // Alert fisso in mattinata per non fliccherare
+        const afsConsumo = mockAFS.length > currentSlotIndex ? mockAFS.slice(0, currentSlotIndex + 1).reduce((sum, val) => sum + parseFloat(val), 0).toFixed(0) : "120";
         
-        const rscConsumo = mockRSC.length > currentSlotIndex ? parseFloat(mockRSC[currentSlotIndex]).toFixed(1) : (2.5 + (currentSlotIndex * 0.1)).toFixed(1);
+        let afsAnomaliaText = null;
+        if (Number(afsConsumo) > 500) {
+            afsAnomaliaText = "Superato limite giornaliero (500 L)";
+        } else if (now.getHours() >= 9 && now.getHours() <= 11) {
+            afsAnomaliaText = "Possibile perdita/consumo continuo";
+        }
+        const afsAnomalia = afsAnomaliaText !== null;
+        
+        const rscConsumo = mockRSC.length > currentSlotIndex ? mockRSC.slice(0, currentSlotIndex + 1).reduce((sum, val) => sum + parseFloat(val), 0).toFixed(1) : "2.5";
         const rscMediaSet = 18.5; 
         const rscIsUp = parseFloat(rscConsumo) > (rscMediaSet / 7);
 
@@ -44,7 +51,7 @@ window.LayoutAppartamento = {
             afs: afsAnomalia ? "Warning (Possibile Perdita)" : "Online",
             riscaldamento: "Online"
         };
-        const errors = afsAnomalia ? ["Rilevato consumo anomalo AFS notturno/contínuo."] : [];
+        const errors = afsAnomalia ? ["Rilevato alert: " + afsAnomaliaText] : [];
 
         // Stato globale appartamento (Verde, Giallo o Rosso)
         let overallStatus = "ok"; // verde
@@ -63,7 +70,8 @@ window.LayoutAppartamento = {
             },
             afs: {
                 consumo: afsConsumo,
-                anomalia: afsAnomalia
+                anomalia: afsAnomalia,
+                anomaliaTesto: afsAnomaliaText
             },
             riscaldamento: {
                 consumo: rscConsumo,
@@ -164,12 +172,6 @@ window.LayoutAppartamento = {
         ctx.beginPath(); ctx.arc(w - 180, 90, 30, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
 
-        // Lettera "i" next to status come icona info pseudo-cliccabile visuale
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 45px Inter';
-        ctx.textAlign = 'center';
-        ctx.fillText("ⓘ", w - 80, 105);
-
         // --- SEZIONI ---
         let currentY = 220;
 
@@ -188,7 +190,7 @@ window.LayoutAppartamento = {
             { label: "Consumo Giornaliero:", value: `${dati.afs.consumo} L` }
         ];
         if (dati.afs.anomalia) {
-            afsItems.push({ label: "⚠️ ALERT: ", value: "Possibile perdita/consumo notturno", valColor: '#ef4444' });
+            afsItems.push({ label: "⚠️ ALERT: ", value: dati.afs.anomaliaTesto, valColor: '#ef4444', isAlert: true });
             // Add a mailto button layout inside section
         } else {
             afsItems.push({ label: "Stato Alert:", value: "Nessun problema", valColor: '#22c55e' });
@@ -258,14 +260,20 @@ window.LayoutAppartamento = {
         // Variabili items
         let itemY = y + 120;
         items.forEach(it => {
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '26px Inter';
-            ctx.fillText(it.label, padding + 30, itemY);
-            
-            ctx.fillStyle = it.valColor || '#f1f5f9';
-            ctx.font = 'bold 32px Inter';
-            ctx.textAlign = 'right';
-            ctx.fillText(it.value, padding + secW - 30, itemY + 2);
+            if (it.isAlert) {
+                ctx.fillStyle = it.valColor || '#ef4444';
+                ctx.font = 'bold 26px Inter';
+                ctx.fillText(it.label + it.value, padding + 30, itemY);
+            } else {
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '26px Inter';
+                ctx.fillText(it.label, padding + 30, itemY);
+                
+                ctx.fillStyle = it.valColor || '#f1f5f9';
+                ctx.font = 'bold 32px Inter';
+                ctx.textAlign = 'right';
+                ctx.fillText(it.value, padding + secW - 30, itemY + 2);
+            }
             
             ctx.textAlign = 'left';
             itemY += 50;
