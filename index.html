@@ -1101,6 +1101,7 @@
             else if (metricaId === 'rumore') { baseVal = 40; variazione = 20; }
             else if (metricaId === 'luce') { baseVal = 200; variazione = 300; }
             else if (metricaId === 'iaq_score') { baseVal = 8.5; variazione = 1.0; }
+            else if (metricaId === 'traffico_rack') { baseVal = 2.5; variazione = 5.0; }
             else { baseVal = 50; variazione = 20; }
 
             for (let i = 0; i < 96; i++) {
@@ -1158,6 +1159,7 @@
             if (metricaId === 'acs') titolo = "CONSUMO ACQUA CALDA (ACS)";
             if (metricaId === 'afs') titolo = "CONSUMO ACQUA FREDDA (AFS)";
             if (metricaId === 'riscaldamento') titolo = "CONSUMO RISCALDAMENTO";
+            if (metricaId === 'traffico_rack') titolo = "TRAFFICO DI RETE GLOBALE (RACK)";
             document.getElementById('detail-title').innerText = "Andamento: " + titolo;
 
             let theDatasets = [];
@@ -1217,6 +1219,7 @@
                 else if (metricaId === 'acs') { unita = "Litri (per 15 min)"; }
                 else if (metricaId === 'afs') { unita = "Litri (per 15 min)"; }
                 else if (metricaId === 'riscaldamento') { unita = "kWh (per 15 min)"; }
+                else if (metricaId === 'traffico_rack') { unita = "Gbps"; }
 
                 theDatasets = [{
                     label: metricaId,

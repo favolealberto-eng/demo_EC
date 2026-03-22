@@ -91,5 +91,11 @@
     "nome": "Appartamento 101",
     "file": "layouts/layout_appartamento.js",
     "oggetto": "LayoutAppartamento"
+  },
+  "14": {
+    "tipo": "rack",
+    "nome": "Rack di Rete Principale",
+    "file": "layouts/layout_rack.js",
+    "oggetto": "LayoutRack"
   }
 }
