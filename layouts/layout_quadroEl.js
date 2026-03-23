@@ -77,13 +77,14 @@ window.LayoutQuadroEl = {
         const tensione = (398.5).toFixed(1); 
         const corrente = (potenzaAttuale * 1000 / (Math.sqrt(3) * tensione * 0.9)).toFixed(1); 
         
-        // Calcolo stati allarme per linee proporzionali alle soglie globali (Giallo > 120, Rosso > 135)
+        // Calcolo stati allarme per linee con soglie asimmetriche per evitare che scattino tutte insieme
         const getStato = (val, yThresh, rThresh) => parseFloat(val) >= rThresh ? 'CRITICO' : (parseFloat(val) >= yThresh ? 'ATTENZIONE' : 'NORMALE');
         
-        const stL1 = getStato(line1, 120 * 0.4, 135 * 0.4);
-        const stL2 = getStato(line2, 120 * 0.25, 135 * 0.25);
-        const stL3 = getStato(line3, 120 * 0.15, 135 * 0.15);
-        const stL4 = getStato(line4, 120 * 0.2, 135 * 0.2);
+        // Con 125 kW totali: L1 varrà circa 50 -> scatterà il Giallo (45), mentre le altre resteranno Verdi.
+        const stL1 = getStato(line1, 45, 52); 
+        const stL2 = getStato(line2, 32, 38);
+        const stL3 = getStato(line3, 20, 25);
+        const stL4 = getStato(line4, 26, 32);
 
         // Stato globale coerente con le singole linee
         let stato_allarme = 'NORMALE';
