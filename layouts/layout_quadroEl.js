@@ -221,9 +221,10 @@ window.LayoutQuadroEl = {
         ctx.fillText("DISTRIBUZIONE CARICHI", w/2, 1240);
         
         let cy = 1380;
-        dati.linee.forEach(linea => {
-            // Spia colorata
-            const dotColor = linea.alert ? '#facc15' : '#22c55e';
+        const lineColors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
+        dati.linee.forEach((linea, idx) => {
+            // Spia colorata legata al grafico
+            const dotColor = lineColors[idx];
             ctx.save();
             ctx.shadowColor = dotColor;
             ctx.shadowBlur = 20;
@@ -238,7 +239,9 @@ window.LayoutQuadroEl = {
             ctx.textAlign = 'left';
             ctx.fillText(linea.nome, 220, cy);
             
-            ctx.fillStyle = '#06b6d4';
+            // Colora il valore in caso di allarme o normale
+            const valColor = linea.alert ? '#ef4444' : '#06b6d4';
+            ctx.fillStyle = valColor;
             ctx.textAlign = 'right';
             ctx.fillText(`${linea.p} kW`, 1350, cy);
             
@@ -306,6 +309,22 @@ window.LayoutQuadroEl = {
             ctx.fillText(`${val}`, gX - 20, y + 10);
         }
 
+        // Asse X - Intervalli Orari (ogni 4 ore)
+        ctx.fillStyle = '#64748b';
+        ctx.font = '32px Inter';
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 3;
+        for(let j=0; j<=24; j+=4) { // 0, 4, 8, 12, 16, 20, 24
+            let px = gX + (j / 24) * gW;
+            ctx.textAlign = 'center';
+            ctx.fillText(`${j}:00`, px, gY + gH + 55);
+            
+            ctx.beginPath();
+            ctx.moveTo(px, gY + gH);
+            ctx.lineTo(px, gY + gH + 15);
+            ctx.stroke();
+        }
+
         // Funzione per disegnare una singola linea dati (fissata su 96 step (24hx4))
         const drawHistoryLine = (dataPoints, color, thickness, fill) => {
             if(!dataPoints || dataPoints.length === 0) return;
@@ -344,21 +363,8 @@ window.LayoutQuadroEl = {
             drawHistoryLine(state.storicoLinee.l2, '#3b82f6', 8, false); // Blu
             drawHistoryLine(state.storicoLinee.l3, '#eab308', 8, false); // Giallo
             drawHistoryLine(state.storicoLinee.l4, '#22c55e', 8, false); // Verde
-            
-            // Legenda
-            ctx.font = '38px Inter';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#ef4444'; ctx.fillText("L1", gX + 200, gY + gH + 80);
-            ctx.fillStyle = '#3b82f6'; ctx.fillText("L2", gX + 450, gY + gH + 80);
-            ctx.fillStyle = '#eab308'; ctx.fillText("L3", gX + 700, gY + gH + 80);
-            ctx.fillStyle = '#22c55e'; ctx.fillText("L4", gX + 950, gY + gH + 80);
         } else {
             drawHistoryLine(state.storicoGlobale, '#06b6d4', 10, true); // Ciano
-            ctx.fillStyle = '#64748b';
-            ctx.font = '40px Inter';
-            ctx.textAlign = 'center';
-            ctx.fillText("Passato", gX + 150, gY + gH + 80);
-            ctx.fillText("Presente", gX + gW - 150, gY + gH + 80);
         }
 
         // 5. PULSANTE TOGGLE GRAFICO
