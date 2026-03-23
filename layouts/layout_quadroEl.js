@@ -8,12 +8,12 @@
 window.LayoutQuadroEl = {
     config: {
         canvasW: 1500,
-        canvasH: 2400,
+        canvasH: 3600,
         planeW: 3.0,
-        planeH: 4.8
+        planeH: 7.2
     },
     hitboxes: [
-        { id: "toggle_grafico", x: 50, y: 2150, w: 1400, h: 180 }
+        { id: "toggle_grafico", x: 50, y: 3200, w: 1400, h: 220 }
     ],
     
     /**
@@ -124,22 +124,22 @@ window.LayoutQuadroEl = {
         // 1. HEADER (Vertical)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.beginPath();
-        ctx.roundRect(0, 0, w, 260, { tl: 60, tr: 60, bl: 0, br: 0 });
+        ctx.roundRect(0, 0, w, 360, { tl: 60, tr: 60, bl: 0, br: 0 });
         ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
         ctx.beginPath();
-        ctx.moveTo(0, 260);
-        ctx.lineTo(w, 260);
+        ctx.moveTo(0, 360);
+        ctx.lineTo(w, 360);
         ctx.stroke();
 
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 85px Inter';
+        ctx.font = 'bold 100px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText("QUADRO ELETTRICO", w/2, 110);
+        ctx.fillText("QUADRO ELETTRICO", w/2, 160);
         
         ctx.fillStyle = '#06b6d4';
-        ctx.font = 'bold 36px Inter';
-        ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  ${dati.testo_aggiornamento}`, w/2, 190);
+        ctx.font = 'bold 46px Inter';
+        ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  ${dati.testo_aggiornamento}`, w/2, 260);
 
         // INDICATORE ALLARME
         let colorAllarme = '#22c55e';
@@ -159,94 +159,94 @@ window.LayoutQuadroEl = {
         // 2. PANNELLO POTENZA (Vertical Layout)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
-        ctx.roundRect(50, 310, 1400, 480, 40);
+        ctx.roundRect(50, 420, 1400, 650, 40);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
 
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '45px Inter';
+        ctx.font = '60px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText("Potenza Attiva (P)", w/2, 400);
+        ctx.fillText("Potenza Attiva (P)", w/2, 540);
         
         // FIX: Unità di misura sovrapposta
         const valText = dati.potenza_kw.toString();
-        ctx.font = 'bold 220px Inter';
+        ctx.font = 'bold 280px Inter';
         const valWidth = ctx.measureText(valText).width;
         
         ctx.fillStyle = dati.stato_allarme === 'NORMALE' ? '#06b6d4' : colorAllarme;
         ctx.textAlign = 'right';
-        ctx.fillText(valText, w/2 + valWidth/2, 580);
+        ctx.fillText(valText, w/2 + valWidth/2, 780);
         
-        ctx.font = 'bold 70px Inter';
+        ctx.font = 'bold 90px Inter';
         ctx.textAlign = 'left';
-        ctx.fillText("kW", w/2 + valWidth/2 + 20, 580);
+        ctx.fillText("kW", w/2 + valWidth/2 + 20, 780);
 
         ctx.textAlign = 'center';
         ctx.fillStyle = '#64748b';
-        ctx.font = '40px Inter';
-        ctx.fillText(`Soglia: ${currentConfig.soglia_kw || 135} kW  |  Stato: ${testAllarme}`, w/2, 670);
+        ctx.font = '50px Inter';
+        ctx.fillText(`Soglia: ${currentConfig.soglia_kw || 135} kW  |  Stato: ${testAllarme}`, w/2, 900);
         
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '35px Inter';
-        ctx.fillText(`U: ${dati.tensione_v} V   |   I: ${dati.corrente_a} A   |   Cos φ: ${dati.cos_phi}`, w/2, 740);
+        ctx.font = '45px Inter';
+        ctx.fillText(`U: ${dati.tensione_v} V   |   I: ${dati.corrente_a} A   |   Cos φ: ${dati.cos_phi}`, w/2, 990);
 
 
         // 3. DISTRIBUZIONE CARICHI CON SPIE
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
-        ctx.roundRect(50, 830, 1400, 440, 40);
+        ctx.roundRect(50, 1130, 1400, 700, 40);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
 
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 50px Inter';
-        ctx.fillText("DISTRIBUZIONE CARICHI", w/2, 920);
+        ctx.font = 'bold 60px Inter';
+        ctx.fillText("DISTRIBUZIONE CARICHI", w/2, 1240);
         
-        let cy = 1000;
+        let cy = 1380;
         dati.linee.forEach(linea => {
             // Spia colorata
             const dotColor = linea.alert ? '#facc15' : '#22c55e';
             ctx.save();
             ctx.shadowColor = dotColor;
-            ctx.shadowBlur = 15;
+            ctx.shadowBlur = 20;
             ctx.fillStyle = dotColor;
             ctx.beginPath();
-            ctx.arc(150, cy - 12, 16, 0, Math.PI * 2);
+            ctx.arc(150, cy - 16, 22, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
 
             ctx.fillStyle = '#94a3b8';
-            ctx.font = '40px Inter';
+            ctx.font = '55px Inter';
             ctx.textAlign = 'left';
-            ctx.fillText(linea.nome, 200, cy);
+            ctx.fillText(linea.nome, 220, cy);
             
             ctx.fillStyle = '#06b6d4';
             ctx.textAlign = 'right';
             ctx.fillText(`${linea.p} kW`, 1350, cy);
             
-            cy += 70;
+            cy += 120;
         });
 
         // 4. GRAFICO EVOLUTIVO
         ctx.fillStyle = 'rgba(4, 15, 30, 0.5)';
         ctx.beginPath();
-        ctx.roundRect(50, 1310, 1400, 780, 40);
+        ctx.roundRect(50, 1900, 1400, 1200, 40);
         ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.3)';
         ctx.stroke();
 
         const state = window.QuadroElGlobalState;
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 50px Inter';
+        ctx.font = 'bold 60px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", w/2, 1400);
+        ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", w/2, 2030);
 
-        let gX = 180;
-        let gY = 1460;
-        let gW = 1200;
-        let gH = 500;
+        let gX = 200;
+        let gY = 2120;
+        let gW = 1150;
+        let gH = 800;
 
         ctx.strokeStyle = '#334155';
         ctx.lineWidth = 4;
@@ -261,17 +261,17 @@ window.LayoutQuadroEl = {
 
         // Nomi degli assi
         ctx.fillStyle = '#94a3b8';
-        ctx.font = 'bold 30px Inter';
+        ctx.font = 'bold 40px Inter';
         ctx.textAlign = 'left';
-        ctx.fillText("Potenza [kW]", gX - 80, gY - 30); // Etichetta Asse Y superiore
+        ctx.fillText("Potenza [kW]", gX - 100, gY - 40); // Etichetta Asse Y superiore
         
         ctx.textAlign = 'center';
-        ctx.fillText("Ore della giornata", gX + gW/2, gY + gH + 90); // Etichetta Asse X
+        ctx.fillText("Ore della giornata", gX + gW/2, gY + gH + 110); // Etichetta Asse X
 
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.fillStyle = '#64748b';
-        ctx.font = '28px Inter';
+        ctx.font = '38px Inter';
         
         let minVal = 0;
         let maxVal = state.vistaSingoleLinee ? 80 : 160;
@@ -324,25 +324,25 @@ window.LayoutQuadroEl = {
         };
 
         if (state.vistaSingoleLinee) {
-            drawHistoryLine(state.storicoLinee.l1, '#ef4444', 5, false); // Rosso
-            drawHistoryLine(state.storicoLinee.l2, '#3b82f6', 5, false); // Blu
-            drawHistoryLine(state.storicoLinee.l3, '#eab308', 5, false); // Giallo
-            drawHistoryLine(state.storicoLinee.l4, '#22c55e', 5, false); // Verde
+            drawHistoryLine(state.storicoLinee.l1, '#ef4444', 8, false); // Rosso
+            drawHistoryLine(state.storicoLinee.l2, '#3b82f6', 8, false); // Blu
+            drawHistoryLine(state.storicoLinee.l3, '#eab308', 8, false); // Giallo
+            drawHistoryLine(state.storicoLinee.l4, '#22c55e', 8, false); // Verde
             
             // Legenda
-            ctx.font = '28px Inter';
+            ctx.font = '38px Inter';
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#ef4444'; ctx.fillText("L1", gX + 200, gY + gH + 60);
-            ctx.fillStyle = '#3b82f6'; ctx.fillText("L2", gX + 450, gY + gH + 60);
-            ctx.fillStyle = '#eab308'; ctx.fillText("L3", gX + 700, gY + gH + 60);
-            ctx.fillStyle = '#22c55e'; ctx.fillText("L4", gX + 950, gY + gH + 60);
+            ctx.fillStyle = '#ef4444'; ctx.fillText("L1", gX + 200, gY + gH + 80);
+            ctx.fillStyle = '#3b82f6'; ctx.fillText("L2", gX + 450, gY + gH + 80);
+            ctx.fillStyle = '#eab308'; ctx.fillText("L3", gX + 700, gY + gH + 80);
+            ctx.fillStyle = '#22c55e'; ctx.fillText("L4", gX + 950, gY + gH + 80);
         } else {
-            drawHistoryLine(state.storicoGlobale, '#06b6d4', 7, true); // Ciano
+            drawHistoryLine(state.storicoGlobale, '#06b6d4', 10, true); // Ciano
             ctx.fillStyle = '#64748b';
-            ctx.font = '30px Inter';
+            ctx.font = '40px Inter';
             ctx.textAlign = 'center';
-            ctx.fillText("Passato", gX + 100, gY + gH + 60);
-            ctx.fillText("Presente", gX + gW - 100, gY + gH + 60);
+            ctx.fillText("Passato", gX + 150, gY + gH + 80);
+            ctx.fillText("Presente", gX + gW - 150, gY + gH + 80);
         }
 
         // 5. PULSANTE TOGGLE GRAFICO
@@ -355,14 +355,14 @@ window.LayoutQuadroEl = {
         ctx.shadowColor = 'rgba(6, 182, 212, 0.4)';
         ctx.shadowBlur = 20;
         ctx.beginPath();
-        ctx.roundRect(box.x, box.y, box.w, box.h, 40);
+        ctx.roundRect(box.x, box.y, box.w, box.h, 50);
         ctx.fill();
         ctx.restore();
         
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
-        ctx.font = 'bold 50px Inter';
-        ctx.fillText(state.vistaSingoleLinee ? "🔄 TORNA A GRAFICO GLOBALE" : "📈 VEDI STORICO SINGOLE LINEE", box.x + box.w/2, box.y + box.h/2 + 18);
+        ctx.font = 'bold 60px Inter';
+        ctx.fillText(state.vistaSingoleLinee ? "🔄 TORNA A GRAFICO GLOBALE" : "📈 VEDI STORICO SINGOLE LINEE", box.x + box.w/2, box.y + box.h/2 + 22);
     },
     
     processClick: function(boxId) {

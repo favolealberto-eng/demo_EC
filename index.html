@@ -278,7 +278,7 @@
         }
 
         .btn-close {
-            position: absolute;
+            position: fixed;
             top: 18px;
             right: 18px;
             background: rgba(239, 68, 68, 0.85);
@@ -317,7 +317,7 @@
             align-items: flex-start;
             justify-content: center;
             overflow-y: auto;
-            padding: 40px 0;
+            padding: 0;
             box-sizing: border-box;
         }
 
@@ -340,13 +340,13 @@
             pointer-events: auto !important;
             position: relative !important;
             display: block !important;
-            width: 95% !important;
-            max-width: 800px !important;
+            width: 100% !important;
+            max-width: 1000px !important;
             height: auto !important;
-            border-radius: 20px;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7), 0 0 0 1.5px rgba(6, 182, 212, 0.25);
+            border-radius: 0;
+            box-shadow: none;
             cursor: pointer;
-            margin: auto;
+            margin: 0 auto;
         }
 
         /* ===========================
