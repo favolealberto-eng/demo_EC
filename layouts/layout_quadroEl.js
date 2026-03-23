@@ -77,9 +77,20 @@ window.LayoutQuadroEl = {
         const tensione = (398.5).toFixed(1); 
         const corrente = (potenzaAttuale * 1000 / (Math.sqrt(3) * tensione * 0.9)).toFixed(1); 
         
-        let stato_allarme = parseFloat(potenzaAttuale) > 135 ? 'CRITICO' : (parseFloat(potenzaAttuale) > 120 ? 'ATTENZIONE' : 'NORMALE');
+        // Calcolo stati allarme per linee proporzionali alle soglie globali (Giallo > 120, Rosso > 135)
+        const getStato = (val, yThresh, rThresh) => parseFloat(val) >= rThresh ? 'CRITICO' : (parseFloat(val) >= yThresh ? 'ATTENZIONE' : 'NORMALE');
+        
+        const stL1 = getStato(line1, 120 * 0.4, 135 * 0.4);
+        const stL2 = getStato(line2, 120 * 0.25, 135 * 0.25);
+        const stL3 = getStato(line3, 120 * 0.15, 135 * 0.15);
+        const stL4 = getStato(line4, 120 * 0.2, 135 * 0.2);
 
-        // Calcolo testo dell'aggiornamento (es: Ultimo aggiornamento ore 16:30, ora attuale 16:36)
+        // Stato globale coerente con le singole linee
+        let stato_allarme = 'NORMALE';
+        if ([stL1, stL2, stL3, stL4].includes('CRITICO') || parseFloat(potenzaAttuale) > 135) stato_allarme = 'CRITICO';
+        else if ([stL1, stL2, stL3, stL4].includes('ATTENZIONE') || parseFloat(potenzaAttuale) > 120) stato_allarme = 'ATTENZIONE';
+
+        // Calcolo testo dell'aggiornamento
         const h_sync = Math.floor(currentSlotIndex / 4).toString().padStart(2, '0');
         const m_sync = ((currentSlotIndex % 4) * 15).toString().padStart(2, '0');
         const str_ultimo_aggiornamento = `${h_sync}:${m_sync}`;
@@ -95,10 +106,10 @@ window.LayoutQuadroEl = {
             stato_allarme: stato_allarme,
             testo_aggiornamento: testoAggiornamento,
             linee: [
-                { nome: 'Linea Produzione 1', p: parseFloat(line1), alert: parseFloat(line1) > 50 },
-                { nome: 'Condizionamento / HVAC', p: parseFloat(line2), alert: parseFloat(line2) > 35 },
-                { nome: 'Prese e Illuminazione', p: parseFloat(line3), alert: parseFloat(line3) > 25 },
-                { nome: 'Servizi Ausiliari / Altro', p: parseFloat(line4), alert: parseFloat(line4) > 30 }
+                { nome: 'Linea Produzione 1', p: parseFloat(line1), stato: stL1 },
+                { nome: 'Condizionamento / HVAC', p: parseFloat(line2), stato: stL2 },
+                { nome: 'Prese e Illuminazione', p: parseFloat(line3), stato: stL3 },
+                { nome: 'Servizi Ausiliari / Altro', p: parseFloat(line4), stato: stL4 }
             ]
         });
     },
@@ -234,13 +245,17 @@ window.LayoutQuadroEl = {
             ctx.fill();
             ctx.restore();
 
+            // Testo nome linea
             ctx.fillStyle = '#94a3b8';
             ctx.font = '55px Inter';
             ctx.textAlign = 'left';
             ctx.fillText(linea.nome, 220, cy);
             
-            // Colora il valore in caso di allarme o normale
-            const valColor = linea.alert ? '#ef4444' : '#06b6d4';
+            // Colore dinamico del valore numerico per stato verde/giallo/rosso
+            let valColor = '#22c55e'; // Verde
+            if (linea.stato === 'ATTENZIONE') valColor = '#facc15'; // Giallo
+            if (linea.stato === 'CRITICO') valColor = '#ef4444'; // Rosso
+            
             ctx.fillStyle = valColor;
             ctx.textAlign = 'right';
             ctx.fillText(`${linea.p} kW`, 1350, cy);
