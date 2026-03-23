@@ -399,19 +399,20 @@ window.LayoutQuadroEl = {
         ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", w/2, 2030);
 
         // Bottone d'espansione del grafico internal
-        let expBox = { x: 1300, y: 1940, w: 100, h: 100 };
+        let expBox = { x: 1250, y: 1920, w: 120, h: 120 };
         ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
         ctx.beginPath();
-        ctx.roundRect(expBox.x, expBox.y, expBox.w, expBox.h, 20);
+        ctx.roundRect(expBox.x, expBox.y, expBox.w, expBox.h, 25);
         ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
         ctx.stroke();
         ctx.fillStyle = '#06b6d4';
-        ctx.font = 'bold 60px Inter';
+        ctx.font = 'bold 80px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText("⛶", expBox.x + expBox.w/2, expBox.y + expBox.h/2 + 20);
+        ctx.fillText("⛶", expBox.x + expBox.w/2, expBox.y + expBox.h/2 + 27);
         
-        this.hitboxes.push({ id: "toggle_fs", ...expBox });
+        // Hitbox enorme (300x300 pixel nativi) per non fallire MAI il tocco col dito sul telefono
+        this.hitboxes.push({ id: "toggle_fs", x: 1150, y: 1820, w: 300, h: 300 });
         this.hitboxes.push({ id: "toggle_grafico", x: 50, y: 3200, w: 1400, h: 220 });
         this.hitboxes.push({ id: "dettaglio_kw", x: 50, y: 420, w: 1400, h: 650 });
 
