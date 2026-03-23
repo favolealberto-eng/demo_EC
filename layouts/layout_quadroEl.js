@@ -131,7 +131,7 @@ window.LayoutQuadroEl = {
         this.hitboxes = [];
 
         // --- GESTIONE MODALITA' LANDSCAPE (A TUTTO SCHERMO HORIZONTAL) ---
-        if (state.isFullscreen && window.isPinned) {
+        if (state.isFullscreen && (typeof isPinned !== 'undefined' ? isPinned : false)) {
             ctx.fillStyle = '#061325';
             ctx.fillRect(0, 0, w, h);
             
@@ -247,7 +247,7 @@ window.LayoutQuadroEl = {
         }
         
         // --- LAYOUT PORTRAIT (NORMALE) ---
-        if (typeof window.isPinned !== 'undefined' && window.isPinned) {
+        if (typeof isPinned !== 'undefined' && isPinned) {
             ctx.fillStyle = '#061325';
             ctx.fillRect(0, 0, w, h);
             
