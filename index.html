@@ -379,14 +379,13 @@
         }
         
         /* -- MODALITA' LANDSCAPE PER DETAIL VIEW -- */
-        .landscape-detail {
+        .fullscreen-active {
             position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            width: 100vh !important;
-            height: 100vw !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
             max-width: none !important;
-            transform: translate(-50%, -50%) rotate(90deg) !important;
             border-radius: 0 !important;
             z-index: 9999999 !important;
             background: #061325 !important;
@@ -394,12 +393,19 @@
             margin: 0 !important;
             box-sizing: border-box;
         }
-        .landscape-detail #detail-title, 
-        .landscape-detail .btn-back-detail,
-        .landscape-detail .btn-expand-detail {
+        .rotated-artificially {
+            top: 50% !important;
+            left: 50% !important;
+            width: 100vh !important;
+            height: 100vw !important;
+            transform: translate(-50%, -50%) rotate(90deg) !important;
+        }
+        .fullscreen-active #detail-title, 
+        .fullscreen-active .btn-back-detail,
+        .fullscreen-active .btn-expand-detail {
             display: none !important;
         }
-        .landscape-detail #detail-chart-container {
+        .fullscreen-active #detail-chart-container {
             height: 100% !important;
             width: 100% !important;
             margin: 0 !important;
@@ -443,7 +449,7 @@
             cursor: pointer;
             z-index: 10000;
         }
-        .landscape-detail .btn-close-landscape {
+        .fullscreen-active .btn-close-landscape {
             display: flex !important;
             align-items: center;
             justify-content: center;
@@ -1386,18 +1392,38 @@
         }
 
         let isLandscapeDetail = false;
-        function toggleDetailLandscape() {
+        
+        function updateDetailOrientation() {
+            if (!isLandscapeDetail) return;
+            const detailView = document.getElementById('detail-view');
+            // Se il dispositivo è in portrait fisico, rassegniamo la rotazione artificiale CSS.
+            // Altrimenti (se ha ruotato lo schermo) annulliamo il CSS e sfruttiamo il landscape nativo.
+            if (window.innerWidth < window.innerHeight) {
+                detailView.classList.add('rotated-artificially');
+            } else {
+                detailView.classList.remove('rotated-artificially');
+            }
+            if (detailChart) detailChart.update();
+        }
+
+        window.addEventListener('resize', updateDetailOrientation);
+
+        async function toggleDetailLandscape() {
             const detailView = document.getElementById('detail-view');
             isLandscapeDetail = !isLandscapeDetail;
+            
             if (isLandscapeDetail) {
-                detailView.classList.add('landscape-detail');
+                detailView.classList.add('fullscreen-active');
+                try { await document.documentElement.requestFullscreen(); } catch(e){}
+                try { if(screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape'); } catch(e){}
+                updateDetailOrientation();
             } else {
-                detailView.classList.remove('landscape-detail');
+                try { await document.exitFullscreen(); } catch(e){}
+                detailView.classList.remove('fullscreen-active', 'rotated-artificially');
             }
+            
             if (detailChart && detailChart.options.plugins.legend) {
                 detailChart.options.plugins.legend.display = isLandscapeDetail;
-                
-                // Manteniamo le proporzioni quando non è in landscape
                 detailChart.options.maintainAspectRatio = !isLandscapeDetail; 
                 detailChart.update();
             }

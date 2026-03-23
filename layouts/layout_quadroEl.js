@@ -132,22 +132,30 @@ window.LayoutQuadroEl = {
 
         // --- GESTIONE MODALITA' LANDSCAPE (A TUTTO SCHERMO HORIZONTAL) ---
         if (state.isFullscreen && (typeof isPinned !== 'undefined' ? isPinned : false)) {
-            ctx.fillStyle = '#061325';
-            ctx.fillRect(0, 0, w, h);
-            
-            ctx.save();
-            ctx.translate(w, 0);
-            ctx.rotate(Math.PI / 2);
-            
-            let lW = h; // 3600
-            let lH = w; // 1500
+            let isLandscapeDevice = window.innerWidth > window.innerHeight;
+            let lW = 3600;
+            let lH = 1500;
+
+            if (isLandscapeDevice) {
+                if (ctx.canvas.width !== lW) { ctx.canvas.width = lW; ctx.canvas.height = lH; }
+                ctx.fillStyle = '#061325';
+                ctx.fillRect(0, 0, lW, lH);
+            } else {
+                // Fallback rotazione per chi tiene il telefono in verticale
+                if (ctx.canvas.width !== w) { ctx.canvas.width = w; ctx.canvas.height = h; }
+                ctx.fillStyle = '#061325';
+                ctx.fillRect(0, 0, w, h);
+                ctx.save();
+                ctx.translate(w, 0);
+                ctx.rotate(Math.PI / 2);
+            }
             
             ctx.fillStyle = '#f1f5f9';
             ctx.font = 'bold 80px Inter';
             ctx.textAlign = 'center';
             ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", lW/2, 180);
             
-            // Bottone X chiusura in Landscape (in alto a destra in landscape -> in basso a sinistra nel DOM prima della rotazione)
+            // Bottone X chiusura in Landscape 
             let btnLy = 80;
             let btnLx = lW - 160;
             
@@ -160,9 +168,12 @@ window.LayoutQuadroEl = {
             ctx.textAlign = 'center';
             ctx.fillText("✖", btnLx + 40, btnLy + 60);
 
-            // Costruiamo la Hitbox mappando sulle coordinate Portrait del DOM Reale (w: 1500 x 3600)
-            // (lx, ly) -> X = w - ly - h -> X = 1500 - 80 - 100 = 1320. Y = lx = 3440.
-            this.hitboxes.push({ id: "toggle_fs", x: 1320, y: btnLx - 50, w: 100, h: 100 });
+            // Costruiamo la Hitbox
+            if (isLandscapeDevice) {
+                this.hitboxes.push({ id: "toggle_fs", x: btnLx - 60, y: btnLy - 60, w: 200, h: 200 });
+            } else {
+                this.hitboxes.push({ id: "toggle_fs", x: w - btnLy - 200, y: btnLx - 100, w: 250, h: 250 });
+            }
             
             let gX = 250;
             let gY = 280;
@@ -242,11 +253,18 @@ window.LayoutQuadroEl = {
                 ctx.fillText("Presente", gX + gW - 150, gY + gH + 180);
             }
 
-            ctx.restore();
+            if (!isLandscapeDevice) {
+                ctx.restore();
+            }
             return; // Termina qui per non disegnare il layout nativo
         }
         
         // --- LAYOUT PORTRAIT (NORMALE) ---
+        if (ctx.canvas.width !== w) {
+            ctx.canvas.width = w;
+            ctx.canvas.height = h;
+        }
+
         if (typeof isPinned !== 'undefined' && isPinned) {
             ctx.fillStyle = '#061325';
             ctx.fillRect(0, 0, w, h);
@@ -551,6 +569,12 @@ window.LayoutQuadroEl = {
         } else if (boxId === "toggle_fs") {
             if (window.QuadroElGlobalState) {
                 window.QuadroElGlobalState.isFullscreen = !window.QuadroElGlobalState.isFullscreen;
+                if (window.QuadroElGlobalState.isFullscreen) {
+                    try{ document.documentElement.requestFullscreen(); }catch(e){}
+                    try{ if(screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape'); }catch(e){}
+                } else {
+                    try{ document.exitFullscreen(); }catch(e){}
+                }
             }
         } else if (boxId === "dettaglio_kw") {
             if (!window.QuadroElGlobalState.isFullscreen && typeof window.apriDettaglio === "function") {
