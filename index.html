@@ -377,6 +377,77 @@
             font-weight: 700;
             letter-spacing: 0.4px;
         }
+        
+        /* -- MODALITA' LANDSCAPE PER DETAIL VIEW -- */
+        .landscape-detail {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            width: 100vh !important;
+            height: 100vw !important;
+            max-width: none !important;
+            transform: translate(-50%, -50%) rotate(90deg) !important;
+            border-radius: 0 !important;
+            z-index: 9999999 !important;
+            background: #061325 !important;
+            padding: 10px !important;
+            margin: 0 !important;
+            box-sizing: border-box;
+        }
+        .landscape-detail #detail-title, 
+        .landscape-detail .btn-back-detail,
+        .landscape-detail .btn-expand-detail {
+            display: none !important;
+        }
+        .landscape-detail #detail-chart-container {
+            height: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 40px 10px 10px 10px !important;
+            box-sizing: border-box;
+        }
+        .btn-expand-detail {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: rgba(6, 182, 212, 0.15);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            color: #06b6d4;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        .btn-expand-detail:hover {
+            background: rgba(6, 182, 212, 0.3);
+        }
+        .btn-close-landscape {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(239, 68, 68, 0.85);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+        }
+        .landscape-detail .btn-close-landscape {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
 
         #detail-chart-container {
             position: relative;
@@ -622,6 +693,8 @@
         <button class="btn-close" onclick="unpinFromScreen()">✖</button>
         <div id="main-view-container"></div>
         <div id="detail-view">
+            <button class="btn-expand-detail" onclick="toggleDetailLandscape()">⛶</button>
+            <button class="btn-close-landscape" onclick="toggleDetailLandscape()">✖</button>
             <h2 id="detail-title">Andamento</h2>
             <div id="detail-chart-container"><canvas id="chart-canvas"></canvas></div>
             <button class="btn-back-detail" onclick="chiudiDettaglio()">⬅ Torna al Cruscotto</button>
@@ -1312,7 +1385,26 @@
             });
         }
 
+        let isLandscapeDetail = false;
+        function toggleDetailLandscape() {
+            const detailView = document.getElementById('detail-view');
+            isLandscapeDetail = !isLandscapeDetail;
+            if (isLandscapeDetail) {
+                detailView.classList.add('landscape-detail');
+            } else {
+                detailView.classList.remove('landscape-detail');
+            }
+            if (detailChart && detailChart.options.plugins.legend) {
+                detailChart.options.plugins.legend.display = isLandscapeDetail;
+                
+                // Manteniamo le proporzioni quando non è in landscape
+                detailChart.options.maintainAspectRatio = !isLandscapeDetail; 
+                detailChart.update();
+            }
+        }
+
         function chiudiDettaglio() {
+            if (typeof isLandscapeDetail !== 'undefined' && isLandscapeDetail) toggleDetailLandscape();
             document.getElementById('detail-view').style.display = 'none';
             document.getElementById('calendar-view').style.display = 'none'; // <-- FONDAMENTALE: Chiude anche il calendario
             document.getElementById('main-view-container').style.display = 'block';

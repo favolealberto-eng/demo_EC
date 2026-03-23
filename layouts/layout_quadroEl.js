@@ -51,7 +51,8 @@ window.LayoutQuadroEl = {
                 curvaIdealeLinee: { l1: hL1, l2: hL2, l3: hL3, l4: hL4 },
                 storicoGlobale: [],
                 storicoLinee: { l1: [], l2: [], l3: [], l4: [] },
-                vistaSingoleLinee: false
+                vistaSingoleLinee: false,
+                isFullscreen: false
             };
         }
 
@@ -122,11 +123,131 @@ window.LayoutQuadroEl = {
     draw: function(ctx, dati, currentConfig) {
         const w = this.config.canvasW;
         const h = this.config.canvasH;
+        const state = window.QuadroElGlobalState;
         
         ctx.clearRect(0, 0, w, h);
         
+        // Reset dynamic hitboxes
+        this.hitboxes = [];
+
+        // --- GESTIONE MODALITA' LANDSCAPE (A TUTTO SCHERMO HORIZONTAL) ---
+        if (state.isFullscreen && window.isPinned) {
+            ctx.fillStyle = '#061325';
+            ctx.fillRect(0, 0, w, h);
+            
+            ctx.save();
+            ctx.translate(w, 0);
+            ctx.rotate(Math.PI / 2);
+            
+            let lW = h; // 3600
+            let lH = w; // 1500
+            
+            ctx.fillStyle = '#f1f5f9';
+            ctx.font = 'bold 80px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", lW/2, 180);
+            
+            // Bottone X chiusura in Landscape (in alto a destra in landscape -> in basso a sinistra nel DOM prima della rotazione)
+            let btnLy = 80;
+            let btnLx = lW - 160;
+            
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.85)';
+            ctx.beginPath();
+            ctx.arc(btnLx + 40, btnLy + 40, 50, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 50px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText("✖", btnLx + 40, btnLy + 60);
+
+            // Costruiamo la Hitbox mappando sulle coordinate Portrait del DOM Reale (w: 1500 x 3600)
+            // (lx, ly) -> X = w - ly - h -> X = 1500 - 80 - 100 = 1320. Y = lx = 3440.
+            this.hitboxes.push({ id: "toggle_fs", x: 1320, y: btnLx - 50, w: 100, h: 100 });
+            
+            let gX = 250;
+            let gY = 280;
+            let gW = lW - 400; // 3200
+            let gH = lH - 550; // 950
+
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(gX, gY + gH);
+            ctx.lineTo(gX + gW, gY + gH);
+            ctx.moveTo(gX, gY);
+            ctx.lineTo(gX, gY + gH);
+            ctx.stroke();
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = 'bold 45px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText("Potenza [kW]", gX - 100, gY - 40);
+            
+            ctx.textAlign = 'center';
+            ctx.fillText("Ore della giornata", gX + gW/2, gY + gH + 110);
+            
+            let minVal = 0;
+            let maxVal = state.vistaSingoleLinee ? 80 : 160;
+            let numSteps = 4;
+            
+            ctx.font = '38px Inter';
+            for(let i=0; i<=numSteps; i++) {
+                let val = minVal + (maxVal - minVal) * (i / numSteps);
+                let yy = (gY + gH) - (i / numSteps) * gH;
+                ctx.beginPath(); ctx.moveTo(gX, yy); ctx.lineTo(gX + gW, yy); ctx.stroke();
+                ctx.textAlign = 'right'; ctx.fillText(`${val}`, gX - 20, yy + 10);
+            }
+
+            for(let j=0; j<=24; j+=4) { 
+                let px = gX + (j / 24) * gW;
+                ctx.textAlign = 'center'; ctx.fillText(`${j}:00`, px, gY + gH + 60);
+                ctx.beginPath(); ctx.moveTo(px, gY + gH); ctx.lineTo(px, gY + gH + 20); ctx.stroke();
+            }
+
+            const drawHLine = (dataPoints, color, thickness, fill) => {
+                if(!dataPoints || dataPoints.length === 0) return;
+                ctx.beginPath();
+                let stepX = gW / 96; 
+                for(let i=0; i<dataPoints.length; i++) {
+                    let px = gX + i * stepX;
+                    let valToDraw = Math.min(dataPoints[i], maxVal);
+                    let py = (gY + gH) - ((valToDraw - minVal) / (maxVal - minVal)) * gH;
+                    if(i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.strokeStyle = color; ctx.lineWidth = thickness; ctx.stroke();
+                if (fill) {
+                    const lastX = gX + (dataPoints.length - 1) * stepX;
+                    ctx.lineTo(lastX, gY + gH); ctx.lineTo(gX, gY + gH); ctx.closePath();
+                    const fillGrad = ctx.createLinearGradient(0, gY, 0, gY + gH);
+                    fillGrad.addColorStop(0, color); fillGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = fillGrad; ctx.fill();
+                }
+            };
+
+            if (state.vistaSingoleLinee) {
+                drawHLine(state.storicoLinee.l1, '#ef4444', 8, false); 
+                drawHLine(state.storicoLinee.l2, '#3b82f6', 8, false); 
+                drawHLine(state.storicoLinee.l3, '#eab308', 8, false); 
+                drawHLine(state.storicoLinee.l4, '#22c55e', 8, false); 
+                
+                ctx.font = '45px Inter';
+                ctx.fillStyle = '#ef4444'; ctx.fillText("Linea Produzione 1", gX + 400, gY + gH + 180);
+                ctx.fillStyle = '#3b82f6'; ctx.fillText("Condizionamento", gX + 1100, gY + gH + 180);
+                ctx.fillStyle = '#eab308'; ctx.fillText("Illuminazione", gX + 1800, gY + gH + 180);
+                ctx.fillStyle = '#22c55e'; ctx.fillText("Servizi Ausiliari", gX + 2500, gY + gH + 180);
+            } else {
+                drawHLine(state.storicoGlobale, '#06b6d4', 10, true); 
+                ctx.fillStyle = '#64748b'; ctx.font = '45px Inter';
+                ctx.fillText("Passato", gX + 150, gY + gH + 180);
+                ctx.fillText("Presente", gX + gW - 150, gY + gH + 180);
+            }
+
+            ctx.restore();
+            return; // Termina qui per non disegnare il layout nativo
+        }
+        
+        // --- LAYOUT PORTRAIT (NORMALE) ---
         if (typeof window.isPinned !== 'undefined' && window.isPinned) {
-            // Sfondo piatto senza bordi stondati per simulare un sito web
             ctx.fillStyle = '#061325';
             ctx.fillRect(0, 0, w, h);
             
@@ -272,11 +393,27 @@ window.LayoutQuadroEl = {
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.3)';
         ctx.stroke();
 
-        const state = window.QuadroElGlobalState;
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 60px Inter';
         ctx.textAlign = 'center';
         ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", w/2, 2030);
+
+        // Bottone d'espansione del grafico internal
+        let expBox = { x: 1300, y: 1940, w: 100, h: 100 };
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
+        ctx.beginPath();
+        ctx.roundRect(expBox.x, expBox.y, expBox.w, expBox.h, 20);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+        ctx.stroke();
+        ctx.fillStyle = '#06b6d4';
+        ctx.font = 'bold 60px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText("⛶", expBox.x + expBox.w/2, expBox.y + expBox.h/2 + 20);
+        
+        this.hitboxes.push({ id: "toggle_fs", ...expBox });
+        this.hitboxes.push({ id: "toggle_grafico", x: 50, y: 3200, w: 1400, h: 220 });
+        this.hitboxes.push({ id: "dettaglio_kw", x: 50, y: 420, w: 1400, h: 650 });
 
         let gX = 200;
         let gY = 2120;
@@ -408,8 +545,12 @@ window.LayoutQuadroEl = {
             if (window.QuadroElGlobalState) {
                 window.QuadroElGlobalState.vistaSingoleLinee = !window.QuadroElGlobalState.vistaSingoleLinee;
             }
+        } else if (boxId === "toggle_fs") {
+            if (window.QuadroElGlobalState) {
+                window.QuadroElGlobalState.isFullscreen = !window.QuadroElGlobalState.isFullscreen;
+            }
         } else if (boxId === "dettaglio_kw") {
-            if (typeof window.apriDettaglio === "function") {
+            if (!window.QuadroElGlobalState.isFullscreen && typeof window.apriDettaglio === "function") {
                 window.apriDettaglio("benchmark_energia"); // Utilizziamo benchmark energia come indicatore di dettaglio
             }
         }
