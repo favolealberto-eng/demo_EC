@@ -521,9 +521,10 @@ window.LayoutQuadroEl = {
         }
 
         // 5. PULSANTE TOGGLE GRAFICO
-        const box = this.hitboxes[0];
-        ctx.save();
-        const btnGrad = ctx.createLinearGradient(box.x, box.y, box.x + box.w, box.y + box.h);
+        const box = this.hitboxes.find(h => h.id === "toggle_grafico");
+        if (box) {
+            ctx.save();
+            const btnGrad = ctx.createLinearGradient(box.x, box.y, box.x + box.w, box.y + box.h);
         btnGrad.addColorStop(0, '#06b6d4');
         btnGrad.addColorStop(1, '#0891b2');
         ctx.fillStyle = btnGrad;
@@ -538,6 +539,7 @@ window.LayoutQuadroEl = {
         ctx.textAlign = 'center';
         ctx.font = 'bold 60px Inter';
         ctx.fillText(state.vistaSingoleLinee ? "🔄 TORNA A GRAFICO GLOBALE" : "📈 VEDI STORICO SINGOLE LINEE", box.x + box.w/2, box.y + box.h/2 + 22);
+        }
     },
     
     processClick: function(boxId) {
