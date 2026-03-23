@@ -13,7 +13,8 @@ window.LayoutQuadroEl = {
         planeH: 7.2
     },
     hitboxes: [
-        { id: "toggle_grafico", x: 50, y: 3200, w: 1400, h: 220 }
+        { id: "toggle_grafico", x: 50, y: 3200, w: 1400, h: 220 },
+        { id: "dettaglio_kw", x: 50, y: 420, w: 1400, h: 650 }
     ],
     
     /**
@@ -112,25 +113,40 @@ window.LayoutQuadroEl = {
         
         ctx.clearRect(0, 0, w, h);
         
-        // Sfondo dark glassmorphism
-        ctx.fillStyle = 'rgba(13, 31, 60, 0.92)';
-        ctx.beginPath();
-        ctx.roundRect(0, 0, w, h, 60);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
-        ctx.lineWidth = 6;
-        ctx.stroke();
+        if (typeof window.isPinned !== 'undefined' && window.isPinned) {
+            // Sfondo piatto senza bordi stondati per simulare un sito web
+            ctx.fillStyle = '#061325';
+            ctx.fillRect(0, 0, w, h);
+            
+            // 1. HEADER (Piatto)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(0, 0, w, 360);
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(0, 360);
+            ctx.lineTo(w, 360);
+            ctx.stroke();
+        } else {
+            // Sfondo dark glassmorphism per AR
+            ctx.fillStyle = 'rgba(13, 31, 60, 0.92)';
+            ctx.beginPath();
+            ctx.roundRect(0, 0, w, h, 60);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+            ctx.lineWidth = 6;
+            ctx.stroke();
 
-        // 1. HEADER (Vertical)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-        ctx.beginPath();
-        ctx.roundRect(0, 0, w, 360, { tl: 60, tr: 60, bl: 0, br: 0 });
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
-        ctx.beginPath();
-        ctx.moveTo(0, 360);
-        ctx.lineTo(w, 360);
-        ctx.stroke();
+            // 1. HEADER (Stondato in alto)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.beginPath();
+            ctx.roundRect(0, 0, w, 360, { tl: 60, tr: 60, bl: 0, br: 0 });
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(0, 360);
+            ctx.lineTo(w, 360);
+            ctx.stroke();
+        }
 
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 100px Inter';
@@ -369,6 +385,10 @@ window.LayoutQuadroEl = {
         if (boxId === "toggle_grafico") {
             if (window.QuadroElGlobalState) {
                 window.QuadroElGlobalState.vistaSingoleLinee = !window.QuadroElGlobalState.vistaSingoleLinee;
+            }
+        } else if (boxId === "dettaglio_kw") {
+            if (typeof window.apriDettaglio === "function") {
+                window.apriDettaglio("benchmark_energia"); // Utilizziamo benchmark energia come indicatore di dettaglio
             }
         }
     }
