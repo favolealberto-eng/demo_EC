@@ -149,30 +149,29 @@ window.LayoutQuadroEl = {
                 ctx.translate(w, 0);
                 ctx.rotate(Math.PI / 2);
             }
-            
+                       // Titolo principale con offset dinamico per evitare sovrapposizioni
+            let titleY = 180;
+            // Se siamo in modalità fullscreen artificiale (portrait), spostiamo il titolo più in basso
+            if (state.isFullscreen && !(window.innerWidth > window.innerHeight)) {
+                titleY = 260;
+            }
             ctx.fillStyle = '#f1f5f9';
             ctx.font = 'bold 80px Inter';
             ctx.textAlign = 'center';
-            ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", lW/2, 180);
-            
-            // Bottone X chiusura in Landscape 
-            let btnLy = 80;
-            let btnLx = lW - 160;
-            
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.85)';
-            ctx.beginPath();
-            ctx.arc(btnLx + 40, btnLy + 40, 50, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 50px Inter';
-            ctx.textAlign = 'center';
-            ctx.fillText("✖", btnLx + 40, btnLy + 60);
+            ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", lW/2, titleY);
 
-            // Costruiamo la Hitbox
-            if (isLandscapeDevice) {
-                this.hitboxes.push({ id: "toggle_fs", x: btnLx - 60, y: btnLy - 60, w: 200, h: 200 });
-            } else {
-                this.hitboxes.push({ id: "toggle_fs", x: w - btnLy - 200, y: btnLx - 100, w: 250, h: 250 });
+            // Rimuoviamo il bottone X interno; la chiusura del fullscreen è gestita dal pulsante X del dettaglio view.
+            // (Se necessario, la chiusura può essere gestita tramite la stessa hitbox toggle_fs, ma il rendering del bottone è stato eliminato.)
+            // Hitbox per chiusura fullscreen (manteniamo la logica, ma senza disegnare il bottone)
+            if (state.isFullscreen) {
+                // Posizione della hitbox in alto a destra del canvas
+                let btnLy = 80;
+                let btnLx = lW - 160;
+                if (isLandscapeDevice) {
+                    this.hitboxes.push({ id: "toggle_fs", x: btnLx - 60, y: btnLy - 60, w: 200, h: 200 });
+                } else {
+                    this.hitboxes.push({ id: "toggle_fs", x: w - btnLy - 200, y: btnLx - 100, w: 250, h: 250 });
+                }
             }
             
             let gX = 250;
