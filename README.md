@@ -6,7 +6,7 @@ Se sei nuovo sul progetto e devi creare, modificare o eseguire il debug di uno d
 
 ---
 
-## 🏗️ L'Architettura Generale
+## L'Architettura Generale
 
 L'applicazione si basa sull'interazione tra tre componenti fondamentali:
 
@@ -16,7 +16,7 @@ L'applicazione si basa sull'interazione tra tre componenti fondamentali:
 
 ---
 
-## 🧩 Anatomia di un File Layout
+## Anatomia di un File Layout
 
 Ogni file layout definisce un oggetto globale (es. `window.LayoutPompa`) che deve **obbligatoriamente** contenere i seguenti elementi:
 
@@ -54,7 +54,7 @@ Invocato automaticamente in base agli hitboxes. Riceve l'ID del bottone premuto.
 
 ---
 
-## 🚀 Come creare un nuovo Pannello (Tutorial)
+## Come creare un nuovo Pannello (Tutorial)
 
 Mettiamo che tu debba creare un nuovo pannello per un **Tapis Roulant**.
 
@@ -89,7 +89,7 @@ Mettiamo che tu debba creare un nuovo pannello per un **Tapis Roulant**.
 
 ---
 
-## 📂 Panoramica dei Moduli Esistenti
+## Panoramica dei Moduli Esistenti
 
 *   `layout_appartamento.js`: Cruscotto consumi domestici (ACS, AFS, Riscaldamento).
 *   `layout_estintore.js`: Informazioni di sicurezza e checklist ispezioni estintori.
@@ -102,4 +102,4 @@ Mettiamo che tu debba creare un nuovo pannello per un **Tapis Roulant**.
 *   `layout_sala.js`: Segnaletica per riunioni e integrazione col calendario globale.
 *   `layout_ufficio.js`: Hub contatti personale dipartimento IT, comprensivo di orari e action-mailer.
 
-*Buona programmazione!* 🚀
+*Buona programmazione!* 

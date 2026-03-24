@@ -6,44 +6,19 @@
     "oggetto": "LayoutIAQ"
   },
   "1": {
-    "tipo": "iaq",
-    "nome": "Sensore IAQ Zona 1",
-    "file": "layouts/layout_iaq.js",
-    "oggetto": "LayoutIAQ"
-  },
-  "2": {
     "tipo": "estintore",
     "nome": "Ufficio 1",
     "file": "layouts/layout_estintore.js",
     "oggetto": "LayoutEstintore"
   },
-  "3": {
-    "tipo": "estintore",
-    "nome": "Ufficio 2",
-    "file": "layouts/layout_estintore.js",
-    "oggetto": "LayoutEstintore"
-  },
-  "4": {
-    "tipo": "estintore",
-    "nome": "Ufficio 3",
-    "file": "layouts/layout_estintore.js",
-    "oggetto": "LayoutEstintore"
-  },
-  "5": {
+  "2": {
     "tipo": "sala",
     "nome": "Sala Newton",
     "id_sala": "newton",
     "file": "layouts/layout_sala.js",
     "oggetto": "LayoutSala"
   },
-  "6": {
-    "tipo": "sala",
-    "nome": "Sala Curie",
-    "id_sala": "curie",
-    "file": "layouts/layout_sala.js",
-    "oggetto": "LayoutSala"
-  },
-  "7": {
+  "3": {
     "tipo": "macchina",
     "nome": "Compressore Aria CMP-01",
     "id_macchina": "cmp01",
@@ -51,34 +26,26 @@
     "file": "layouts/layout_macchina.js",
     "oggetto": "LayoutMacchina"
   },
-  "8": {
-    "tipo": "macchina",
-    "nome": "Pompa Idraulica PMP-02",
-    "id_macchina": "pmp02",
-    "soglia_kw": 30,
-    "file": "layouts/layout_macchina.js",
-    "oggetto": "LayoutMacchina"
-  },
-  "9": {
+  "4": {
     "tipo": "pompa",
     "nome": "Pompa Centrifuga",
     "file": "layouts/layout_pompa.js",
     "oggetto": "LayoutPompa"
   },
-  "10": {
+  "5": {
     "tipo": "pannelli_radianti",
     "nome": "Pannello Radiante",
     "id_macchina": "PR-01",
     "file": "layouts/layout_pannelli_radianti.js",
     "oggetto": "LayoutPannelliRadianti"
   },
-  "11": {
+  "6": {
     "tipo": "ufficio",
     "nome": "Ufficio Tecnico",
     "file": "layouts/layout_ufficio.js",
     "oggetto": "LayoutUfficio"
   },
-  "12": {
+  "7": {
     "tipo": "quadroEl",
     "nome": "Quadro Elettrico Principale",
     "id_macchina": "QE-01",
@@ -86,13 +53,13 @@
     "file": "layouts/layout_quadroEl.js",
     "oggetto": "LayoutQuadroEl"
   },
-  "13": {
+  "8": {
     "tipo": "appartamento",
     "nome": "Appartamento 101",
     "file": "layouts/layout_appartamento.js",
     "oggetto": "LayoutAppartamento"
   },
-  "14": {
+  "9": {
     "tipo": "rack",
     "nome": "Rack di Rete Principale",
     "file": "layouts/layout_rack.js",

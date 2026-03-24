@@ -843,15 +843,15 @@
                     marker.setAttribute('value', id);
                     marker.setAttribute('id', `marker-${id}`);
                     marker.setAttribute('smooth', 'true');
-                    marker.setAttribute('smoothCount', '60');
-                    marker.setAttribute('smoothTolerance', '0.05');
-                    marker.setAttribute('smoothThreshold', '8');
+                    marker.setAttribute('smoothCount', '10');
+                    marker.setAttribute('smoothTolerance', '0.1');
+                    marker.setAttribute('smoothThreshold', '5');
 
                     // 3. Crea l'Entità contenitore
                     const entity = document.createElement('a-entity');
                     entity.setAttribute('id', `content-${id}`);
                     entity.setAttribute('look-at', '[camera]');
-                    entity.setAttribute('position', '0 1.5 0');
+                    entity.setAttribute('position', '0 0.5 0');
 
                     // 4. Crea il Piano Olografico
                     const plane = document.createElement('a-plane');
