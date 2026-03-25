@@ -375,6 +375,8 @@ window.LayoutQuadroEl = {
         }
 
         // --- LAYOUT PORTRAIT (NORMALE) ---
+        ctx.clearRect(0, 0, w, h);
+
         if (typeof isPinned !== 'undefined' && isPinned) {
             ctx.fillStyle = '#061325';
             ctx.fillRect(0, 0, w, h);
@@ -386,7 +388,25 @@ window.LayoutQuadroEl = {
             ctx.moveTo(0, 360);
             ctx.lineTo(w, 360);
             ctx.stroke();
+
+            // Applicazione stili per dashboard pinnata (larghezza 100% e scroll)
+            if (ctx.canvas) {
+                ctx.canvas.style.setProperty('width', '100%', 'important');
+                ctx.canvas.style.setProperty('height', 'auto', 'important');
+                ctx.canvas.style.setProperty('max-height', 'none', 'important');
+                ctx.canvas.style.setProperty('max-width', 'none', 'important');
+                ctx.canvas.style.setProperty('margin', '0', 'important');
+            }
         } else {
+            // Ripristino stili originali
+            if (ctx.canvas) {
+                ctx.canvas.style.removeProperty('width');
+                ctx.canvas.style.removeProperty('height');
+                ctx.canvas.style.removeProperty('max-height');
+                ctx.canvas.style.removeProperty('max-width');
+                ctx.canvas.style.removeProperty('margin');
+            }
+
             ctx.fillStyle = 'rgba(13, 31, 60, 0.92)';
             ctx.beginPath();
             ctx.roundRect(0, 0, w, h, 60);
