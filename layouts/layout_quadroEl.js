@@ -1,9 +1,5 @@
 /**
- * LayoutQuadroEl - Dashboard Energetica per Quadro Elettrico Principale.
- * 
- * Simula i flussi di corrente (kW, Volts, Amperes) e disegna grafici storici 
- * custom-built su Canvas API. Ha uno state controller interno (QuadroElGlobalState)
- * per switchare tra vista globale e spacchettamento per singole linee produttive.
+ * LayoutQuadroEl - Dashboard Energetica e Registro Manutenzioni.
  */
 window.LayoutQuadroEl = {
     config: {
@@ -17,11 +13,6 @@ window.LayoutQuadroEl = {
         { id: "dettaglio_kw", x: 50, y: 420, w: 1400, h: 650 }
     ],
 
-    /**
-     * fetchDati - Inizializza o recupera lo state globale Singleton.
-     * Crea proceduralmente 96 slot di dati (quarti d'ora) spalmati sulle 24h
-     * simulando carichi realistici su 4 linee di distribuzione differenti.
-     */
     fetchDati: function (callback) {
         if (!window.QuadroElGlobalState) {
             const history = [];
@@ -46,13 +37,25 @@ window.LayoutQuadroEl = {
                 hL4.push(v * 0.2);
             }
 
+            // DATI MOCK DELLA MANUTENZIONE
+            const interventiManutenzione = [
+                { data: "15/03/2026", operazione: "Sostituzione fusibile L1", stato: "COMPLETATO", operatore: "Mario Rossi" },
+                { data: "02/02/2026", operazione: "Serraggio morsetti gen.", stato: "COMPLETATO", operatore: "Luigi Bianchi" },
+                { data: "12/11/2025", operazione: "Verifica interruttori diff.", stato: "COMPLETATO", operatore: "Anna Neri" },
+                { data: "05/09/2025", operazione: "Termografia quadro", stato: "COMPLETATO", operatore: "Mario Rossi" },
+                { data: "22/05/2025", operazione: "Pulizia e aspirazione", stato: "COMPLETATO", operatore: "Luigi Bianchi" },
+                { data: "10/05/2026", operazione: "Taratura relè termici", stato: "PROGRAMMATO", operatore: "Ditta Esterna" }
+            ];
+
             window.QuadroElGlobalState = {
                 curvaIdealeGlobale: history,
                 curvaIdealeLinee: { l1: hL1, l2: hL2, l3: hL3, l4: hL4 },
                 storicoGlobale: [],
                 storicoLinee: { l1: [], l2: [], l3: [], l4: [] },
                 vistaSingoleLinee: false,
-                isFullscreen: false
+                isFullscreen: false,
+                vistaTabella: false, // NUOVO STATO: Switch Dashboard/Tabella
+                registroManutenzioni: interventiManutenzione
             };
         }
 
@@ -61,14 +64,12 @@ window.LayoutQuadroEl = {
 
         const state = window.QuadroElGlobalState;
 
-        // Lo storico fisso comprende gli slot fino all'orario attuale compreso
         state.storicoGlobale = state.curvaIdealeGlobale.slice(0, currentSlotIndex + 1);
         state.storicoLinee.l1 = state.curvaIdealeLinee.l1.slice(0, currentSlotIndex + 1);
         state.storicoLinee.l2 = state.curvaIdealeLinee.l2.slice(0, currentSlotIndex + 1);
         state.storicoLinee.l3 = state.curvaIdealeLinee.l3.slice(0, currentSlotIndex + 1);
         state.storicoLinee.l4 = state.curvaIdealeLinee.l4.slice(0, currentSlotIndex + 1);
 
-        // Preleviamo coerentemente i valori dell'istante i-esimo (corrente al 15 min mark)
         const potenzaAttuale = state.curvaIdealeGlobale[currentSlotIndex].toFixed(1);
         const line1 = state.curvaIdealeLinee.l1[currentSlotIndex].toFixed(1);
         const line2 = state.curvaIdealeLinee.l2[currentSlotIndex].toFixed(1);
@@ -78,21 +79,17 @@ window.LayoutQuadroEl = {
         const tensione = (398.5).toFixed(1);
         const corrente = (potenzaAttuale * 1000 / (Math.sqrt(3) * tensione * 0.9)).toFixed(1);
 
-        // Calcolo stati allarme per linee con soglie asimmetriche per evitare che scattino tutte insieme
         const getStato = (val, yThresh, rThresh) => parseFloat(val) >= rThresh ? 'CRITICO' : (parseFloat(val) >= yThresh ? 'ATTENZIONE' : 'NORMALE');
 
-        // Con 125 kW totali: L1 varrà circa 50 -> scatterà il Giallo (45), mentre le altre resteranno Verdi.
         const stL1 = getStato(line1, 45, 52);
         const stL2 = getStato(line2, 32, 38);
         const stL3 = getStato(line3, 20, 25);
         const stL4 = getStato(line4, 26, 32);
 
-        // Stato globale coerente con le singole linee
         let stato_allarme = 'NORMALE';
         if ([stL1, stL2, stL3, stL4].includes('CRITICO') || parseFloat(potenzaAttuale) > 135) stato_allarme = 'CRITICO';
         else if ([stL1, stL2, stL3, stL4].includes('ATTENZIONE') || parseFloat(potenzaAttuale) > 120) stato_allarme = 'ATTENZIONE';
 
-        // Calcolo testo dell'aggiornamento
         const h_sync = Math.floor(currentSlotIndex / 4).toString().padStart(2, '0');
         const m_sync = ((currentSlotIndex % 4) * 15).toString().padStart(2, '0');
         const str_ultimo_aggiornamento = `${h_sync}:${m_sync}`;
@@ -115,20 +112,118 @@ window.LayoutQuadroEl = {
             ]
         });
     },
-    /**
-     * draw - Motore di tracciamento UI Canvas.
-     * Rendering intensivo per i grafici cartesiani lineari (drawHistoryLine)
-     * e gestione del toggle button per lo switch del grafico.
-     */
+
     draw: function (ctx, dati, currentConfig) {
         const w = this.config.canvasW;
         const h = this.config.canvasH;
         const state = window.QuadroElGlobalState;
 
         ctx.clearRect(0, 0, w, h);
+        this.hitboxes = []; // Reset hitboxes
 
-        // Reset dynamic hitboxes
-        this.hitboxes = [];
+        // ---------------------------------------------------------
+        // RAMO A: VISTA TABELLA MANUTENZIONE
+        // ---------------------------------------------------------
+        if (state.vistaTabella) {
+            // Sfondo standard
+            if (typeof isPinned !== 'undefined' && isPinned) {
+                ctx.fillStyle = '#061325';
+                ctx.fillRect(0, 0, w, h);
+            } else {
+                ctx.fillStyle = 'rgba(13, 31, 60, 0.92)';
+                ctx.beginPath(); ctx.roundRect(0, 0, w, h, 60); ctx.fill();
+                ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+                ctx.lineWidth = 6; ctx.stroke();
+            }
+
+            // Header specifico per la tabella
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.beginPath();
+            if (typeof isPinned !== 'undefined' && isPinned) {
+                ctx.fillRect(0, 0, w, 360);
+            } else {
+                ctx.roundRect(0, 0, w, 360, { tl: 60, tr: 60, bl: 0, br: 0 });
+            }
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+            ctx.beginPath(); ctx.moveTo(0, 360); ctx.lineTo(w, 360); ctx.stroke();
+
+            ctx.fillStyle = '#f1f5f9';
+            ctx.font = 'bold 90px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText("REGISTRO MANUTENZIONI", w / 2, 160);
+
+            ctx.fillStyle = '#06b6d4';
+            ctx.font = 'bold 46px Inter';
+            ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  Ultimi 6 interventi`, w / 2, 260);
+
+            // Container Tabella
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.beginPath(); ctx.roundRect(50, 420, 1400, 3050, 40); ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.stroke();
+
+            // Intestazioni Colonne Tabella
+            let startY = 550;
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = 'bold 45px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText("DATA", 100, startY);
+            ctx.fillText("OPERAZIONE", 400, startY);
+            ctx.fillText("STATO", 1000, startY);
+
+            // Riga di separazione Intestazione
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(80, startY + 40); ctx.lineTo(1420, startY + 40); ctx.stroke();
+
+            // Disegno delle righe
+            startY += 120;
+            state.registroManutenzioni.forEach((intervento) => {
+                // Background riga alternato (stile pillola)
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+                ctx.beginPath(); ctx.roundRect(80, startY - 70, 1340, 140, 20); ctx.fill();
+
+                // Data
+                ctx.fillStyle = '#f1f5f9';
+                ctx.font = 'bold 42px Inter';
+                ctx.textAlign = 'left';
+                ctx.fillText(intervento.data, 100, startY);
+
+                // Operazione & Operatore (su due righe per pulizia visiva)
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = '45px Inter';
+                ctx.fillText(intervento.operazione, 400, startY - 10);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '36px Inter';
+                ctx.fillText(`Op: ${intervento.operatore}`, 400, startY + 45);
+
+                // Badge Stato
+                let badgeColor = '#22c55e'; // Verde
+                let badgeBg = 'rgba(34, 197, 94, 0.15)';
+                if (intervento.stato === 'PROGRAMMATO') {
+                    badgeColor = '#eab308'; // Giallo
+                    badgeBg = 'rgba(234, 179, 8, 0.15)';
+                }
+
+                ctx.fillStyle = badgeBg;
+                ctx.beginPath(); ctx.roundRect(980, startY - 45, 380, 70, 35); ctx.fill();
+                ctx.strokeStyle = badgeColor;
+                ctx.lineWidth = 2; ctx.stroke();
+
+                ctx.fillStyle = badgeColor;
+                ctx.font = 'bold 36px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(intervento.stato, 1170, startY + 5);
+
+                startY += 180;
+            });
+
+            return; // INTERROMPE LA FUNZIONE QUI: la dashboard energetica non viene disegnata.
+        }
+
+        // ---------------------------------------------------------
+        // RAMO B: VISTA DASHBOARD ENERGETICA (Codice originale)
+        // ---------------------------------------------------------
 
         // --- GESTIONE MODALITA' LANDSCAPE (A TUTTO SCHERMO HORIZONTAL) ---
         if (state.isFullscreen && (typeof isPinned !== 'undefined' ? isPinned : false)) {
@@ -141,7 +236,6 @@ window.LayoutQuadroEl = {
                 ctx.fillStyle = '#061325';
                 ctx.fillRect(0, 0, lW, lH);
             } else {
-                // Fallback rotazione per chi tiene il telefono in verticale
                 if (ctx.canvas.width !== w) { ctx.canvas.width = w; ctx.canvas.height = h; }
                 ctx.fillStyle = '#061325';
                 ctx.fillRect(0, 0, w, h);
@@ -155,7 +249,6 @@ window.LayoutQuadroEl = {
             ctx.textAlign = 'center';
             ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", lW / 2, 180);
 
-            // Bottone X chiusura in Landscape 
             let btnLy = 80;
             let btnLx = lW - 160;
 
@@ -168,7 +261,6 @@ window.LayoutQuadroEl = {
             ctx.textAlign = 'center';
             ctx.fillText("✖", btnLx + 40, btnLy + 60);
 
-            // Costruiamo la Hitbox
             if (isLandscapeDevice) {
                 this.hitboxes.push({ id: "toggle_fs", x: btnLx - 60, y: btnLy - 60, w: 200, h: 200 });
             } else {
@@ -177,8 +269,8 @@ window.LayoutQuadroEl = {
 
             let gX = 250;
             let gY = 280;
-            let gW = lW - 400; // 3200
-            let gH = lH - 550; // 950
+            let gW = lW - 400;
+            let gH = lH - 550;
 
             ctx.strokeStyle = '#334155';
             ctx.lineWidth = 4;
@@ -256,7 +348,7 @@ window.LayoutQuadroEl = {
             if (!isLandscapeDevice) {
                 ctx.restore();
             }
-            return; // Termina qui per non disegnare il layout nativo
+            return;
         }
 
         // --- LAYOUT PORTRAIT (NORMALE) ---
@@ -269,7 +361,6 @@ window.LayoutQuadroEl = {
             ctx.fillStyle = '#061325';
             ctx.fillRect(0, 0, w, h);
 
-            // 1. HEADER (Piatto)
             ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
             ctx.fillRect(0, 0, w, 360);
             ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
@@ -278,7 +369,6 @@ window.LayoutQuadroEl = {
             ctx.lineTo(w, 360);
             ctx.stroke();
         } else {
-            // Sfondo dark glassmorphism per AR
             ctx.fillStyle = 'rgba(13, 31, 60, 0.92)';
             ctx.beginPath();
             ctx.roundRect(0, 0, w, h, 60);
@@ -287,7 +377,6 @@ window.LayoutQuadroEl = {
             ctx.lineWidth = 6;
             ctx.stroke();
 
-            // 1. HEADER (Stondato in alto)
             ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
             ctx.beginPath();
             ctx.roundRect(0, 0, w, 360, { tl: 60, tr: 60, bl: 0, br: 0 });
@@ -308,7 +397,6 @@ window.LayoutQuadroEl = {
         ctx.font = 'bold 46px Inter';
         ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  ${dati.testo_aggiornamento}`, w / 2, 260);
 
-        // INDICATORE ALLARME
         let colorAllarme = '#22c55e';
         let glowAllarme = 'rgba(34, 197, 94, 0.6)';
         let testAllarme = "SISTEMA OK";
@@ -323,7 +411,7 @@ window.LayoutQuadroEl = {
             testAllarme = "ATTENZIONE POTENZA";
         }
 
-        // 2. PANNELLO POTENZA (Vertical Layout)
+        // 2. PANNELLO POTENZA
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
         ctx.roundRect(50, 420, 1400, 650, 40);
@@ -336,7 +424,6 @@ window.LayoutQuadroEl = {
         ctx.textAlign = 'center';
         ctx.fillText("Potenza Attiva (P)", w / 2, 540);
 
-        // FIX: Unità di misura sovrapposta
         const valText = dati.potenza_kw.toString();
         ctx.font = 'bold 280px Inter';
         const valWidth = ctx.measureText(valText).width;
@@ -374,7 +461,6 @@ window.LayoutQuadroEl = {
         let cy = 1380;
         const lineColors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
         dati.linee.forEach((linea, idx) => {
-            // Spia colorata legata al grafico
             const dotColor = lineColors[idx];
             ctx.save();
             ctx.shadowColor = dotColor;
@@ -385,16 +471,14 @@ window.LayoutQuadroEl = {
             ctx.fill();
             ctx.restore();
 
-            // Testo nome linea
             ctx.fillStyle = '#94a3b8';
             ctx.font = '55px Inter';
             ctx.textAlign = 'left';
             ctx.fillText(linea.nome, 220, cy);
 
-            // Colore dinamico del valore numerico per stato verde/giallo/rosso
-            let valColor = '#22c55e'; // Verde
-            if (linea.stato === 'ATTENZIONE') valColor = '#facc15'; // Giallo
-            if (linea.stato === 'CRITICO') valColor = '#ef4444'; // Rosso
+            let valColor = '#22c55e';
+            if (linea.stato === 'ATTENZIONE') valColor = '#facc15';
+            if (linea.stato === 'CRITICO') valColor = '#ef4444';
 
             ctx.fillStyle = valColor;
             ctx.textAlign = 'right';
@@ -416,7 +500,6 @@ window.LayoutQuadroEl = {
         ctx.textAlign = 'center';
         ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", w / 2, 2030);
 
-        // Bottone d'espansione del grafico internal
         let expBox = { x: 1250, y: 1920, w: 120, h: 120 };
 
         const isPinnedExp = typeof isPinned !== 'undefined' ? isPinned : (window.isPinned !== undefined ? window.isPinned : true);
@@ -435,7 +518,7 @@ window.LayoutQuadroEl = {
 
         if (!isPinnedExp) ctx.globalAlpha = 1.0;
 
-        // Hitbox enorme (300x300 pixel nativi) per non fallire MAI il tocco col dito sul telefono
+        // Ripristina Hitboxes della dashboard
         this.hitboxes.push({ id: "toggle_fs", x: 1150, y: 1820, w: 300, h: 300 });
         this.hitboxes.push({ id: "toggle_grafico", x: 50, y: 3200, w: 1400, h: 220 });
         this.hitboxes.push({ id: "dettaglio_kw", x: 50, y: 420, w: 1400, h: 650 });
@@ -448,22 +531,19 @@ window.LayoutQuadroEl = {
         ctx.strokeStyle = '#334155';
         ctx.lineWidth = 4;
         ctx.beginPath();
-        // Asse X
         ctx.moveTo(gX, gY + gH);
         ctx.lineTo(gX + gW, gY + gH);
-        // Asse Y principale
         ctx.moveTo(gX, gY);
         ctx.lineTo(gX, gY + gH);
         ctx.stroke();
 
-        // Nomi degli assi
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'bold 40px Inter';
         ctx.textAlign = 'left';
-        ctx.fillText("Potenza [kW]", gX - 100, gY - 40); // Etichetta Asse Y superiore
+        ctx.fillText("Potenza [kW]", gX - 100, gY - 40);
 
         ctx.textAlign = 'center';
-        ctx.fillText("Ore della giornata", gX + gW / 2, gY + gH + 110); // Etichetta Asse X
+        ctx.fillText("Ore della giornata", gX + gW / 2, gY + gH + 110);
 
         ctx.lineWidth = 3;
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
@@ -487,12 +567,11 @@ window.LayoutQuadroEl = {
             ctx.fillText(`${val}`, gX - 20, y + 10);
         }
 
-        // Asse X - Intervalli Orari (ogni 4 ore)
         ctx.fillStyle = '#64748b';
         ctx.font = '32px Inter';
         ctx.strokeStyle = '#334155';
         ctx.lineWidth = 3;
-        for (let j = 0; j <= 24; j += 4) { // 0, 4, 8, 12, 16, 20, 24
+        for (let j = 0; j <= 24; j += 4) {
             let px = gX + (j / 24) * gW;
             ctx.textAlign = 'center';
             ctx.fillText(`${j}:00`, px, gY + gH + 55);
@@ -503,12 +582,9 @@ window.LayoutQuadroEl = {
             ctx.stroke();
         }
 
-        // Funzione per disegnare una singola linea dati (fissata su 96 step (24hx4))
         const drawHistoryLine = (dataPoints, color, thickness, fill) => {
             if (!dataPoints || dataPoints.length === 0) return;
             ctx.beginPath();
-
-            // Usiamo 96 come asse fisso per l'intera giornata in modo che la linea si "interrompa" all'orario attuale.
             let stepX = gW / 96;
 
             for (let i = 0; i < dataPoints.length; i++) {
@@ -523,7 +599,6 @@ window.LayoutQuadroEl = {
             ctx.stroke();
 
             if (fill) {
-                // Rientro giù sulla x dell'ultimo punto calcolato
                 const lastX = gX + (dataPoints.length - 1) * stepX;
                 ctx.lineTo(lastX, gY + gH);
                 ctx.lineTo(gX, gY + gH);
@@ -537,12 +612,12 @@ window.LayoutQuadroEl = {
         };
 
         if (state.vistaSingoleLinee) {
-            drawHistoryLine(state.storicoLinee.l1, '#ef4444', 8, false); // Rosso
-            drawHistoryLine(state.storicoLinee.l2, '#3b82f6', 8, false); // Blu
-            drawHistoryLine(state.storicoLinee.l3, '#eab308', 8, false); // Giallo
-            drawHistoryLine(state.storicoLinee.l4, '#22c55e', 8, false); // Verde
+            drawHistoryLine(state.storicoLinee.l1, '#ef4444', 8, false);
+            drawHistoryLine(state.storicoLinee.l2, '#3b82f6', 8, false);
+            drawHistoryLine(state.storicoLinee.l3, '#eab308', 8, false);
+            drawHistoryLine(state.storicoLinee.l4, '#22c55e', 8, false);
         } else {
-            drawHistoryLine(state.storicoGlobale, '#06b6d4', 10, true); // Ciano
+            drawHistoryLine(state.storicoGlobale, '#06b6d4', 10, true);
         }
 
         // 5. PULSANTE TOGGLE GRAFICO
@@ -590,7 +665,7 @@ window.LayoutQuadroEl = {
             }
         } else if (boxId === "dettaglio_kw") {
             if (!window.QuadroElGlobalState.isFullscreen && typeof window.apriDettaglio === "function") {
-                window.apriDettaglio("benchmark_energia"); // Utilizziamo benchmark energia come indicatore di dettaglio
+                window.apriDettaglio("benchmark_energia");
             }
         }
     }

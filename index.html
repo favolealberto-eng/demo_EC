@@ -453,7 +453,7 @@
             right: 24px;
             background: rgba(239, 68, 68, 0.90);
             color: white;
-            border: 1.5px solid rgba(255,255,255,0.25);
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
             height: 48px;
             padding: 0 20px 0 16px;
             border-radius: 24px;
@@ -464,13 +464,14 @@
             cursor: pointer;
             z-index: 10000002;
             backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(239,68,68,0.45);
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.45);
             transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
         }
+
         .btn-close-landscape:hover {
             transform: translateY(-2px) scale(1.05);
             background: rgba(239, 68, 68, 1);
-            box-shadow: 0 8px 28px rgba(239,68,68,0.6);
+            box-shadow: 0 8px 28px rgba(239, 68, 68, 0.6);
         }
 
         .fullscreen-active .btn-close-landscape {
@@ -717,6 +718,8 @@
     <div id="ui-controls">
         <button class="btn-minimal" onclick="cambiaZoom(1)">➕</button>
         <button class="btn-minimal" onclick="cambiaZoom(-1)">➖</button>
+        <button id="btn-switch-view" class="btn-minimal btn-pin" style="display: none;"
+            onclick="toggleQuadroView()">Manutenzione</button>
         <button class="btn-minimal btn-pin" onclick="pinToScreen()">Dettagli</button>
     </div>
 
@@ -925,13 +928,22 @@
                         config.template = window[config.oggetto];
                         startRenderLoop(id, config);
 
-                        // FONDAMENTALE FORZATURA PER MARKER DINAMICI: Il bottone HUD DEVE apparire qui.
+                        // FONDAMENTALE FORZATURA PER MARKER DINAMICI
                         if (!isPinned) {
                             uiControls.style.display = 'flex';
-                            uiControls.style.zIndex = '10000'; // Assicura che sia sopra a tutto
+                            uiControls.style.zIndex = '10000';
+
+                            // GESTIONE BOTTONE SWITCH MANUTENZIONE
+                            const btnSwitch = document.getElementById('btn-switch-view');
+                            if (config.oggetto === 'LayoutQuadroEl') {
+                                btnSwitch.style.display = 'flex'; // Mostra solo per il Quadro Elettrico
+                                // Resetta il testo al default quando si reinquadra
+                                btnSwitch.innerHTML = (window.QuadroElGlobalState && window.QuadroElGlobalState.vistaTabella) ? '⚡ Dashboard' : '🔧 Manutenzione';
+                            } else {
+                                btnSwitch.style.display = 'none'; // Nascondi per le altre macchine
+                            }
                         }
                     };
-
                     document.head.appendChild(script);
                 });
 
@@ -945,6 +957,33 @@
                 });
             });
         }
+
+        // --- FUNZIONE SWITCH VISTA QUADRO ELETTRICO ---
+        window.toggleQuadroView = function () {
+            if (window.QuadroElGlobalState) {
+                // Inverti lo stato
+                window.QuadroElGlobalState.vistaTabella = !window.QuadroElGlobalState.vistaTabella;
+
+                // Aggiorna il testo del bottone
+                const btn = document.getElementById('btn-switch-view');
+                if (window.QuadroElGlobalState.vistaTabella) {
+                    btn.innerHTML = 'Dashboard'; // Se vedo la tabella, il pulsante mi fa tornare alla dashboard
+                } else {
+                    btn.innerHTML = 'Manutenzione';
+                }
+
+                // Forza un ridisegno immediato per non aspettare il secondo del renderLoop
+                if (currentConfig && currentConfig.template && currentConfig.template.draw) {
+                    const canvas = document.getElementById('canvas-' + currentMarkerId);
+                    const ctx = canvas.getContext('2d');
+                    currentConfig.template.draw(ctx, lastFetchedData, currentConfig);
+                    const plane = document.getElementById('plane-' + currentMarkerId);
+                    if (plane && plane.getObject3D('mesh')) {
+                        plane.getObject3D('mesh').material.map.needsUpdate = true;
+                    }
+                }
+            }
+        };
 
         // ==========================================
         // 2. MOTORE DI RENDERING 2D SU PANNELLI 3D
