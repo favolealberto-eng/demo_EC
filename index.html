@@ -448,25 +448,36 @@
 
         .btn-close-landscape {
             display: none;
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background: rgba(239, 68, 68, 0.85);
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(239, 68, 68, 0.90);
             color: white;
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            font-size: 18px;
-            font-weight: bold;
+            border: 1.5px solid rgba(255,255,255,0.25);
+            height: 48px;
+            padding: 0 20px 0 16px;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            gap: 8px;
             cursor: pointer;
-            z-index: 10000;
+            z-index: 10000002;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(239,68,68,0.45);
+            transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+        }
+        .btn-close-landscape:hover {
+            transform: translateY(-2px) scale(1.05);
+            background: rgba(239, 68, 68, 1);
+            box-shadow: 0 8px 28px rgba(239,68,68,0.6);
         }
 
         .fullscreen-active .btn-close-landscape {
             display: flex !important;
             align-items: center;
             justify-content: center;
+            flex-direction: row;
         }
 
         #detail-chart-container {
@@ -714,7 +725,7 @@
         <div id="main-view-container"></div>
         <div id="detail-view">
             <button class="btn-expand-detail" onclick="toggleDetailLandscape()">⛶</button>
-            <button class="btn-close-landscape" onclick="toggleDetailLandscape()">✖</button>
+            <button class="btn-close-landscape" onclick="toggleDetailLandscape()">✖ <span>Esci</span></button>
             <h2 id="detail-title">Andamento</h2>
             <div id="detail-chart-container"><canvas id="chart-canvas"></canvas></div>
             <button class="btn-back-detail" onclick="chiudiDettaglio()">⬅ Torna al Cruscotto</button>
