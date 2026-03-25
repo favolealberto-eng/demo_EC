@@ -389,13 +389,18 @@ window.LayoutQuadroEl = {
             ctx.lineTo(w, 360);
             ctx.stroke();
 
-            // Applicazione stili per dashboard pinnata (larghezza 100% e scroll)
+            // Applicazione stili per dashboard pinnata (pagina web a tutto schermo, stile commit 51560b)
             if (ctx.canvas) {
                 ctx.canvas.style.setProperty('width', '100%', 'important');
                 ctx.canvas.style.setProperty('height', 'auto', 'important');
                 ctx.canvas.style.setProperty('max-height', 'none', 'important');
                 ctx.canvas.style.setProperty('max-width', 'none', 'important');
                 ctx.canvas.style.setProperty('margin', '0', 'important');
+                ctx.canvas.style.setProperty('border-radius', '0', 'important');
+                ctx.canvas.style.setProperty('border', 'none', 'important');
+                if (ctx.canvas.parentElement) {
+                    ctx.canvas.parentElement.style.setProperty('padding', '0', 'important');
+                }
             }
         } else {
             // Ripristino stili originali
@@ -405,6 +410,11 @@ window.LayoutQuadroEl = {
                 ctx.canvas.style.removeProperty('max-height');
                 ctx.canvas.style.removeProperty('max-width');
                 ctx.canvas.style.removeProperty('margin');
+                ctx.canvas.style.removeProperty('border-radius');
+                ctx.canvas.style.removeProperty('border');
+                if (ctx.canvas.parentElement) {
+                    ctx.canvas.parentElement.style.removeProperty('padding');
+                }
             }
 
             ctx.fillStyle = 'rgba(13, 31, 60, 0.92)';
