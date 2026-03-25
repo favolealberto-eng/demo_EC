@@ -254,3 +254,4 @@ window.LayoutIAQ = {
         ctx.font = '28px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(window.isPinned !== false ? '👆 Tocca una riga o lo score per il dettaglio' : '🔒 Fissa il pannello per interagire', W / 2, 1490); // Spostato leggermente in alto per stare nella card
     }
+}
