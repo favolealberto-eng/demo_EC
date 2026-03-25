@@ -164,6 +164,35 @@ window.LayoutUfficio = {
 
         ctx.clearRect(0, 0, 800, 1100);
 
+        if (typeof isPinned !== 'undefined' && isPinned) {
+            if (ctx.canvas) {
+                ctx.canvas.style.setProperty('width', '100%', 'important');
+                ctx.canvas.style.setProperty('height', 'auto', 'important');
+                ctx.canvas.style.setProperty('max-height', 'none', 'important');
+                ctx.canvas.style.setProperty('max-width', 'none', 'important');
+                ctx.canvas.style.setProperty('margin', '0', 'important');
+                ctx.canvas.style.setProperty('border-radius', '0', 'important');
+                ctx.canvas.style.setProperty('border', 'none', 'important');
+                if (ctx.canvas.parentElement) {
+                    ctx.canvas.parentElement.style.setProperty('padding', '0', 'important');
+                }
+            }
+        } else {
+            if (ctx.canvas) {
+                ctx.canvas.style.removeProperty('width');
+                ctx.canvas.style.removeProperty('height');
+                ctx.canvas.style.removeProperty('max-height');
+                ctx.canvas.style.removeProperty('max-width');
+                ctx.canvas.style.removeProperty('margin');
+                ctx.canvas.style.removeProperty('border-radius');
+                ctx.canvas.style.removeProperty('border');
+                if (ctx.canvas.parentElement) {
+                    ctx.canvas.parentElement.style.removeProperty('padding');
+                }
+            }
+        }
+
+
         // SFONDO SCURO GLASSMORPHISM
         const W = 800; const H = 1100;
         const bgGrad = ctx.createLinearGradient(0, 0, W, H);

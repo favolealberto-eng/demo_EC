@@ -150,6 +150,35 @@ window.LayoutRack = {
         // Pulisce l'intero frame precedente
         ctx.clearRect(0, 0, w, h);
 
+        if (typeof isPinned !== 'undefined' && isPinned) {
+            if (ctx.canvas) {
+                ctx.canvas.style.setProperty('width', '100%', 'important');
+                ctx.canvas.style.setProperty('height', 'auto', 'important');
+                ctx.canvas.style.setProperty('max-height', 'none', 'important');
+                ctx.canvas.style.setProperty('max-width', 'none', 'important');
+                ctx.canvas.style.setProperty('margin', '0', 'important');
+                ctx.canvas.style.setProperty('border-radius', '0', 'important');
+                ctx.canvas.style.setProperty('border', 'none', 'important');
+                if (ctx.canvas.parentElement) {
+                    ctx.canvas.parentElement.style.setProperty('padding', '0', 'important');
+                }
+            }
+        } else {
+            if (ctx.canvas) {
+                ctx.canvas.style.removeProperty('width');
+                ctx.canvas.style.removeProperty('height');
+                ctx.canvas.style.removeProperty('max-height');
+                ctx.canvas.style.removeProperty('max-width');
+                ctx.canvas.style.removeProperty('margin');
+                ctx.canvas.style.removeProperty('border-radius');
+                ctx.canvas.style.removeProperty('border');
+                if (ctx.canvas.parentElement) {
+                    ctx.canvas.parentElement.style.removeProperty('padding');
+                }
+            }
+        }
+
+
         // --- BACKGROUND PANNELLO (Sfondo Dark Glassmorphism) ---
         ctx.fillStyle = 'rgba(13, 31, 60, 0.85)';
         ctx.beginPath();
