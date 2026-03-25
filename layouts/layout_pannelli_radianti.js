@@ -283,11 +283,17 @@ window.LayoutPannelliRadianti = {
         ctx.fillStyle = btnGrad;
         ctx.shadowColor = 'rgba(6, 182, 212, 0.5)';
         ctx.shadowBlur = 15;
+
+        const isPinnedDiag = window.isPinned;
+        if (!isPinnedDiag) ctx.globalAlpha = 0.4;
+
         ctx.beginPath(); ctx.roundRect(40, btnY, 720, 100, 20); ctx.fill();
         ctx.restore();
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText("🛠 MANUTENZIONE & DIAGNOSTICA", 400, btnY + 60);
+        ctx.fillText(isPinnedDiag ? "🛠 MANUTENZIONE & DIAGNOSTICA" : "🔒 MANUTENZIONE & DIAGNOSTICA", 400, btnY + 60);
+
+        if (!isPinnedDiag) ctx.globalAlpha = 1.0;
     },
 
     drawDiagnostic: function (ctx, dati) {
@@ -318,11 +324,17 @@ window.LayoutPannelliRadianti = {
         ctx.fillStyle = pGrad;
         ctx.shadowColor = 'rgba(14, 165, 233, 0.5)';
         ctx.shadowBlur = 15;
+
+        const isPinnedPompa = window.isPinned;
+        if (!isPinnedPompa) ctx.globalAlpha = 0.4;
+
         ctx.beginPath(); ctx.roundRect(40, btnP, 720, 100, 20); ctx.fill();
         ctx.restore();
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText("⚙ ACCEDI AL PANNELLO POMPA", 400, btnP + 60);
+        ctx.fillText(isPinnedPompa ? "⚙ ACCEDI AL PANNELLO POMPA" : "🔒 ACCEDI AL PANNELLO POMPA", 400, btnP + 60);
+
+        if (!isPinnedPompa) ctx.globalAlpha = 1.0;
 
         // PULSANTE BACK
         const btnY = 950;
@@ -331,12 +343,18 @@ window.LayoutPannelliRadianti = {
         btnGrad.addColorStop(0, 'rgba(255,255,255,0.1)');
         btnGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
         ctx.fillStyle = btnGrad;
+        
+        const isPinnedBack = window.isPinned;
+        if (!isPinnedBack) ctx.globalAlpha = 0.4;
+
         ctx.beginPath(); ctx.roundRect(40, btnY, 720, 100, 20); ctx.fill();
         ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke();
         ctx.restore();
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText("⬅ TORNA ALLA VISTA PRINCIPALE", 400, btnY + 60);
+        ctx.fillText(isPinnedBack ? "⬅ TORNA ALLA VISTA PRINCIPALE" : "🔒 TORNA ALLA VISTA PRINCIPALE", 400, btnY + 60);
+
+        if (!isPinnedBack) ctx.globalAlpha = 1.0;
     },
 
     drawRow: function(ctx, label, val, unita, y) {

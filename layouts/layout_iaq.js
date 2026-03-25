@@ -230,6 +230,6 @@ window.LayoutIAQ = {
         // Footer
         ctx.fillStyle = 'rgba(100,116,139,0.5)';
         ctx.font = '26px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('Tocca una riga per il dettaglio storico', W / 2, 1545);
+        ctx.fillText(window.isPinned !== false ? 'Tocca una riga per il dettaglio storico' : '🔒 Fissa il pannello per interagire', W / 2, 1545);
     }
 };

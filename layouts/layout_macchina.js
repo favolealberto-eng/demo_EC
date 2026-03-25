@@ -185,6 +185,10 @@ window.LayoutMacchina = {
         ctx.fillStyle = btnGrad;
         ctx.shadowColor = 'rgba(6, 182, 212, 0.4)';
         ctx.shadowBlur = 20;
+
+        const isPinnedMac = window.isPinned;
+        if (!isPinnedMac) ctx.globalAlpha = 0.4;
+
         ctx.beginPath();
         ctx.roundRect(btnBox.x, btnBox.y, btnBox.w, btnBox.h, 24);
         ctx.fill();
@@ -193,6 +197,8 @@ window.LayoutMacchina = {
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
         ctx.font = 'bold 36px Inter';
-        ctx.fillText("📊 DETTAGLIO GRAFICO", btnBox.x + btnBox.w/2, btnBox.y + 70);
+        ctx.fillText(isPinnedMac ? "📊 DETTAGLIO GRAFICO" : "🔒 DETTAGLIO GRAFICO", btnBox.x + btnBox.w/2, btnBox.y + 70);
+
+        if (!isPinnedMac) ctx.globalAlpha = 1.0;
     }
 };

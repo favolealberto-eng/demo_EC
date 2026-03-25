@@ -319,6 +319,9 @@ window.LayoutRack = {
             ctx.fillText(device.name, dx + 30, dy + 60);
 
             // Pulsante [X] di chiusura (colpito da id "chiudi_detail")
+            const isPinnedChiudi = window.isPinned;
+            if (!isPinnedChiudi) ctx.globalAlpha = 0.4;
+
             ctx.fillStyle = 'rgba(255,255,255,0.1)';
             ctx.beginPath();
             ctx.roundRect(dx + dw - 90, dy + 20, 70, 50, 10);
@@ -327,6 +330,8 @@ window.LayoutRack = {
             ctx.font = 'bold 24px Inter';
             ctx.textAlign = 'center';
             ctx.fillText("X", dx + dw - 55, dy + 55);
+
+            if (!isPinnedChiudi) ctx.globalAlpha = 1.0;
 
             // Costruzione Dizionario Chiave/Valore per il dettaglio tecnico
             ctx.textAlign = 'left';
@@ -404,10 +409,15 @@ window.LayoutRack = {
                 ctx.fillText(`Ports: ${dev.portsInUse} | IP: ${dev.ip} | FW: ${dev.firmware}`, 110, listY + 85);
 
                 // Call To action per espansione Riga
+                const isPinnedDev = window.isPinned;
+                if (!isPinnedDev) ctx.globalAlpha = 0.4;
+
                 ctx.fillStyle = '#06b6d4';
                 ctx.font = 'bold 20px Inter';
                 ctx.textAlign = 'right';
-                ctx.fillText("DETTAGLI +", 810, listY + 65);
+                ctx.fillText(isPinnedDev ? "DETTAGLI +" : "🔒", 810, listY + 65);
+
+                if (!isPinnedDev) ctx.globalAlpha = 1.0;
 
                 listY += 130;  // Spazio tra box -> NB: Allineare i valori a queste somme nei hitboxes in draw()!!
             });
@@ -424,6 +434,10 @@ window.LayoutRack = {
         ctx.fillStyle = btnGrad;
         ctx.shadowColor = 'rgba(6, 182, 212, 0.4)';
         ctx.shadowBlur = 20;
+
+        const isPinnedAss = window.isPinned;
+        if (!isPinnedAss) ctx.globalAlpha = 0.4;
+
         ctx.beginPath();
         ctx.roundRect(btnBox.x, btnBox.y, btnBox.w, btnBox.h, 24);
         ctx.fill();
@@ -433,6 +447,8 @@ window.LayoutRack = {
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
         ctx.font = 'bold 36px Inter';
-        ctx.fillText("✉ RICHIEDI ASSISTENZA", btnBox.x + btnBox.w/2, btnBox.y + 70);
+        ctx.fillText(isPinnedAss ? "✉ RICHIEDI ASSISTENZA" : "🔒 RICHIEDI ASSISTENZA", btnBox.x + btnBox.w/2, btnBox.y + 70);
+
+        if (!isPinnedAss) ctx.globalAlpha = 1.0;
     }
 };

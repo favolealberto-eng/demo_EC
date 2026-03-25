@@ -418,6 +418,10 @@ window.LayoutQuadroEl = {
 
         // Bottone d'espansione del grafico internal
         let expBox = { x: 1250, y: 1920, w: 120, h: 120 };
+
+        const isPinnedExp = typeof isPinned !== 'undefined' ? isPinned : (window.isPinned !== undefined ? window.isPinned : true);
+        if (!isPinnedExp) ctx.globalAlpha = 0.4;
+
         ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
         ctx.beginPath();
         ctx.roundRect(expBox.x, expBox.y, expBox.w, expBox.h, 25);
@@ -427,7 +431,9 @@ window.LayoutQuadroEl = {
         ctx.fillStyle = '#06b6d4';
         ctx.font = 'bold 80px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText("⛶", expBox.x + expBox.w / 2, expBox.y + expBox.h / 2 + 27);
+        ctx.fillText(isPinnedExp ? "⛶" : "🔒", expBox.x + expBox.w / 2, expBox.y + expBox.h / 2 + 27);
+
+        if (!isPinnedExp) ctx.globalAlpha = 1.0;
 
         // Hitbox enorme (300x300 pixel nativi) per non fallire MAI il tocco col dito sul telefono
         this.hitboxes.push({ id: "toggle_fs", x: 1150, y: 1820, w: 300, h: 300 });
@@ -549,6 +555,10 @@ window.LayoutQuadroEl = {
             ctx.fillStyle = btnGrad;
             ctx.shadowColor = 'rgba(6, 182, 212, 0.4)';
             ctx.shadowBlur = 20;
+
+            const isPinnedTog = typeof isPinned !== 'undefined' ? isPinned : (window.isPinned !== undefined ? window.isPinned : true);
+            if (!isPinnedTog) ctx.globalAlpha = 0.4;
+
             ctx.beginPath();
             ctx.roundRect(box.x, box.y, box.w, box.h, 50);
             ctx.fill();
@@ -557,7 +567,9 @@ window.LayoutQuadroEl = {
             ctx.fillStyle = '#fff';
             ctx.textAlign = 'center';
             ctx.font = 'bold 60px Inter';
-            ctx.fillText(state.vistaSingoleLinee ? "🔄 TORNA A GRAFICO GLOBALE" : "📈 VEDI STORICO SINGOLE LINEE", box.x + box.w / 2, box.y + box.h / 2 + 22);
+            ctx.fillText(!isPinnedTog ? "🔒 MODIFICA GRAFICO" : (state.vistaSingoleLinee ? "🔄 TORNA A GRAFICO GLOBALE" : "📈 VEDI STORICO SINGOLE LINEE"), box.x + box.w / 2, box.y + box.h / 2 + 22);
+
+            if (!isPinnedTog) ctx.globalAlpha = 1.0;
         }
     },
 

@@ -232,6 +232,9 @@ window.LayoutPompa = {
             const y = 580 + (i * 80);
 
             // Box cliccabile
+            const isPinnedCheck = window.isPinned;
+            if (!isPinnedCheck) ctx.globalAlpha = 0.4;
+
             ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
             ctx.beginPath(); ctx.roundRect(40, y - 40, 720, 70, 15); ctx.fill();
             ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'; ctx.stroke();
@@ -241,7 +244,9 @@ window.LayoutPompa = {
 
             // Freccia a destra
             ctx.fillStyle = 'rgba(6,182,212,0.8)'; ctx.font = '28px sans-serif';
-            ctx.fillText("➔", 710, y + 8);
+            ctx.fillText(isPinnedCheck ? "➔" : "🔒", 710, y + 8);
+
+            if (!isPinnedCheck) ctx.globalAlpha = 1.0;
         });
 
         // --- SEZIONE 3: PULSANTE ASSISTENZA ---
@@ -253,12 +258,18 @@ window.LayoutPompa = {
         ctx.fillStyle = btnGrad;
         ctx.shadowColor = 'rgba(239, 68, 68, 0.5)';
         ctx.shadowBlur = 15;
+        
+        const isPinnedAss = window.isPinned;
+        if (!isPinnedAss) ctx.globalAlpha = 0.4;
+
         ctx.beginPath(); ctx.roundRect(40, btnY, 720, 100, 20); ctx.fill();
         ctx.restore();
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText("✉ RICHIEDI ASSISTENZA", 400, btnY + 60);
+        ctx.fillText(isPinnedAss ? "✉ RICHIEDI ASSISTENZA" : "🔒 RICHIEDI ASSISTENZA", 400, btnY + 60);
+
+        if (!isPinnedAss) ctx.globalAlpha = 1.0;
     },
 
     drawDetail: function (ctx, dati) {
@@ -317,12 +328,18 @@ window.LayoutPompa = {
         btnGrad.addColorStop(0, 'rgba(255,255,255,0.1)');
         btnGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
         ctx.fillStyle = btnGrad;
+
+        const isPinnedBack = window.isPinned;
+        if (!isPinnedBack) ctx.globalAlpha = 0.4;
+
         ctx.beginPath(); ctx.roundRect(40, btnY, 720, 100, 20); ctx.fill();
         ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.stroke();
         ctx.restore();
 
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText("⬅ TORNA AL PANNELLO", 400, btnY + 60);
+        ctx.fillText(isPinnedBack ? "⬅ TORNA AL PANNELLO" : "🔒 TORNA AL PANNELLO", 400, btnY + 60);
+
+        if (!isPinnedBack) ctx.globalAlpha = 1.0;
     }
 };

@@ -253,6 +253,9 @@ window.LayoutAppartamento = {
         const btnBoxDiag = { id: "btn_diagnostica", x: 100, y: btnDiagY, w: 600, h: 90 };
         this.hitboxes.push(btnBoxDiag);
 
+        const isPinned = window.isPinned;
+        if (!isPinned) ctx.globalAlpha = 0.4;
+
         ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.beginPath(); ctx.roundRect(btnBoxDiag.x, btnBoxDiag.y, btnBoxDiag.w, btnBoxDiag.h, 45); ctx.fill();
         ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.stroke();
@@ -260,7 +263,9 @@ window.LayoutAppartamento = {
         ctx.fillStyle = '#38bdf8';
         ctx.textAlign = 'center';
         ctx.font = 'bold 32px Inter';
-        ctx.fillText("⚙ DIAGNOSTICA E DETTAGLI", w/2, btnDiagY + 55);
+        ctx.fillText(isPinned ? "⚙ DIAGNOSTICA E DETTAGLI" : "🔒 DIAGNOSTICA E DETTAGLI", w/2, btnDiagY + 55);
+
+        if (!isPinned) ctx.globalAlpha = 1.0;
     },
 
     drawSection: function(ctx, y, w, title, colorPrimary, items, infoBtnId, alertMailId = null, extraColorLight = null) {
@@ -329,13 +334,18 @@ window.LayoutAppartamento = {
             
             this.hitboxes.push({ id: alertMailId, x: mailX, y: mailY, w: mailBtnW, h: mailBtnH });
             
+            const isPinned = window.isPinned;
+            if (!isPinned) ctx.globalAlpha = 0.4;
+
             ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
             ctx.beginPath(); ctx.roundRect(mailX, mailY, mailBtnW, mailBtnH, 10); ctx.fill();
             ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)'; ctx.lineWidth = 1; ctx.stroke();
 
             ctx.fillStyle = '#ef4444'; ctx.textAlign = 'center'; ctx.font = 'bold 20px Inter';
-            ctx.fillText("✉ CONTATTA IDRAULICO", mailX + mailBtnW/2, mailY + 33);
+            ctx.fillText(isPinned ? "✉ CONTATTA IDRAULICO" : "🔒 CONTATTA IDRAULICO", mailX + mailBtnW/2, mailY + 33);
             
+            if (!isPinned) ctx.globalAlpha = 1.0;
+
             itemY += 70; // Spazio extra se presente alert
             ctx.textAlign = 'left';
         }
@@ -344,6 +354,9 @@ window.LayoutAppartamento = {
         const infoBtnBox = { id: infoBtnId, x: padding + 30, y: y + hSec - 80, w: secW - 60, h: 60 };
         this.hitboxes.push(infoBtnBox);
 
+        const isPinnedInfo = window.isPinned;
+        if (!isPinnedInfo) ctx.globalAlpha = 0.4;
+
         ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
         ctx.beginPath(); ctx.roundRect(infoBtnBox.x, infoBtnBox.y, infoBtnBox.w, infoBtnBox.h, 15); ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
@@ -351,7 +364,9 @@ window.LayoutAppartamento = {
         ctx.fillStyle = '#06b6d4';
         ctx.textAlign = 'center';
         ctx.font = 'bold 24px Inter';
-        ctx.fillText("MAGGIORI INFO 📊", infoBtnBox.x + infoBtnBox.w/2, infoBtnBox.y + 40);
+        ctx.fillText(isPinnedInfo ? "MAGGIORI INFO 📊" : "🔒 MAGGIORI INFO", infoBtnBox.x + infoBtnBox.w/2, infoBtnBox.y + 40);
+
+        if (!isPinnedInfo) ctx.globalAlpha = 1.0;
 
         return y + hSec;
     },
@@ -451,6 +466,9 @@ window.LayoutAppartamento = {
         const btnBoxDiagBack = { id: "btn_back_main", x: 100, y: h - 140, w: 600, h: 80 };
         this.hitboxes.push(btnBoxDiagBack);
 
+        const isPinnedBack = window.isPinned;
+        if (!isPinnedBack) ctx.globalAlpha = 0.4;
+
         ctx.fillStyle = 'rgba(6, 182, 212, 0.2)';
         ctx.beginPath(); ctx.roundRect(btnBoxDiagBack.x, btnBoxDiagBack.y, btnBoxDiagBack.w, btnBoxDiagBack.h, 20); ctx.fill();
         ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 1.5; ctx.stroke();
@@ -458,7 +476,9 @@ window.LayoutAppartamento = {
         ctx.fillStyle = '#06b6d4';
         ctx.textAlign = 'center';
         ctx.font = 'bold 30px Inter';
-        ctx.fillText("⬅ TORNA ALLA VISTA PRINCIPALE", w/2, h - 90);
+        ctx.fillText(isPinnedBack ? "⬅ TORNA ALLA VISTA PRINCIPALE" : "🔒 TORNA ALLA VISTA PRINCIPALE", w/2, h - 90);
+
+        if (!isPinnedBack) ctx.globalAlpha = 1.0;
 
     }
 };

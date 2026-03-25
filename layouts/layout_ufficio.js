@@ -279,13 +279,16 @@ window.LayoutUfficio = {
             // PULSANTI AZIONE (i loro hitbox corrispondono a questi disegni)
             const btnAy = y + 120;
             
+            const isPinnedUff = window.isPinned;
+            if (!isPinnedUff) ctx.globalAlpha = 0.4;
+
             // Pulsante Agenda
             ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
             ctx.beginPath(); ctx.roundRect(170, btnAy, 260, 50, 10); ctx.fill();
             ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(6, 182, 212, 0.6)'; ctx.stroke();
             
             ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 18px Inter'; ctx.textAlign = 'center';
-            ctx.fillText("📅 AGENDA PERSONALE", 300, btnAy + 32);
+            ctx.fillText(isPinnedUff ? "📅 AGENDA PERSONALE" : "🔒 AGENDA PERSONALE", 300, btnAy + 32);
 
             // Pulsante Mail
             ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
@@ -293,7 +296,9 @@ window.LayoutUfficio = {
             ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)'; ctx.stroke();
             
             ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 18px Inter'; ctx.textAlign = 'center';
-            ctx.fillText("✉ CHIEDI APPUNTAMENTO", 580, btnAy + 32);
+            ctx.fillText(isPinnedUff ? "✉ CHIEDI APPUNTAMENTO" : "🔒 CHIEDI APPUNTAMENTO", 580, btnAy + 32);
+
+            if (!isPinnedUff) ctx.globalAlpha = 1.0;
         });
     }
 };
