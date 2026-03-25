@@ -322,15 +322,21 @@
             height: 100%;
             display: flex;
             align-items: flex-start;
-            justify-content: center;
+            justify-content: flex-start;
+            /* Modificato per permettere lo scroll */
             overflow-y: auto;
-            padding: 0;
+            overflow-x: auto;
+            /* Aggiunto scroll orizzontale */
+            padding: 20px;
+            /* Aggiunto un po' di margine */
             box-sizing: border-box;
         }
 
         /* Scrollbar sottile brand per main view container */
         #main-view-container::-webkit-scrollbar {
             width: 4px;
+            height: 4px;
+            /* Aggiunto per la scrollbar orizzontale */
         }
 
         #main-view-container::-webkit-scrollbar-track {
@@ -347,14 +353,17 @@
             pointer-events: auto !important;
             position: relative !important;
             display: block !important;
-            width: 100vw !important;
+            height: 85vh !important;
+            /* Blocca l'altezza */
+            width: auto !important;
+            /* Lascia la larghezza libera di espandersi */
             max-width: none !important;
-            height: auto !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
+            border-radius: 20px !important;
+            /* Bordi arrotondati carini */
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
             cursor: pointer;
-            margin: 0 !important;
-            border: none !important;
+            margin: auto !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
 
         /* ===========================
@@ -938,7 +947,7 @@
                             if (config.oggetto === 'LayoutQuadroEl') {
                                 btnSwitch.style.display = 'flex'; // Mostra solo per il Quadro Elettrico
                                 // Resetta il testo al default quando si reinquadra
-                                btnSwitch.innerHTML = (window.QuadroElGlobalState && window.QuadroElGlobalState.vistaTabella) ? '⚡ Dashboard' : '🔧 Manutenzione';
+                                btnSwitch.innerHTML = (window.QuadroElGlobalState && window.QuadroElGlobalState.vistaTabella) ? 'Dashboard' : 'Manutenzione';
                             } else {
                                 btnSwitch.style.display = 'none'; // Nascondi per le altre macchine
                             }
