@@ -14,13 +14,13 @@ window.LayoutIAQ = {
         planeH: 4.8
     },
 
-    // 2. MAPPA DELLE AREE CLICCABILI (Coordinate sistemate!)
+    // 2. MAPPA DELLE AREE CLICCABILI (Coordinate aggiornate con i nuovi pulsanti)
     hitboxes: [
-        { id: "iaq_score", x: 250, y: 350, w: 400, h: 300 }, // Area centrale dell'arco
-        { id: "temperatura", x: 80, y: 940, w: 740, h: 100 },
-        { id: "umidita", x: 80, y: 1060, w: 740, h: 100 },
-        { id: "rumore", x: 80, y: 1180, w: 740, h: 100 },
-        { id: "luce", x: 80, y: 1300, w: 740, h: 100 }
+        { id: "iaq_score", x: 250, y: 350, w: 400, h: 300 },
+        { id: "temperatura", x: 60, y: 900, w: 780, h: 88 },
+        { id: "umidita", x: 60, y: 1010, w: 780, h: 88 },
+        { id: "rumore", x: 60, y: 1120, w: 780, h: 88 },
+        { id: "luce", x: 60, y: 1230, w: 780, h: 88 }
     ],
 
     // 3. DATABASE FITTIZIO (Simulazione chiamata API globale o sensoristica Edge)
@@ -32,7 +32,7 @@ window.LayoutIAQ = {
         setTimeout(() => {
             const now = new Date();
             const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
-            
+
             const getMock = (metrica) => {
                 const arr = window.getMockDayData ? window.getMockDayData(metrica) : [];
                 return arr.length > currentSlotIndex ? parseFloat(arr[currentSlotIndex]) : null;
@@ -89,6 +89,7 @@ window.LayoutIAQ = {
         const titolo = config && config.nome ? config.nome.toUpperCase().replace('_', ' ') : "QUALITÀ DELL'ARIA";
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 54px sans-serif'; ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic'; // Ripristina baseline standard per l'header
         ctx.shadowColor = 'rgba(6,182,212,0.4)'; ctx.shadowBlur = 12;
         ctx.fillText(titolo, W / 2, 110);
         ctx.shadowBlur = 0;
@@ -160,14 +161,7 @@ window.LayoutIAQ = {
         ctx.shadowBlur = 0;
         ctx.restore();
 
-        // Anello pulsante attorno all'area score — indica che è tappabile
-        ctx.beginPath();
-        ctx.arc(cx, cy - 60, 200, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(6,182,212,0.18)';
-        ctx.lineWidth = 6;
-        ctx.setLineDash([18, 12]);
-        ctx.stroke();
-        ctx.setLineDash([]);
+        // [Rimosso l'anello tratteggiato attorno allo score]
 
         // Valore score
         ctx.fillStyle = '#f1f5f9';
@@ -203,56 +197,60 @@ window.LayoutIAQ = {
         ctx.fillStyle = 'rgba(6,182,212,0.35)';
         ctx.fillRect(75, 862, 370, 2);
 
-        ctx.textAlign = 'left';
 
-        function drawRigaDato(y, label, valore, unita) {
-            const rowTop = y - 70;
-            const rowH   = 88;
+        // --- NUOVA LOGICA DI DISEGNO RIGHE ---
+        function drawRigaDato(rowTop, label, valore, unita) {
+            const rowH = 88;
+            const centerY = rowTop + (rowH / 2); // Calcoliamo il centro verticale esatto della riga
 
-            // Pill background — richiama un bottone cliccabile
+            // Pill background
             ctx.fillStyle = 'rgba(6,182,212,0.07)';
             ctx.beginPath(); ctx.roundRect(60, rowTop, 780, rowH, 20); ctx.fill();
 
-            // Bordo sottile cyan — segnala interattività
+            // Bordo sottile cyan
             ctx.strokeStyle = 'rgba(6,182,212,0.22)';
             ctx.lineWidth = 1.5;
             ctx.beginPath(); ctx.roundRect(60, rowTop, 780, rowH, 20); ctx.stroke();
+
+            // Configura l'allineamento verticale al centro
+            ctx.textBaseline = 'middle';
 
             // Label
             ctx.fillStyle = 'rgba(148,163,184,0.90)';
             ctx.font = '38px sans-serif';
             ctx.textAlign = 'left';
-            ctx.fillText(label, 95, y);
+            ctx.fillText(label, 95, centerY);
 
             // Valore
             ctx.fillStyle = '#f1f5f9';
-            ctx.font = 'bold 48px sans-serif';
+            ctx.font = 'bold 44px sans-serif'; // Leggermente ridotto per non toccare i bordi
             ctx.textAlign = 'right';
-            ctx.fillText(`${valore} ${unita}`, 710, y);
+            ctx.fillText(`${valore} ${unita}`, 710, centerY);
 
             // Pallino verde live indicator
             ctx.fillStyle = '#22c55e';
             ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 10;
-            ctx.beginPath(); ctx.arc(760, y - 14, 9, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath();
+            ctx.arc(760, centerY, 8, 0, Math.PI * 2); // Allineato a centerY e leggermente più piccolo
+            ctx.fill();
             ctx.shadowBlur = 0;
 
-            // Chevron '›' — indica navigabilità/interattività
+            // Chevron '›'
             ctx.fillStyle = 'rgba(6,182,212,0.65)';
             ctx.font = 'bold 46px sans-serif';
             ctx.textAlign = 'right';
-            ctx.fillText('›', 820, y + 4);
-
-            ctx.textAlign = 'left';
+            ctx.fillText('›', 820, centerY);
         }
 
-        drawRigaDato(990,  "Temperatura",  dati.temperatura, "°C");
-        drawRigaDato(1110, "Umidità",      dati.umidita,     "%");
-        drawRigaDato(1230, "Rumore",       dati.rumore,      "dB");
-        drawRigaDato(1350, "Illuminamento",dati.luce,        "lux");
+        // Ora passiamo la coordinata Y superiore (rowTop) della riga
+        drawRigaDato(900, "Temperatura", dati.temperatura, "°C");
+        drawRigaDato(1010, "Umidità", dati.umidita, "%");
+        drawRigaDato(1120, "Rumore", dati.rumore, "dB");
+        drawRigaDato(1230, "Illuminamento", dati.luce, "lux");
 
         // Footer
+        ctx.textBaseline = 'alphabetic'; // Ripristina la baseline standard prima del footer
         ctx.fillStyle = 'rgba(100,116,139,0.55)';
         ctx.font = '28px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(window.isPinned !== false ? '👆 Tocca una riga o lo score per il dettaglio' : '🔒 Fissa il pannello per interagire', W / 2, 1545);
+        ctx.fillText(window.isPinned !== false ? '👆 Tocca una riga o lo score per il dettaglio' : '🔒 Fissa il pannello per interagire', W / 2, 1490); // Spostato leggermente in alto per stare nella card
     }
-};
