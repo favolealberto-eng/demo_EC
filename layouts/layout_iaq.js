@@ -160,6 +160,15 @@ window.LayoutIAQ = {
         ctx.shadowBlur = 0;
         ctx.restore();
 
+        // Anello pulsante attorno all'area score — indica che è tappabile
+        ctx.beginPath();
+        ctx.arc(cx, cy - 60, 200, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(6,182,212,0.18)';
+        ctx.lineWidth = 6;
+        ctx.setLineDash([18, 12]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
         // Valore score
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 145px sans-serif';
@@ -182,7 +191,7 @@ window.LayoutIAQ = {
         ctx.fillText("10", 732, 700);
 
         // --- CARD DATI SENSORI ---
-        ctx.fillStyle = 'rgba(255,255,255,0.04)';
+        ctx.fillStyle = 'rgba(255,255,255,0.03)';
         ctx.beginPath(); ctx.roundRect(40, 800, 820, 720, 40); ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.10)';
         ctx.lineWidth = 1.5; ctx.stroke();
@@ -197,28 +206,42 @@ window.LayoutIAQ = {
         ctx.textAlign = 'left';
 
         function drawRigaDato(y, label, valore, unita) {
-            // Separatore riga
-            ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(75, y - 28); ctx.lineTo(825, y - 28); ctx.stroke();
+            const rowTop = y - 70;
+            const rowH   = 88;
+
+            // Pill background — richiama un bottone cliccabile
+            ctx.fillStyle = 'rgba(6,182,212,0.07)';
+            ctx.beginPath(); ctx.roundRect(60, rowTop, 780, rowH, 20); ctx.fill();
+
+            // Bordo sottile cyan — segnala interattività
+            ctx.strokeStyle = 'rgba(6,182,212,0.22)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.roundRect(60, rowTop, 780, rowH, 20); ctx.stroke();
 
             // Label
-            ctx.fillStyle = 'rgba(148,163,184,0.85)';
+            ctx.fillStyle = 'rgba(148,163,184,0.90)';
             ctx.font = '38px sans-serif';
             ctx.textAlign = 'left';
-            ctx.fillText(label, 90, y);
+            ctx.fillText(label, 95, y);
 
             // Valore
             ctx.fillStyle = '#f1f5f9';
             ctx.font = 'bold 48px sans-serif';
             ctx.textAlign = 'right';
-            ctx.fillText(`${valore} ${unita}`, 750, y);
+            ctx.fillText(`${valore} ${unita}`, 710, y);
 
             // Pallino verde live indicator
             ctx.fillStyle = '#22c55e';
             ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 10;
-            ctx.beginPath(); ctx.arc(810, y - 14, 10, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(760, y - 14, 9, 0, Math.PI * 2); ctx.fill();
             ctx.shadowBlur = 0;
+
+            // Chevron '›' — indica navigabilità/interattività
+            ctx.fillStyle = 'rgba(6,182,212,0.65)';
+            ctx.font = 'bold 46px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText('›', 820, y + 4);
+
             ctx.textAlign = 'left';
         }
 
@@ -228,8 +251,8 @@ window.LayoutIAQ = {
         drawRigaDato(1350, "Illuminamento",dati.luce,        "lux");
 
         // Footer
-        ctx.fillStyle = 'rgba(100,116,139,0.5)';
-        ctx.font = '26px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(window.isPinned !== false ? 'Tocca una riga per il dettaglio storico' : '🔒 Fissa il pannello per interagire', W / 2, 1545);
+        ctx.fillStyle = 'rgba(100,116,139,0.55)';
+        ctx.font = '28px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(window.isPinned !== false ? '👆 Tocca una riga o lo score per il dettaglio' : '🔒 Fissa il pannello per interagire', W / 2, 1545);
     }
 };
