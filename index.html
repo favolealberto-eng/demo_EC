@@ -226,6 +226,7 @@
             z-index: 1000;
             display: none;
             flex-direction: column;
+            align-items: flex-end;
             gap: 12px;
         }
 
@@ -817,6 +818,7 @@
         let currentConfig = null;
         let renderLoop = null;
         let isPinned = false;
+        window.isPinned = false;
         let zoomLevels = {}; // Si popolerà in automatico!
 
         // NUOVA VARIABILE: Salva gli ultimi dati ricevuti per usarli nel calendario
@@ -995,6 +997,7 @@
         function pinToScreen() {
             if (currentMarkerId === null) return;
             isPinned = true;
+            window.isPinned = true;
             uiControls.style.display = 'none';
             document.getElementById('hud-modal').style.display = 'flex';
 
@@ -1022,6 +1025,7 @@
         function unpinFromScreen() {
             if (currentMarkerId === null) return;
             isPinned = false;
+            window.isPinned = false;
             document.getElementById('hud-modal').style.display = 'none';
             chiudiDettaglio();
 
