@@ -1077,7 +1077,23 @@
 
                     // Se il template ha una sua funzione personale per i click, usala!
                     if (currentConfig.template.processClick) {
+                        // 1. Registra il click e cambia lo stato interno (es. sblocca il lucchetto)
                         currentConfig.template.processClick(box.id);
+
+                        // 2. FORZATURA ISTANTANEA: Ridisegna subito la grafica senza aspettare il timer!
+                        if (currentConfig.template.draw) {
+                            const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
+                            const ctx = activeCanvas.getContext('2d');
+
+                            // Usiamo gli ultimi dati noti per ridisegnare il canvas con il nuovo stato
+                            currentConfig.template.draw(ctx, lastFetchedData, currentConfig);
+
+                            // Diciamo ad A-Frame di aggiornare immediatamente la texture 3D
+                            const plane = document.getElementById('plane-' + currentMarkerId);
+                            if (plane && plane.getObject3D('mesh')) {
+                                plane.getObject3D('mesh').material.map.needsUpdate = true;
+                            }
+                        }
                     }
                     // Altrimenti usa la logica standard
                     else {
