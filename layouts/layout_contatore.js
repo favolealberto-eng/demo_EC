@@ -62,8 +62,7 @@ window.LayoutContatore = {
                 afs_mc: 89.2,
                 energy_kwt: 45.7,
                 valve_states: ["APERTA", "APERTA", "CHIUSA"], // ACS, AFS, HVAC
-                pinnedDetailsView: 'STATISTICHE', // 'STATISTICHE' o 'MANUTENZIONE'
-                vistaDashboard: false
+                pinnedDetailsView: 'STATISTICHE' // 'STATISTICHE' o 'MANUTENZIONE'
             };
         }
 
@@ -74,36 +73,6 @@ window.LayoutContatore = {
         s.acs_mc += Math.random() * 0.01;
         s.afs_mc += Math.random() * 0.005;
         s.energy_kwt += Math.random() * 0.02;
-
-        const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
-        const h_sync = Math.floor(currentSlotIndex / 4).toString().padStart(2, '0');
-        const m_sync = ((currentSlotIndex % 4) * 15).toString().padStart(2, '0');
-        const str_ora_attuale = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-
-        const mockACS = typeof getMockDayData === 'function' ? getMockDayData('acs') : [];
-        const mockAFS = typeof getMockDayData === 'function' ? getMockDayData('afs') : [];
-        const mockRSC = typeof getMockDayData === 'function' ? getMockDayData('riscaldamento') : [];
-
-        const acsConsumo = mockACS.length > currentSlotIndex ? mockACS.slice(0, currentSlotIndex + 1).reduce((sum, val) => sum + parseFloat(val), 0).toFixed(0) : "45";
-        const acsPicco = Math.round(Number(acsConsumo) * 0.15 + 2);
-        const acsTrend = 5.2; 
-
-        const afsConsumo = mockAFS.length > currentSlotIndex ? mockAFS.slice(0, currentSlotIndex + 1).reduce((sum, val) => sum + parseFloat(val), 0).toFixed(0) : "120";
-        
-        let afsAnomaliaText = null;
-        if (Number(afsConsumo) > 500) {
-            afsAnomaliaText = "Superato limite giornaliero (500 L)";
-        } else if (now.getHours() >= 9 && now.getHours() <= 11) {
-            afsAnomaliaText = "Possibile perdita/consumo continuo";
-        }
-        const afsAnomalia = afsAnomaliaText !== null;
-        
-        const rscConsumo = mockRSC.length > currentSlotIndex ? mockRSC.slice(0, currentSlotIndex + 1).reduce((sum, val) => sum + parseFloat(val), 0).toFixed(1) : "2.5";
-        const rscMediaSet = 18.5; 
-        const rscIsUp = parseFloat(rscConsumo) > (rscMediaSet / 7);
-
-        let overallStatus = "ok";
-        if (afsAnomalia) overallStatus = "warning";
 
         const mockData = {
             timestamp: now,
@@ -127,16 +96,7 @@ window.LayoutContatore = {
             temp_supply: (60.2 + (Math.random() * 0.4 - 0.2)).toFixed(1), // Mandata HVAC
             temp_return: (40.1 + (Math.random() * 0.4 - 0.2)).toFixed(1), // Ritorno HVAC
             temp_acs_out: (48.5 + (Math.random() * 0.2 - 0.1)).toFixed(1), // ACS sx
-            temp_afs_in: (12.1 + (Math.random() * 0.1 - 0.05)).toFixed(1),  // AFS sx
-            
-            // Dati cruscotto Appartamento
-            nome: "CONTATORE GENERALE",
-            overallStatus: overallStatus,
-            str_ora_attuale: str_ora_attuale,
-            last_update: `${h_sync}:${m_sync}`,
-            acs: { consumo: acsConsumo, picco: acsPicco, trend: acsTrend },
-            afs: { consumo: afsConsumo, anomalia: afsAnomalia, anomaliaTesto: afsAnomaliaText },
-            riscaldamento: { consumo: rscConsumo, media_settimanale: rscMediaSet, is_up: rscIsUp }
+            temp_afs_in: (12.1 + (Math.random() * 0.1 - 0.05)).toFixed(1)  // AFS sx
         };
         callback(mockData);
     },
@@ -154,155 +114,16 @@ window.LayoutContatore = {
             // Recupera lo stato globale per capire se siamo pinnati
             const isPinned = window.isPinned || false;
 
-            // ---------------------------------------------------------
-            // RAMO A: VISTA PINNATA (STILE PAGINA WEB CON DETTAGLI E PULSANTI)
-            // ---------------------------------------------------------
-            if (isPinned) {
-                // Sfondo solido e pulito stile pagina web
-                ctx.fillStyle = '#061325';
-                ctx.fillRect(0, 0, W, H);
-
-                // --- HEADER PAGINA (Stile layout_quadroEl) ---
-                const headerH = 250;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-                ctx.fillRect(0, 0, W, headerH);
-                ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)'; ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.moveTo(0, headerH); ctx.lineTo(W, headerH); ctx.stroke();
-
-                ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 100px Inter'; ctx.textAlign = 'left';
-                ctx.fillText(`CONTATORE GENERALE - ID: ${config.id_macchina || 'QE-01'}`, 80, 160);
-
-                // --- STRUTTURA A COLONNE ---
-                const colW = (W - 150) / 2;
-                const colY = headerH + 80;
-
-                // COLONNA SINISTRA: IMMAGINE RIDOTTA E ANNOTATA (Per contesto)
-                ctx.save();
-                const imgScale = 0.9;
-                ctx.translate(80, colY);
-                ctx.scale(imgScale, imgScale);
-
-                // Disegno immagine ridotta
-                if (this.imageLoaded && this.backgroundImage) {
-                    ctx.drawImage(this.backgroundImage, 0, 0, 1696, 2516);
-                }
-
-                // Disegno le annotazioni ridotte sopra l'immagine
-                // (Chiamiamo la funzione di disegno standard ma dentro questa trasformazione)
-                ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'center';
-                this.drawStandardAnnotations(ctx, dati, { cX: 0, cY: this.map.header_hY });
-                ctx.restore();
-
-                // COLONNA DESTRA: DETTAGLI E PULSANTI (Stile layout_appartamento)
-                ctx.save();
-                ctx.translate(80 + colW + 80, colY);
-
-                // Container dettagli
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-                ctx.beginPath(); ctx.roundRect(0, 0, colW, 1600, 30); ctx.fill();
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.stroke();
-
-                // Titolo colonna
-                ctx.fillStyle = '#06b6d4'; ctx.font = 'bold 60px Inter'; ctx.textAlign = 'center';
-                ctx.fillText("DETTAGLI APPROFONDITI", colW / 2, 90);
-
-                // Sottotitolo ora aggiornata
-                ctx.fillStyle = '#94a3b8'; ctx.font = '36px Inter';
-                ctx.fillText(`Dati live aggiornati alle: ${dati.oraStr}`, colW / 2, 150);
-
-                // --- ELENCO DETTAGLI (List Riga stile layout_quadroEl) ---
-                let dY = 250;
-                const drawDetailRiga = (y, label, valore, unita, colorTheme) => {
-                    const rowH = 100;
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
-                    ctx.beginPath(); ctx.roundRect(40, y - 70, colW - 80, rowH, 15); ctx.fill();
-
-                    ctx.fillStyle = '#94a3b8'; ctx.font = '40px Inter'; ctx.textAlign = 'left';
-                    ctx.fillText(label, 70, y);
-
-                    ctx.fillStyle = colorTheme || '#f1f5f9'; ctx.font = 'bold 50px Inter'; ctx.textAlign = 'right';
-                    ctx.fillText(`${valore} ${unita}`, colW - 70, y);
-                };
-
-                drawDetailRiga(dY, "Consumo Totale Acqua Fredda", dati.afs_mc, "m³"); dY += 130;
-                drawDetailRiga(dY, "Consumo Totale Acqua Calda", dati.acs_mc, "m³"); dY += 130;
-                drawDetailRiga(dY, "Energia Termica HVAC Accumulata", dati.energy_kwt, "kWh"); dY += 130;
-                drawDetailRiga(dY, "Portata Istantanea HVAC", dati.flow_rate, "l/min"); dY += 130;
-
-                // Temperature Details
-                ctx.fillStyle = '#64748b'; ctx.font = 'bold 45px Inter'; ctx.textAlign = 'left'; dY += 50;
-                ctx.fillText("DIAGNOSTICA TEMPERATURE", 60, dY);
-                dY += 80;
-
-                const dT = (parseFloat(dati.temp_supply) - parseFloat(dati.temp_return)).toFixed(1);
-                drawDetailRiga(dY, "Temp. Mandata HVAC (Ingresso)", dati.temp_supply, "°C", '#ef4444'); dY += 110;
-                drawDetailRiga(dY, "Temp. Ritorno HVAC (Uscita)", dati.temp_return, "°C", '#3b82f6'); dY += 110;
-                drawDetailRiga(dY, "Differenziale Termico ΔT", dT, "°C", (dT > 15 ? '#22c55e' : '#facc15')); dY += 110;
-                drawDetailRiga(dY, "Temp. Uscita Acqua Calda Sanitaria", dati.temp_acs_out, "°C"); dY += 130;
-
-                // --- PULSANTI INTERATTIVI (In fondo alla colonna) ---
-                const btnW = colW - 200, btnH = 150;
-                ctx.save(); ctx.translate(100, dY + 100);
-
-                const drawButton = (y, text) => {
-                    ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
-                    ctx.beginPath(); ctx.roundRect(0, y, btnW, btnH, 30); ctx.fill();
-                    ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)'; ctx.lineWidth = 3; ctx.stroke();
-                    ctx.fillStyle = '#06b6d4'; ctx.font = 'bold 60px Inter'; ctx.textAlign = 'center';
-                    ctx.fillText(`${text}`, btnW / 2, y + btnH / 2 + 20);
-                };
-
-                drawButton(0, "STORICO ENERGETICO");
-                // Mappiamo hitbox (attenzione, siamo traslati due volte!)
-                this.hitboxes.push({ id: "apri_grafico", x: 80 + colW + 80 + 100, y: colY + dY + 100, w: btnW, h: btnH });
-
-                drawButton(200, "ULTIMA MANUTENZIONE");
-                this.hitboxes.push({ id: "apri_manutenzione", x: 80 + colW + 80 + 100, y: colY + dY + 300, w: btnW, h: btnH });
-
-                ctx.restore();
-                ctx.restore();
-
-                return; // INTERROMPE LA FUNZIONE: non disegniamo il layout standard
-            }
+            // Il RAMO A (Vista doppia) è stato rimosso.
+            // Utilizziamo unicamente la VISTA STANDARD in ogni caso.
 
             // ---------------------------------------------------------
             // RAMO B: VISTA STANDARD (ANNOTATA SOPRA IMMAGINE REALE)
             // ---------------------------------------------------------
 
-            // AGGIUNTA DASHBOARD: se vistaDashboard è true
-            if (window.ContatoreGlobalState && window.ContatoreGlobalState.vistaDashboard) {
-                this.hitboxes = [];
-                if (ctx.canvas.width !== 800 || ctx.canvas.height !== 1600) {
-                    ctx.canvas.width = 800; ctx.canvas.height = 1600;
-                    const markerId = ctx.canvas.id.replace('canvas-', '');
-                    const plane3D = document.getElementById('plane-' + markerId);
-                    if (plane3D) {
-                        plane3D.setAttribute('width', 2.2);
-                        plane3D.setAttribute('height', 4.4);
-                    }
-                }
-
-                ctx.fillStyle = 'rgba(13, 31, 60, 0.9)';
-                ctx.beginPath();
-                ctx.roundRect(0, 0, 800, 1600, 40);
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
-                ctx.lineWidth = 4;
-                ctx.stroke();
-
-                this.drawMain(ctx, dati, 800, 1600);
-                return;
-            }
-
             // Ripristina dimensioni Canvas nativo se necessario
             if (ctx.canvas.width !== W || ctx.canvas.height !== H) {
                 ctx.canvas.width = W; ctx.canvas.height = H;
-                const markerId = ctx.canvas.id.replace('canvas-', '');
-                const plane3D = document.getElementById('plane-' + markerId);
-                if (plane3D) {
-                    plane3D.setAttribute('width', this.config.planeW);
-                    plane3D.setAttribute('height', this.config.planeH);
-                }
             }
 
             // --- 1. DISEGNO HEADER SUPERIORE ---
@@ -468,201 +289,5 @@ window.LayoutContatore = {
             // Placeholder: qui si potrebbe mostrare la cronologia manutenzioni
             alert(`Simulazione: Apertura Registro Manutenzioni.\nUltimo intervento: 15/03/2026 - Sostituzione fusibile L1.`);
         }
-    },
-
-    drawMain: function(ctx, dati, w, h) {
-        // --- HEADER LOGICA ---
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-        ctx.beginPath();
-        ctx.roundRect(0, 0, w, 180, { tl: 40, tr: 40, bl: 0, br: 0 });
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
-        ctx.beginPath(); ctx.moveTo(0, 180); ctx.lineTo(w, 180); ctx.stroke();
-
-        // Icona/Testo
-        ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 50px Inter';
-        ctx.textAlign = 'left';
-        ctx.fillText(dati.nome, 50, 80);
-
-        // Ultimo aggiornamento
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '24px Inter';
-        ctx.fillText(`Ultimo agg: ${dati.last_update} - Ora attuale: ${dati.str_ora_attuale}`, 50, 130);
-
-        // Spia Globale + Icona info globale
-        let colorSemaforo = '#22c55e'; // Verde ok
-        let glowSemaforo = 'rgba(34, 197, 94, 0.6)';
-        if (dati.overallStatus === "warning") {
-            colorSemaforo = '#facc15'; // Giallo
-            glowSemaforo = 'rgba(250, 204, 21, 0.6)';
-        } else if (dati.overallStatus === "error") {
-            colorSemaforo = '#ef4444'; // Rosso
-            glowSemaforo = 'rgba(239, 68, 68, 0.6)';
-        }
-
-        ctx.save();
-        ctx.shadowColor = glowSemaforo;
-        ctx.shadowBlur = 30;
-        ctx.fillStyle = colorSemaforo;
-        ctx.beginPath(); ctx.arc(w - 180, 90, 30, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
-
-        // --- SEZIONI ---
-        let currentY = 220;
-
-        // 1. ACS (Acqua Calda Sanitaria)
-        currentY = this.drawSection(ctx, currentY, w, "ACS - Acqua Calda", '#0ea5e9', [
-            { label: "Consumo Giornaliero:", value: `${dati.acs.consumo} L` },
-            { label: "Picco Istantaneo:", value: `${dati.acs.picco} L/min` },
-            { label: "Trend Settimanale:", value: `+${dati.acs.trend}% ▲` }
-        ], 'btn_info_acs');
-
-        currentY += 40;
-
-        // 2. AFS (Acqua Fredda Sanitaria)
-        // Se c'è anomalia inserisco item alert e pulldown mail
-        let afsItems = [
-            { label: "Consumo Giornaliero:", value: `${dati.afs.consumo} L` }
-        ];
-        if (dati.afs.anomalia) {
-            afsItems.push({ label: "⚠️ ALERT: ", value: dati.afs.anomaliaTesto, valColor: '#ef4444', isAlert: true });
-            // Add a mailto button layout inside section
-        } else {
-            afsItems.push({ label: "Stato Alert:", value: "Nessun problema", valColor: '#22c55e' });
-        }
-        currentY = this.drawSection(ctx, currentY, w, "AFS - Acqua Fredda", '#3b82f6', afsItems, 'btn_info_afs', dati.afs.anomalia ? 'mail_idraulico' : null);
-
-        currentY += 40;
-
-        // 3. Riscaldamento
-        currentY = this.drawSection(ctx, currentY, w, "Riscaldamento", '#f97316', [
-            { label: "Consumo Giornaliero:", value: `${dati.riscaldamento.consumo} kWh` },
-            { label: "Media Settimanale:", value: `${dati.riscaldamento.media_settimanale} kWh` },
-            { label: "Rispetto alla media:", value: dati.riscaldamento.is_up ? '▲ In aumento' : '▼ In calo', valColor: dati.riscaldamento.is_up ? '#ef4444' : '#22c55e' }
-        ], 'btn_info_rsc', null, '#f97316' /* mini icon termica implicitamente data da questo colore main */ );
-
-
-        // --- PULSANTE GLOBALE DIAGNOSTICA ---
-        const btnDiagY = currentY + 40;
-        const btnBoxDiag = { id: "btn_diagnostica", x: 100, y: btnDiagY, w: 600, h: 90 };
-        this.hitboxes.push(btnBoxDiag);
-
-        const isPinned = window.isPinned;
-        if (!isPinned) ctx.globalAlpha = 0.4;
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.beginPath(); ctx.roundRect(btnBoxDiag.x, btnBoxDiag.y, btnBoxDiag.w, btnBoxDiag.h, 45); ctx.fill();
-        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.stroke();
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.textAlign = 'center';
-        ctx.font = 'bold 32px Inter';
-        ctx.fillText(isPinned ? "⚙ DIAGNOSTICA E DETTAGLI" : "🔒 DIAGNOSTICA E DETTAGLI", w/2, btnDiagY + 55);
-
-        if (!isPinned) ctx.globalAlpha = 1.0;
-    },
-
-    drawSection: function(ctx, y, w, title, colorPrimary, items, infoBtnId, alertMailId = null, extraColorLight = null) {
-        const hSec = alertMailId ? 380 : 310;
-        const padding = 40;
-        const secW = w - (padding * 2);
-
-        // Box
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-        ctx.beginPath(); ctx.roundRect(padding, y, secW, hSec, 20); ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.stroke();
-
-        // Linea colorata laterale sx
-        ctx.fillStyle = colorPrimary;
-        ctx.beginPath(); ctx.roundRect(padding, y + 20, 8, hSec - 40, 4); ctx.fill();
-
-        // Titolo sezione
-        let iconOffset = 0;
-        if (title.includes("Riscaldamento")) {
-            ctx.fillStyle = colorPrimary;
-            ctx.font = 'bold 36px Inter';
-            ctx.textAlign = 'left';
-            ctx.fillText("🌡", padding + 30, y + 55);
-            iconOffset = 45;
-        }
-
-        ctx.fillStyle = '#f1f5f9';
-        ctx.textAlign = 'left';
-        ctx.font = 'bold 34px Inter';
-        ctx.fillText(title, padding + 30 + iconOffset, y + 55);
-
-        // Eventuale spia stato sezione
-        if (extraColorLight) {
-            ctx.fillStyle = colorPrimary; // Usiamo questo come colore stato "acceso" se c'è
-            ctx.beginPath(); ctx.arc(padding + secW - 40, y + 40, 15, 0, Math.PI * 2); ctx.fill();
-        }
-
-        // Variabili items
-        let itemY = y + 120;
-        items.forEach(it => {
-            if (it.isAlert) {
-                ctx.fillStyle = it.valColor || '#ef4444';
-                ctx.font = 'bold 26px Inter';
-                ctx.fillText(it.label + it.value, padding + 30, itemY);
-            } else {
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '26px Inter';
-                ctx.fillText(it.label, padding + 30, itemY);
-                
-                ctx.fillStyle = it.valColor || '#f1f5f9';
-                ctx.font = 'bold 32px Inter';
-                ctx.textAlign = 'right';
-                ctx.fillText(it.value, padding + secW - 30, itemY + 2);
-            }
-            
-            ctx.textAlign = 'left';
-            itemY += 50;
-        });
-
-        // Eventuale mailto
-        if (alertMailId) {
-            const mailBtnW = 280;
-            const mailBtnH = 50;
-            const mailX = padding + secW - 30 - mailBtnW;
-            const mailY = itemY;
-            
-            this.hitboxes.push({ id: alertMailId, x: mailX, y: mailY, w: mailBtnW, h: mailBtnH });
-            
-            const isPinned = window.isPinned;
-            if (!isPinned) ctx.globalAlpha = 0.4;
-
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
-            ctx.beginPath(); ctx.roundRect(mailX, mailY, mailBtnW, mailBtnH, 10); ctx.fill();
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)'; ctx.lineWidth = 1; ctx.stroke();
-
-            ctx.fillStyle = '#ef4444'; ctx.textAlign = 'center'; ctx.font = 'bold 20px Inter';
-            ctx.fillText(isPinned ? "✉ CONTATTA IDRAULICO" : "🔒 CONTATTA IDRAULICO", mailX + mailBtnW/2, mailY + 33);
-            
-            if (!isPinned) ctx.globalAlpha = 1.0;
-
-            itemY += 70; // Spazio extra se presente alert
-            ctx.textAlign = 'left';
-        }
-
-        // Pulsante Maggiori info
-        const infoBtnBox = { id: infoBtnId, x: padding + 30, y: y + hSec - 80, w: secW - 60, h: 60 };
-        this.hitboxes.push(infoBtnBox);
-
-        const isPinnedInfo = window.isPinned;
-        if (!isPinnedInfo) ctx.globalAlpha = 0.4;
-
-        ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
-        ctx.beginPath(); ctx.roundRect(infoBtnBox.x, infoBtnBox.y, infoBtnBox.w, infoBtnBox.h, 15); ctx.fill();
-        ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
-        
-        ctx.fillStyle = '#06b6d4';
-        ctx.textAlign = 'center';
-        ctx.font = 'bold 24px Inter';
-        ctx.fillText(isPinnedInfo ? "MAGGIORI INFO 📊" : "🔒 MAGGIORI INFO", infoBtnBox.x + infoBtnBox.w/2, infoBtnBox.y + 40);
-
-        if (!isPinnedInfo) ctx.globalAlpha = 1.0;
-
-        return y + hSec;
     }
 };
