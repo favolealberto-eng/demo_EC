@@ -180,12 +180,6 @@ window.LayoutContatore = {
             const h = hMap;
             const x = (xMap + ox) - (w / 2);
             const y = (yMap + oy) - (h / 2);
-            // --- DEBUG: Disegna un mirino rosso ESATTAMENTE sul centro ---
-            ctx.fillStyle = 'red';
-            ctx.beginPath();
-            ctx.arc(xMap + ox, yMap + oy, 15, 0, Math.PI * 2);
-            ctx.fill();
-            // -------------------------------------------------------------
 
             // Fondo scuro semitrasparente (stile vetro fumè)
             ctx.fillStyle = 'rgba(13, 31, 60, 0.85)';
@@ -194,6 +188,14 @@ window.LayoutContatore = {
             // Bordo colorato
             ctx.strokeStyle = colorTheme || '#06b6d4'; ctx.lineWidth = 4;
             ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.stroke();
+
+            // --- DEBUG: Disegna un mirino rosso ESATTAMENTE sul centro ---
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(xMap + ox, yMap + oy, 15, 0, Math.PI * 2);
+            ctx.fill();
+            // -------------------------------------------------------------
+
 
             // Allineamento verticale testo
             ctx.textBaseline = 'middle';
@@ -234,6 +236,13 @@ window.LayoutContatore = {
 
             ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.stroke();
+
+            // --- DEBUG: Disegna un mirino rosso ESATTAMENTE sul centro ---
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(xMap + ox, yMap + oy, 15, 0, Math.PI * 2);
+            ctx.fill();
+            // -------------------------------------------------------------
 
             // Colore stato (Verde aperto, Giallo chiuso)
             let statusColor = (stato === "APERTA") ? "#22c55e" : "#eab308";
