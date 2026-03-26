@@ -161,7 +161,7 @@ window.LayoutContatore = {
             }
 
             // --- 3. DISEGNO ANNOTAZIONI DINAMICHE ---
-            this.drawStandardAnnotations(ctx, dati, { cX: 0, cY: 0 });
+            this.drawStandardAnnotations(ctx, dati, { cX: 0, cY: this.map.header_hY });
 
         });
     },
@@ -180,6 +180,12 @@ window.LayoutContatore = {
             const h = hMap;
             const x = (xMap + ox) - (w / 2);
             const y = (yMap + oy) - (h / 2);
+            // --- DEBUG: Disegna un mirino rosso ESATTAMENTE sul centro ---
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(xMap + ox, yMap + oy, 15, 0, Math.PI * 2);
+            ctx.fill();
+            // -------------------------------------------------------------
 
             // Fondo scuro semitrasparente (stile vetro fumè)
             ctx.fillStyle = 'rgba(13, 31, 60, 0.85)';
