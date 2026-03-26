@@ -728,7 +728,7 @@
         <button class="btn-minimal" onclick="cambiaZoom(1)">➕</button>
         <button class="btn-minimal" onclick="cambiaZoom(-1)">➖</button>
         <button id="btn-switch-view" class="btn-minimal btn-pin" style="display: none;"
-            onclick="toggleQuadroView()">Manutenzione</button>
+            onclick="toggleSwitchView()">Manutenzione</button>
         <button class="btn-minimal btn-pin" onclick="pinToScreen()">Dettagli</button>
     </div>
 
@@ -942,12 +942,15 @@
                             uiControls.style.display = 'flex';
                             uiControls.style.zIndex = '10000';
 
-                            // GESTIONE BOTTONE SWITCH MANUTENZIONE
+                            // GESTIONE BOTTONE SWITCH VISTE
                             const btnSwitch = document.getElementById('btn-switch-view');
                             if (config.oggetto === 'LayoutQuadroEl') {
-                                btnSwitch.style.display = 'flex'; // Mostra solo per il Quadro Elettrico
+                                btnSwitch.style.display = 'flex'; // Mostra per il Quadro Elettrico
                                 // Resetta il testo al default quando si reinquadra
                                 btnSwitch.innerHTML = (window.QuadroElGlobalState && window.QuadroElGlobalState.vistaTabella) ? 'Dashboard' : 'Manutenzione';
+                            } else if (config.oggetto === 'LayoutContatore') {
+                                btnSwitch.style.display = 'flex'; // Mostra per il Contatore
+                                btnSwitch.innerHTML = (window.ContatoreGlobalState && window.ContatoreGlobalState.vistaDashboard) ? 'Contatore' : 'Dashboard';
                             } else {
                                 btnSwitch.style.display = 'none'; // Nascondi per le altre macchine
                             }
@@ -967,9 +970,9 @@
             });
         }
 
-        // --- FUNZIONE SWITCH VISTA QUADRO ELETTRICO ---
-        window.toggleQuadroView = function () {
-            if (window.QuadroElGlobalState) {
+        // --- FUNZIONE SWITCH VISTA ---
+        window.toggleSwitchView = function () {
+            if (currentConfig.oggetto === 'LayoutQuadroEl' && window.QuadroElGlobalState) {
                 // Inverti lo stato
                 window.QuadroElGlobalState.vistaTabella = !window.QuadroElGlobalState.vistaTabella;
 
@@ -981,18 +984,35 @@
                     btn.innerHTML = 'Manutenzione';
                 }
 
-                // Forza un ridisegno immediato per non aspettare il secondo del renderLoop
-                if (currentConfig && currentConfig.template && currentConfig.template.draw) {
-                    const canvas = document.getElementById('canvas-' + currentMarkerId);
-                    const ctx = canvas.getContext('2d');
-                    currentConfig.template.draw(ctx, lastFetchedData, currentConfig);
-                    const plane = document.getElementById('plane-' + currentMarkerId);
-                    if (plane && plane.getObject3D('mesh')) {
-                        plane.getObject3D('mesh').material.map.needsUpdate = true;
-                    }
+                forceRedraw();
+            } else if (currentConfig.oggetto === 'LayoutContatore' && window.ContatoreGlobalState) {
+                // Inverti lo stato
+                window.ContatoreGlobalState.vistaDashboard = !window.ContatoreGlobalState.vistaDashboard;
+
+                // Aggiorna il testo del bottone
+                const btn = document.getElementById('btn-switch-view');
+                if (window.ContatoreGlobalState.vistaDashboard) {
+                    btn.innerHTML = 'Contatore'; // Se vedo la dashboard, torno all'immagine contatore
+                } else {
+                    btn.innerHTML = 'Dashboard';
                 }
+
+                forceRedraw();
             }
         };
+
+        function forceRedraw() {
+            // Forza un ridisegno immediato per non aspettare il secondo del renderLoop
+            if (currentConfig && currentConfig.template && currentConfig.template.draw) {
+                const canvas = document.getElementById('canvas-' + currentMarkerId);
+                const ctx = canvas.getContext('2d');
+                currentConfig.template.draw(ctx, lastFetchedData, currentConfig);
+                const plane = document.getElementById('plane-' + currentMarkerId);
+                if (plane && plane.getObject3D('mesh')) {
+                    plane.getObject3D('mesh').material.map.needsUpdate = true;
+                }
+            }
+        }
 
         // ==========================================
         // 2. MOTORE DI RENDERING 2D SU PANNELLI 3D
