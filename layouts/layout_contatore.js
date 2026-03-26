@@ -12,7 +12,7 @@ window.LayoutContatore = {
     },
 
     // 2. GESTIONE ASSET (Immagine e CSV)
-    imageSrc: 'images/contatore/Contatore.jpg',
+    imageSrc: 'images/contatore/Contatore.png',
     csvSrc: 'Contatore.csv',
 
     backgroundImage: null,
