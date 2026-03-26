@@ -161,122 +161,146 @@ window.LayoutContatore = {
             }
 
             // --- 3. DISEGNO ANNOTAZIONI DINAMICHE ---
-            this.drawStandardAnnotations(ctx, dati, { cX: 0, cY: this.map.header_hY });
+            this.drawStandardAnnotations(ctx, dati);
 
         });
     },
 
-    // Funzione helper per disegnare le annotazioni in vista standard
+    // Funzione helper per disegnare le annotazioni in vista standard (Con Auto-Scaling)
     drawStandardAnnotations: function (ctx, dati) {
         const map = this.map;
-        // Il codice aggiunge l'offset dell'header in AUTOMATICO. 
-        // Tu inserisci solo le X e Y lette dall'immagine originale su Paint.
-        const offsetY = map.header_hY;
+        // Applichiamo l'offset ESATTAMENTE UNA VOLTA QUI.
+        const offsetY = map.header_hY || 200;
 
         // ==========================================
-        // 1. DISEGNO CERCHI (Per Contatori Acqua)
+        // 1. DISEGNO CERCHI (Auto-adattanti)
         // ==========================================
         const drawCircle = (label, valore, unita, cX, cY, diametro, colorTheme) => {
             const x = cX;
-            const y = cY + offsetY; // Traduzione automatica
+            const y = cY + offsetY;
             const raggio = diametro / 2;
 
-            // Sfondo scuro e Bordo circolare
+            // Sfondo scuro e Bordo
             ctx.fillStyle = 'rgba(13, 31, 60, 0.85)';
             ctx.beginPath(); ctx.arc(x, y, raggio, 0, Math.PI * 2); ctx.fill();
-            ctx.strokeStyle = colorTheme || '#06b6d4'; ctx.lineWidth = 6;
+            ctx.strokeStyle = colorTheme || '#06b6d4'; ctx.lineWidth = Math.max(2, diametro * 0.02);
             ctx.beginPath(); ctx.arc(x, y, raggio, 0, Math.PI * 2); ctx.stroke();
 
-            // Testo perfettamente centrato nel cerchio
+            // Calcolo DINAMICO del font in base al diametro!
+            const valSize = Math.floor(diametro * 0.22); // Il valore prende il 22% del diametro
+            const lblSize = Math.floor(diametro * 0.09); // Le etichette il 9%
+
             ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
 
-            ctx.fillStyle = 'rgba(148,163,184,1)'; ctx.font = '30px Inter';
-            ctx.fillText(label.toUpperCase(), x, y - 50);
+            ctx.fillStyle = 'rgba(148,163,184,1)';
+            ctx.font = `bold ${lblSize}px Inter`;
+            ctx.fillText(label.toUpperCase(), x, y - (diametro * 0.18));
 
-            ctx.fillStyle = colorTheme || '#f1f5f9'; ctx.font = 'bold 70px Inter';
-            ctx.fillText(valore, x, y + 10);
+            ctx.fillStyle = colorTheme || '#f1f5f9';
+            ctx.font = `bold ${valSize}px Inter`;
+            ctx.fillText(valore, x, y + (diametro * 0.05));
 
-            ctx.fillStyle = '#94a3b8'; ctx.font = '30px Inter';
-            ctx.fillText(unita, x, y + 65);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = `${lblSize}px Inter`;
+            ctx.fillText(unita, x, y + (diametro * 0.28));
         };
 
         // ==========================================
-        // 2. DISEGNO RETTANGOLI (Per Danfoss e Temperature)
+        // 2. DISEGNO RETTANGOLI (Auto-adattanti)
         // ==========================================
         const drawRect = (label, valore, unita, cX, cY, w, h, colorTheme) => {
             const x = cX - (w / 2);
-            const y = (cY + offsetY) - (h / 2); // Traduzione automatica
+            const y = (cY + offsetY) - (h / 2);
 
             ctx.fillStyle = 'rgba(13, 31, 60, 0.85)';
-            ctx.beginPath(); ctx.roundRect(x, y, w, h, 20); ctx.fill();
-            ctx.strokeStyle = colorTheme || '#06b6d4'; ctx.lineWidth = 4;
-            ctx.beginPath(); ctx.roundRect(x, y, w, h, 20); ctx.stroke();
+            ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.min(20, h * 0.2)); ctx.fill();
+            ctx.strokeStyle = colorTheme || '#06b6d4'; ctx.lineWidth = Math.max(2, h * 0.03);
+            ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.min(20, h * 0.2)); ctx.stroke();
 
             ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
             const centerY = y + (h / 2);
 
             if (h <= 120) {
-                // Layout compatto su una riga per le temperature
-                ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 45px Inter';
-                ctx.fillText(`${valore} ${unita}`, cX, centerY + 5);
+                // Modello su singola riga (Es. Temperature)
+                // Il font si adatta per non sforare né in altezza né in larghezza
+                const fontSize = Math.floor(Math.min(h * 0.45, w * 0.18));
+                ctx.fillStyle = '#f1f5f9';
+                ctx.font = `bold ${fontSize}px Inter`;
+                ctx.fillText(`${valore} ${unita}`, cX, centerY + 2);
             } else {
-                // Layout su più righe per il Danfoss
-                ctx.fillStyle = 'rgba(148,163,184,1)'; ctx.font = '32px Inter';
-                ctx.fillText(label.toUpperCase(), cX, y + 55);
-                ctx.fillStyle = colorTheme || '#f1f5f9'; ctx.font = 'bold 65px Inter';
-                ctx.fillText(valore, cX, centerY + 25);
-                ctx.fillStyle = '#94a3b8'; ctx.font = '32px Inter';
-                ctx.fillText(unita, cX, y + h - 30);
+                // Modello multi-riga (Es. Danfoss)
+                const valSize = Math.floor(Math.min(h * 0.25, w * 0.2));
+                const lblSize = Math.floor(Math.min(h * 0.12, w * 0.1));
+
+                ctx.fillStyle = 'rgba(148,163,184,1)';
+                ctx.font = `bold ${lblSize}px Inter`;
+                ctx.fillText(label.toUpperCase(), cX, y + (h * 0.25));
+
+                ctx.fillStyle = colorTheme || '#f1f5f9';
+                ctx.font = `bold ${valSize}px Inter`;
+                ctx.fillText(valore, cX, centerY + (h * 0.05));
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = `${lblSize}px Inter`;
+                ctx.fillText(unita, cX, y + h - (h * 0.15));
             }
         };
 
         // ==========================================
-        // 3. DISEGNO VALVOLE (Stato Aperto/Chiuso)
+        // 3. DISEGNO VALVOLE (Auto-adattanti)
         // ==========================================
         const drawValve = (label, stato, cX, cY, w, h) => {
             const x = cX - (w / 2);
-            const y = (cY + offsetY) - (h / 2); // Traduzione automatica
+            const y = (cY + offsetY) - (h / 2);
 
             ctx.fillStyle = 'rgba(13, 31, 60, 0.85)';
-            ctx.beginPath(); ctx.roundRect(x, y, w, h, 20); ctx.fill();
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.roundRect(x, y, w, h, 20); ctx.stroke();
+            ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.min(20, h * 0.2)); ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = Math.max(2, h * 0.03);
+            ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.min(20, h * 0.2)); ctx.stroke();
 
             let statusColor = (stato === "APERTA") ? "#22c55e" : "#eab308";
             ctx.textBaseline = 'middle';
             const centerY = y + (h / 2);
 
-            ctx.fillStyle = statusColor;
-            ctx.beginPath(); ctx.arc(x + 50, centerY, 15, 0, Math.PI * 2); ctx.fill();
+            // Calcolo font dinamico e posizione pallino
+            const fontSize = Math.floor(Math.min(h * 0.35, w * 0.1));
+            const iconRadius = Math.floor(h * 0.15);
+            const startX = x + (w * 0.15); // Margine sinistro proporzionale
 
-            ctx.fillStyle = '#94a3b8'; ctx.font = '36px Inter'; ctx.textAlign = 'left';
-            ctx.fillText(label, x + 90, centerY + 4);
-            ctx.fillStyle = statusColor; ctx.font = 'bold 36px Inter';
-            ctx.fillText(stato, x + 210, centerY + 4);
+            ctx.fillStyle = statusColor;
+            ctx.beginPath(); ctx.arc(startX, centerY, iconRadius, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = `${fontSize}px Inter`; ctx.textAlign = 'left';
+            ctx.fillText(label, startX + iconRadius + 15, centerY + 2);
+
+            ctx.fillStyle = statusColor;
+            ctx.font = `bold ${fontSize}px Inter`;
+            // Posizioniamo lo stato sulla destra
+            ctx.fillText(stato, x + (w * 0.55), centerY + 2);
         };
 
         // ==========================================
-        // ESECUZIONE DISEGNO CON LE TUE MISURE ESATTE
+        // ESECUZIONE DISEGNO
         // ==========================================
 
-        // Contatori (CERCHI) - Il parametro 'w' del tuo map diventa il Diametro
+        // Contatori (CERCHI)
         drawCircle("Acqua Fredda", dati.afs_mc, "m³", map["Contatore Acqua Fredda"].cX, map["Contatore Acqua Fredda"].cY, map["Contatore Acqua Fredda"].w, '#06b6d4');
         drawCircle("Acqua Calda", dati.acs_mc, "m³", map["Contatore Acqua Calda"].cX, map["Contatore Acqua Calda"].cY, map["Contatore Acqua Calda"].w, '#ef4444');
 
         // Valvole (RETTANGOLI STATO)
-        drawValve("VALVOLA", dati.valve_afs, map["Valvola Acqua Fredda"].cX, map["Valvola Acqua Fredda"].cY, 350, 90);
-        drawValve("VALVOLA", dati.valve_acs, map["Valvola Acqua Calda"].cX, map["Valvola Acqua Calda"].cY, 350, 90);
-        drawValve("MOTORE", dati.valve_hvac, map["Attuatore Motorizzato"].cX, map["Attuatore Motorizzato"].cY, 350, 90);
+        drawValve("VALVOLA", dati.valve_afs, map["Valvola Acqua Fredda"].cX, map["Valvola Acqua Fredda"].cY, map["Valvola Acqua Fredda"].w, map["Valvola Acqua Fredda"].h);
+        drawValve("VALVOLA", dati.valve_acs, map["Valvola Acqua Calda"].cX, map["Valvola Acqua Calda"].cY, map["Valvola Acqua Calda"].w, map["Valvola Acqua Calda"].h);
+        drawValve("MOTORE", dati.valve_hvac, map["Attuatore Motorizzato"].cX, map["Attuatore Motorizzato"].cY, map["Attuatore Motorizzato"].w, map["Attuatore Motorizzato"].h);
 
         // Danfoss e Temperature (RETTANGOLI DATI)
         drawRect("Energia Termica", dati.energy_kwt, "kWh", map["Misuratore Danfoss"].cX, map["Misuratore Danfoss"].cY, map["Misuratore Danfoss"].w, map["Misuratore Danfoss"].h, '#eab308');
-
         drawRect("Mandata", dati.temp_supply, "°C", map["Temp Mandata (Rosso)"].cX, map["Temp Mandata (Rosso)"].cY, map["Temp Mandata (Rosso)"].w, map["Temp Mandata (Rosso)"].h, '#ef4444');
         drawRect("Ritorno", dati.temp_return, "°C", map["Temp Ritorno (Blu)"].cX, map["Temp Ritorno (Blu)"].cY, map["Temp Ritorno (Blu)"].w, map["Temp Ritorno (Blu)"].h, '#3b82f6');
         drawRect("Temp AFS", dati.temp_afs_in, "°C", map["Temp AFS (Blu sx)"].cX, map["Temp AFS (Blu sx)"].cY, map["Temp AFS (Blu sx)"].w, map["Temp AFS (Blu sx)"].h, '#60a5fa');
         drawRect("Temp ACS", dati.temp_acs_out, "°C", map["Temp ACS (Rosso sx)"].cX, map["Temp ACS (Rosso sx)"].cY, map["Temp ACS (Rosso sx)"].w, map["Temp ACS (Rosso sx)"].h, '#f87171');
 
-        // Reset Baseline
+        // Reset
         ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
     },
 };
