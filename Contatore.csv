@@ -1,0 +1,9 @@
+Oggetto;Centro x;Centro Y;Larghezza;Altezza;Forma
+Portata AFS;363;1047;187;184;cerchio
+Portata ACS;631;1047;187;184;cerchio
+Temperatura acqua calda tecnica (mandata);1108;496;180;120;rettangolo
+Temperatura acqua calda tecnica (ritorno);908;496;180;120;rettangolo
+Temperatura ACS ;629;496;180;120;rettangolo
+Temperatura AFS ;363;496;180;120;rettangolo
+Contatore termico Dafnoss;932;1228;228;109;rettangolo
+Valvola motorizzata;1372;962;220;123;rettangolo
