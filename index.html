@@ -935,6 +935,12 @@
 
                     script.onload = () => {
                         config.template = window[config.oggetto];
+
+                        // PRE-CARICA gli asset del layout prima del primo tick (evita draw asincrono)
+                        if (config.template && typeof config.template.preloadAssets === 'function') {
+                            config.template.preloadAssets();
+                        }
+
                         startRenderLoop(id, config);
 
                         // FONDAMENTALE FORZATURA PER MARKER DINAMICI
@@ -959,6 +965,10 @@
                 markerEl.addEventListener('markerLost', () => {
                     const id = markerEl.getAttribute('value');
                     if (!isPinned && currentMarkerId === id) {
+                        // Resetta il pannello alla vista standard prima di perdere il marker
+                        if (currentConfig && currentConfig.template && typeof currentConfig.template.resetState === 'function') {
+                            currentConfig.template.resetState();
+                        }
                         uiControls.style.display = 'none';
                         if (renderLoop) clearInterval(renderLoop);
                         currentMarkerId = null;
@@ -1024,6 +1034,16 @@
 
                     lastFetchedData = dati; // <-- FONDAMENTALE: Salva i dati per usarli nel Calendario!
 
+                    // Imposta il callback per re-draw asincrono (es. layout_contatore primo frame)
+                    if (typeof currentConfig.template._pendingRedrawCallback !== 'undefined') {
+                        currentConfig.template._pendingRedrawCallback = () => {
+                            currentConfig.template.draw(ctx, dati, currentConfig);
+                            if (plane.getObject3D('mesh')) {
+                                plane.getObject3D('mesh').material.map.needsUpdate = true;
+                            }
+                        };
+                    }
+
                     currentConfig.template.draw(ctx, dati, currentConfig);
                     if (plane.getObject3D('mesh')) {
                         plane.getObject3D('mesh').material.map.needsUpdate = true;
@@ -1087,6 +1107,11 @@
             window.isPinned = false;
             document.getElementById('hud-modal').style.display = 'none';
             chiudiDettaglio();
+
+            // Resetta il pannello alla vista standard (es. vistaDettaglio del Contatore)
+            if (currentConfig && currentConfig.template && typeof currentConfig.template.resetState === 'function') {
+                currentConfig.template.resetState();
+            }
 
             const activeCanvas = document.getElementById('canvas-' + currentMarkerId);
             document.body.appendChild(activeCanvas);

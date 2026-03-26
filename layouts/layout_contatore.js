@@ -19,11 +19,20 @@ window.LayoutContatore = {
     imageLoaded: false,
     csvLoaded: false,
 
+    // Callback richiamato dal renderLoop dopo ogni draw asincrono (usato da index.html)
+    _pendingRedrawCallback: null,
+
     map: { header_hY: 200 }, // Conterrà i dati del CSV
     hitboxes: [],
 
     // Funzione combinata per caricare sia l'immagine che il CSV
+    // Se gli asset sono già pronti chiama immediatamente il callback (sincrona).
     loadAssets: function (callback) {
+        if (this.imageLoaded && this.csvLoaded) {
+            callback();
+            return;
+        }
+
         let assetsToLoad = 2;
         let assetsLoaded = 0;
 
@@ -48,7 +57,7 @@ window.LayoutContatore = {
                 .then(response => response.text())
                 .then(data => {
                     const rows = data.split('\n');
-                    for (let i = 1; i < rows.length; i++) { // Salta la riga di intestazione
+                    for (let i = 1; i < rows.length; i++) {
                         const row = rows[i].trim();
                         if (row) {
                             const cols = row.split(';');
@@ -73,6 +82,20 @@ window.LayoutContatore = {
                 });
         } else {
             onAssetLoaded();
+        }
+    },
+
+    // PRE-CARICAMENTO: da chiamare subito al markerFound per avere gli asset pronti al primo draw
+    preloadAssets: function () {
+        this.loadAssets(() => {
+            console.log("[Contatore] Asset pre-caricati e pronti.");
+        });
+    },
+
+    // RESET STATO: da chiamare su unpinFromScreen e markerLost
+    resetState: function () {
+        if (window.ContatoreGlobalState) {
+            window.ContatoreGlobalState.vistaDettaglio = false;
         }
     },
 
@@ -115,10 +138,36 @@ window.LayoutContatore = {
         const W = this.config.canvasW;
         const H = this.config.canvasH;
 
-        // Assicuriamoci che Immagine e CSV siano pronti
-        this.loadAssets(() => {
-
+        // Se gli asset NON sono ancora pronti, avvia il caricamento e pianifica un re-draw
+        // tramite il callback _pendingRedrawCallback (impostato da index.html nel tick).
+        if (!this.imageLoaded || !this.csvLoaded) {
+            this.loadAssets(() => {
+                if (typeof this._pendingRedrawCallback === 'function') {
+                    this._pendingRedrawCallback();
+                }
+            });
+            // Disegna uno schermo di caricamento minimal
             ctx.clearRect(0, 0, W, H);
+            ctx.fillStyle = '#061325';
+            ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = 'rgba(6,182,212,0.7)';
+            ctx.font = 'bold 60px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Caricamento...', W / 2, H / 2);
+            ctx.textAlign = 'left';
+            return;
+        }
+
+        // --- Da qui gli asset sono sempre pronti: rendering sincrono ---
+        this._drawSync(ctx, dati, config);
+    },
+
+    _drawSync: function (ctx, dati, config) {
+        const state = window.ContatoreGlobalState;
+        const W = this.config.canvasW;
+        const H = this.config.canvasH;
+
+        ctx.clearRect(0, 0, W, H);
 
             // =========================================================
             // RAMO A: VISTA DETTAGLI (Stile Pannello Appartamento)
@@ -208,7 +257,6 @@ window.LayoutContatore = {
             this.drawStandardAnnotations(ctx, dati);
 
             ctx.restore(); // Fine traslazione
-        });
     },
 
     // =========================================================
@@ -264,16 +312,14 @@ window.LayoutContatore = {
                 // Gestione Valvola Motorizzata (Stato)
                 if (isStato) {
                     let statusColor = (valore === "APERTA") ? "#22c55e" : "#eab308";
-                    const fontSize = Math.floor(Math.min(h * 0.35, w * 0.1));
+                    const fontSize = Math.floor(Math.min(h * 0.40, w * 0.15));
                     const iconRadius = Math.floor(h * 0.15);
 
                     ctx.fillStyle = statusColor;
-                    ctx.beginPath(); ctx.arc(x + (w * 0.15), cY, iconRadius, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(x + (w * 0.25), cY, iconRadius, 0, Math.PI * 2); ctx.fill();
 
-                    ctx.fillStyle = '#94a3b8'; ctx.font = `${fontSize}px Inter`; ctx.textAlign = 'left';
-                    ctx.fillText(label, x + (w * 0.15) + iconRadius + 15, cY + 2);
-                    ctx.fillStyle = statusColor; ctx.font = `bold ${fontSize}px Inter`;
-                    ctx.fillText(valore, x + (w * 0.55), cY + 2);
+                    ctx.fillStyle = statusColor; ctx.font = `bold ${fontSize}px Inter`; ctx.textAlign = 'left';
+                    ctx.fillText(valore, x + (w * 0.25) + iconRadius + 20, cY + 2);
                 }
                 // Gestione Scatole Dati (Temperature e Danfoss)
                 else {
