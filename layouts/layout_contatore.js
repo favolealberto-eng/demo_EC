@@ -14,7 +14,7 @@ window.LayoutContatore = {
 
     // 2. GESTIONE IMMAGINE DI SFONDO
     // Imposta qui il percorso corretto della tua immagine
-    imageSrc: 'images/contatore/Contatore.jpg',
+    imageSrc: 'images/contatore/Contatore.png',
     backgroundImage: null,
     imageLoaded: false,
 
