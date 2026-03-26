@@ -64,5 +64,11 @@
     "nome": "Rack di Rete Principale",
     "file": "layouts/layout_rack.js",
     "oggetto": "LayoutRack"
+  },
+  "10": {
+    "tipo": "contatore",
+    "nome": "Gruppo idrico N.26",
+    "file": "layouts/layout_contatore.js",
+    "oggetto": "LayoutContatore"
   }
 }
