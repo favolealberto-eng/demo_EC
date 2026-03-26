@@ -27,30 +27,28 @@ window.LayoutContatore = {
         this.backgroundImage.onerror = () => { console.error("Errore caricamento immagine sfondo contatore."); callback(); };
     },
 
-    // 3. MAPPATURA COORDINATE (Dal CSV, aggiunti +200px alla Y del baricentro per l'header)
-    // Oggetto: { centroX, centroY, disponibiliW, disponibiliH }
+    // 3. MAPPATURA COORDINATE (Basata sul tuo file Excel)
+    // Oggetto: { centroX, centroY, w (larghezza), h (altezza) }
     map: {
         header_hY: 200, // Offset Y dove inizia l'immagine
 
+        // Valvole in alto a sinistra
+        "Valvola Acqua Fredda": { cX: 436, cY: 422, w: 160, h: 160 },
+        "Valvola Acqua Calda": { cX: 687, cY: 422, w: 160, h: 160 },
+
         // Contatori volumetrici (Cerchi)
-        "Contatore Acqua Fredda": { cX: 250, cY: 300 + 200, w: 170, h: 177 },
-        "Contatore Acqua Calda": { cX: 750, cY: 300 + 200, w: 170, h: 177 },
+        "Contatore Acqua Fredda": { cX: 441, cY: 893, w: 350, h: 350 },
+        "Contatore Acqua Calda": { cX: 687, cY: 893, w: 350, h: 350 },
 
-        // Valvole di intercettazione (Rettangoli)
-        "Valvola Acqua Fredda": { cX: 280, cY: 850 + 200, w: 300, h: 80 },
-        "Valvola Acqua Calda": { cX: 780, cY: 850 + 200, w: 300, h: 80 },
+        // Temperature (Sui tubi centrali e in basso)
+        "Temp Ritorno (Blu)": { cX: 918, cY: 422, w: 300, h: 160 },
+        "Temp Mandata (Rosso)": { cX: 1196, cY: 422, w: 300, h: 160 },
+        "Temp AFS (Blu sx)": { cX: 441, cY: 1400, w: 200, h: 120 },
+        "Temp ACS (Rosso sx)": { cX: 687, cY: 1400, w: 200, h: 120 },
 
-        // Misuratore Energetico (Rettangolo)
-        "Misuratore Danfoss": { cX: 1250, cY: 600 + 200, w: 400, h: 300 },
-
-        // Attuatore motorizzato (Rettangolo)
-        "Attuatore Motorizzato": { cX: 1600, cY: 900 + 200, w: 500, h: 400 },
-
-        // Temperature (Tubi)
-        "Temp Mandata (Rosso)": { cX: 1250, cY: 250 + 200, w: 180, h: 60 },
-        "Temp Ritorno (Blu)": { cX: 1450, cY: 250 + 200, w: 180, h: 60 },
-        "Temp ACS (Rosso sx)": { cX: 500, cY: 1050 + 200, w: 180, h: 60 },
-        "Temp AFS (Blu sx)": { cX: 150, cY: 1050 + 200, w: 180, h: 60 } // Aggiunto per simmetria
+        // Dispositivi di Destra
+        "Misuratore Danfoss": { cX: 1016, cY: 1177, w: 350, h: 350 },
+        "Attuatore Motorizzato": { cX: 1409, cY: 893, w: 280, h: 420 }
     },
 
     hitboxes: [], // Reset dinamico
@@ -152,7 +150,7 @@ window.LayoutContatore = {
                 // Disegno le annotazioni ridotte sopra l'immagine
                 // (Chiamiamo la funzione di disegno standard ma dentro questa trasformazione)
                 ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'center';
-                this.drawStandardAnnotations(ctx, dati, { cX: 0, cY: 0 }); // Usiamo offset 0 perchè siamo già traslati
+                this.drawStandardAnnotations(ctx, dati, { cX: 0, cY: this.map.header_hY });
                 ctx.restore();
 
                 // COLONNA DESTRA: DETTAGLI E PULSANTI (Stile layout_appartamento)
