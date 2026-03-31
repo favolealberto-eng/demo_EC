@@ -169,94 +169,94 @@ window.LayoutContatore = {
 
         ctx.clearRect(0, 0, W, H);
 
-            // =========================================================
-            // RAMO A: VISTA DETTAGLI (Stile Pannello Appartamento)
-            // =========================================================
-            if (state && state.vistaDettaglio) {
-                ctx.fillStyle = '#061325'; ctx.fillRect(0, 0, W, H);
+        // =========================================================
+        // RAMO A: VISTA DETTAGLI (Stile Pannello Appartamento)
+        // =========================================================
+        if (state && state.vistaDettaglio) {
+            ctx.fillStyle = '#061325'; ctx.fillRect(0, 0, W, H);
 
-                const headerH = 250;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'; ctx.fillRect(0, 0, W, headerH);
-                ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)'; ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.moveTo(0, headerH); ctx.lineTo(W, headerH); ctx.stroke();
-
-                ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 90px Inter'; ctx.textAlign = 'left';
-                ctx.fillText(`GRUPPO IDRICO - ID: ${config.id_macchina || 'CNT-01'}`, 80, 150);
-
-                const colW = W - 160;
-                const colY = headerH + 80;
-
-                ctx.save(); ctx.translate(80, colY);
-
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-                ctx.beginPath(); ctx.roundRect(0, 0, colW, 2200, 40); ctx.fill();
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.stroke();
-
-                ctx.fillStyle = '#06b6d4'; ctx.font = 'bold 70px Inter'; ctx.textAlign = 'center';
-                ctx.fillText("DETTAGLI E DIAGNOSTICA", colW / 2, 100);
-                ctx.fillStyle = '#94a3b8'; ctx.font = '40px Inter';
-                ctx.fillText(`Dati live aggiornati alle: ${dati.oraStr}`, colW / 2, 160);
-
-                let dY = 300;
-                const drawDetailRiga = (y, label, valore, unita, colorTheme) => {
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
-                    ctx.beginPath(); ctx.roundRect(40, y - 80, colW - 80, 120, 20); ctx.fill();
-
-                    ctx.fillStyle = '#94a3b8'; ctx.font = '50px Inter'; ctx.textAlign = 'left';
-                    ctx.fillText(label, 80, y);
-
-                    ctx.fillStyle = colorTheme || '#f1f5f9'; ctx.font = 'bold 60px Inter'; ctx.textAlign = 'right';
-                    ctx.fillText(`${valore} ${unita}`, colW - 80, y);
-                };
-
-                drawDetailRiga(dY, "Consumo Acqua Fredda (AFS)", dati.afs_mc, "m³", '#06b6d4'); dY += 150;
-                drawDetailRiga(dY, "Consumo Acqua Calda (ACS)", dati.acs_mc, "m³", '#ef4444'); dY += 150;
-                drawDetailRiga(dY, "Energia Termica HVAC", dati.energy_kwt, "kWh", '#eab308'); dY += 180;
-
-                ctx.fillStyle = '#64748b'; ctx.font = 'bold 50px Inter'; ctx.textAlign = 'left';
-                ctx.fillText("TEMPERATURE E DIFFERENZIALI", 60, dY); dY += 120;
-
-                const dT = (parseFloat(dati.temp_supply) - parseFloat(dati.temp_return)).toFixed(1);
-                drawDetailRiga(dY, "Temp. Mandata HVAC", dati.temp_supply, "°C", '#ef4444'); dY += 150;
-                drawDetailRiga(dY, "Temp. Ritorno HVAC", dati.temp_return, "°C", '#3b82f6'); dY += 150;
-                drawDetailRiga(dY, "Differenziale Termico ΔT", dT, "°C", (dT > 15 ? '#22c55e' : '#facc15'));
-
-                ctx.restore();
-                return; // Esce e non disegna l'immagine
-            }
-
-            // =========================================================
-            // RAMO B: VISTA STANDARD SULL'IMMAGINE
-            // =========================================================
-            const headerH = this.map.header_hY;
-
-            // 1. DISEGNO HEADER
-            const bgGrad = ctx.createLinearGradient(0, 0, W, headerH);
-            bgGrad.addColorStop(0, '#0d1f3c'); bgGrad.addColorStop(1, '#061325');
-            ctx.fillStyle = bgGrad;
-            ctx.beginPath(); ctx.roundRect(0, 0, W, headerH, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
-
-            ctx.strokeStyle = 'rgba(6,182,212,1)'; ctx.lineWidth = 6;
+            const headerH = 250;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'; ctx.fillRect(0, 0, W, headerH);
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)'; ctx.lineWidth = 4;
             ctx.beginPath(); ctx.moveTo(0, headerH); ctx.lineTo(W, headerH); ctx.stroke();
 
-            ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 80px Inter'; ctx.textAlign = 'left';
-            ctx.fillText(config.nome || "CONTATORE GENERALE", 60, 130);
-            ctx.fillStyle = 'rgba(6,182,212,1)'; ctx.font = 'bold 60px Inter'; ctx.textAlign = 'right';
-            ctx.fillText(`${dati.dataStr} · ${dati.oraStr}`, W - 60, 130);
+            ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 90px Inter'; ctx.textAlign = 'left';
+            ctx.fillText(`GRUPPO IDRICO - ID: ${config.id_macchina || 'CNT-01'}`, 80, 150);
 
-            // 2. TRASLAZIONE (Zero matematica sui box!)
-            ctx.save();
-            ctx.translate(0, headerH);
+            const colW = W - 160;
+            const colY = headerH + 80;
 
-            if (this.imageLoaded && this.backgroundImage) {
-                ctx.drawImage(this.backgroundImage, 0, 0, 1696, 2516);
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; ctx.fillRect(0, 0, 1696, 2516);
-            }
+            ctx.save(); ctx.translate(80, colY);
 
-            // 3. DISEGNO DINAMICO DA CSV
-            this.drawStandardAnnotations(ctx, dati);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.beginPath(); ctx.roundRect(0, 0, colW, 2200, 40); ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.stroke();
 
-            ctx.restore(); // Fine traslazione
+            ctx.fillStyle = '#06b6d4'; ctx.font = 'bold 70px Inter'; ctx.textAlign = 'center';
+            ctx.fillText("DETTAGLI E DIAGNOSTICA", colW / 2, 100);
+            ctx.fillStyle = '#94a3b8'; ctx.font = '40px Inter';
+            ctx.fillText(`Dati live aggiornati alle: ${dati.oraStr}`, colW / 2, 160);
+
+            let dY = 300;
+            const drawDetailRiga = (y, label, valore, unita, colorTheme) => {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+                ctx.beginPath(); ctx.roundRect(40, y - 80, colW - 80, 120, 20); ctx.fill();
+
+                ctx.fillStyle = '#94a3b8'; ctx.font = '50px Inter'; ctx.textAlign = 'left';
+                ctx.fillText(label, 80, y);
+
+                ctx.fillStyle = colorTheme || '#f1f5f9'; ctx.font = 'bold 60px Inter'; ctx.textAlign = 'right';
+                ctx.fillText(`${valore} ${unita}`, colW - 80, y);
+            };
+
+            drawDetailRiga(dY, "Consumo Acqua Fredda (AFS)", dati.afs_mc, "m³", '#06b6d4'); dY += 150;
+            drawDetailRiga(dY, "Consumo Acqua Calda (ACS)", dati.acs_mc, "m³", '#ef4444'); dY += 150;
+            drawDetailRiga(dY, "Energia Termica HVAC", dati.energy_kwt, "kWh", '#eab308'); dY += 180;
+
+            ctx.fillStyle = '#64748b'; ctx.font = 'bold 50px Inter'; ctx.textAlign = 'left';
+            ctx.fillText("TEMPERATURE E DIFFERENZIALI", 60, dY); dY += 120;
+
+            const dT = (parseFloat(dati.temp_supply) - parseFloat(dati.temp_return)).toFixed(1);
+            drawDetailRiga(dY, "Temp. Mandata HVAC", dati.temp_supply, "°C", '#ef4444'); dY += 150;
+            drawDetailRiga(dY, "Temp. Ritorno HVAC", dati.temp_return, "°C", '#3b82f6'); dY += 150;
+            drawDetailRiga(dY, "Differenziale Termico ΔT", dT, "°C", (dT > 15 ? '#22c55e' : '#facc15'));
+
+            ctx.restore();
+            return; // Esce e non disegna l'immagine
+        }
+
+        // =========================================================
+        // RAMO B: VISTA STANDARD SULL'IMMAGINE
+        // =========================================================
+        const headerH = this.map.header_hY;
+
+        // 1. DISEGNO HEADER
+        const bgGrad = ctx.createLinearGradient(0, 0, W, headerH);
+        bgGrad.addColorStop(0, '#0d1f3c'); bgGrad.addColorStop(1, '#061325');
+        ctx.fillStyle = bgGrad;
+        ctx.beginPath(); ctx.roundRect(0, 0, W, headerH, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
+
+        ctx.strokeStyle = 'rgba(6,182,212,1)'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(0, headerH); ctx.lineTo(W, headerH); ctx.stroke();
+
+        ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 80px Inter'; ctx.textAlign = 'left';
+        ctx.fillText(config.nome || "CONTATORE GENERALE", 60, 130);
+        ctx.fillStyle = 'rgba(6,182,212,1)'; ctx.font = 'bold 60px Inter'; ctx.textAlign = 'right';
+        ctx.fillText(`${dati.dataStr} · ${dati.oraStr}`, W - 60, 130);
+
+        // 2. TRASLAZIONE (Zero matematica sui box!)
+        ctx.save();
+        ctx.translate(0, headerH);
+
+        if (this.imageLoaded && this.backgroundImage) {
+            ctx.drawImage(this.backgroundImage, 0, 0, 1696, 2516);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; ctx.fillRect(0, 0, 1696, 2516);
+        }
+
+        // 3. DISEGNO DINAMICO DA CSV
+        this.drawStandardAnnotations(ctx, dati);
+
+        ctx.restore(); // Fine traslazione
     },
 
     // =========================================================

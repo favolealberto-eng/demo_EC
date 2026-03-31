@@ -20,20 +20,20 @@ window.LayoutPannelliRadianti = {
     fetchDati: function (callback) {
         const now = new Date();
         const currentSlotIndex = Math.floor(now.getHours() * 4 + now.getMinutes() / 15);
-        
+
         const arrT = window.getMockDayData ? window.getMockDayData('temperatura') : [];
         const tAmbiente = arrT.length > currentSlotIndex ? parseFloat(arrT[currentSlotIndex]) : 21.5;
-        
+
         const arrU = window.getMockDayData ? window.getMockDayData('umidita') : [];
-        const umidita = arrU.length > currentSlotIndex ? parseFloat(arrU[currentSlotIndex]) : 45.0; 
+        const umidita = arrU.length > currentSlotIndex ? parseFloat(arrU[currentSlotIndex]) : 45.0;
 
         // Simuliamo alcuni dati legati a quello realistico
         const isRiscaldamento = true; // es. Inverno
         const tMandata = isRiscaldamento ? (tAmbiente + 14).toFixed(1) : (tAmbiente - 5).toFixed(1);
         const tRitorno = isRiscaldamento ? (tAmbiente + 9).toFixed(1) : (tAmbiente - 2).toFixed(1);
-        const dewPoint = tAmbiente - ((100 - umidita) / 5); 
-        const rischioCondensa = tAmbiente - dewPoint; 
-        
+        const dewPoint = tAmbiente - ((100 - umidita) / 5);
+        const rischioCondensa = tAmbiente - dewPoint;
+
         let statoCondensa = 0; // 0: Verde, 1: Giallo, 2: Rosso
         if (!isRiscaldamento) {
             if (rischioCondensa < 2) statoCondensa = 2;
@@ -65,7 +65,7 @@ window.LayoutPannelliRadianti = {
             pressione: 1.8, // bar
             statoPompa: 0 // 0: OK
         };
-        
+
         callback(dati);
     },
 
@@ -84,7 +84,7 @@ window.LayoutPannelliRadianti = {
             changed = true;
         } else if (id === "btn_pompa") {
             try {
-                const pumpId = "9";
+                const pumpId = "4";
                 const pumpConfig = registroMacchinari[pumpId];
                 if (pumpConfig) {
                     if (!pumpConfig.template) {
@@ -94,11 +94,11 @@ window.LayoutPannelliRadianti = {
                             pumpConfig.template = window[pumpConfig.oggetto];
                             currentMarkerId = pumpId;
                             startRenderLoop(pumpId, pumpConfig);
-                            if(isPinned) {
+                            if (isPinned) {
                                 const activeCanvas = document.getElementById('canvas-' + pumpId);
                                 const container = document.getElementById('main-view-container');
                                 Array.from(container.children).forEach(c => {
-                                    if(c.tagName === 'CANVAS') {
+                                    if (c.tagName === 'CANVAS') {
                                         c.classList.remove('canvas-pinned');
                                         c.classList.add('hidden-canvas');
                                         document.body.appendChild(c);
@@ -114,11 +114,11 @@ window.LayoutPannelliRadianti = {
                     } else {
                         currentMarkerId = pumpId;
                         startRenderLoop(pumpId, pumpConfig);
-                        if(isPinned) {
+                        if (isPinned) {
                             const activeCanvas = document.getElementById('canvas-' + pumpId);
                             const container = document.getElementById('main-view-container');
                             Array.from(container.children).forEach(c => {
-                                if(c.tagName === 'CANVAS') {
+                                if (c.tagName === 'CANVAS') {
                                     c.classList.remove('canvas-pinned');
                                     c.classList.add('hidden-canvas');
                                     document.body.appendChild(c);
@@ -244,7 +244,7 @@ window.LayoutPannelliRadianti = {
         const isStandby = false; // Potremmo supportare stand-by
         let badgeColor = isRisc ? '#ef4444' : '#3b82f6';
         if (isStandby) badgeColor = '#64748b';
-        
+
         ctx.fillStyle = badgeColor;
         ctx.beginPath(); ctx.roundRect(40, 160, 260, 45, 10); ctx.fill();
         ctx.fillStyle = '#ffffff'; ctx.font = 'bold 20px Inter'; ctx.textAlign = 'center';
@@ -283,12 +283,12 @@ window.LayoutPannelliRadianti = {
             ctx.shadowColor = '#ef4444'; ctx.shadowBlur = isBlinkOn ? 15 : 0;
         }
         ctx.fill();
-        ctx.shadowBlur = 0; 
-        
+        ctx.shadowBlur = 0;
+
         ctx.fillStyle = '#f1f5f9'; ctx.font = '24px Inter'; ctx.textAlign = 'right';
         let rischioText = "Normale";
-        if(dati.statoCondensa === 1) rischioText = "Attenzione";
-        if(dati.statoCondensa === 2) rischioText = "Pericolo";
+        if (dati.statoCondensa === 1) rischioText = "Attenzione";
+        if (dati.statoCondensa === 2) rischioText = "Pericolo";
         ctx.fillText(rischioText, 705, 540);
 
         // VALORI CIRCUITO RADIANTI
@@ -338,7 +338,7 @@ window.LayoutPannelliRadianti = {
         this.drawRowDiag(ctx, "Apertura Valvola Modulante", `${dati.valvolaModulante}`, "%", 300);
         this.drawRowDiag(ctx, "Portata Circuito", `${dati.portata}`, "l/h", 380);
         this.drawRowDiag(ctx, "Pressione Sistema", `${dati.pressione}`, "bar", 460);
-        
+
         ctx.fillStyle = 'rgba(148,163,184,0.9)'; ctx.font = '26px Inter'; ctx.textAlign = 'left';
         ctx.fillText("Stato Pompa Circolazione", 70, 540);
         ctx.fillStyle = '#22c55e'; ctx.font = 'bold 28px Inter'; ctx.textAlign = 'right';
@@ -348,7 +348,7 @@ window.LayoutPannelliRadianti = {
         const btnP = 820;
         ctx.save();
         const pGrad = ctx.createLinearGradient(40, btnP, 760, btnP + 100);
-        pGrad.addColorStop(0, 'rgba(14, 165, 233, 0.8)'); 
+        pGrad.addColorStop(0, 'rgba(14, 165, 233, 0.8)');
         pGrad.addColorStop(1, 'rgba(2, 132, 199, 0.8)');
         ctx.fillStyle = pGrad;
         ctx.shadowColor = 'rgba(14, 165, 233, 0.5)';
@@ -372,7 +372,7 @@ window.LayoutPannelliRadianti = {
         btnGrad.addColorStop(0, 'rgba(255,255,255,0.1)');
         btnGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
         ctx.fillStyle = btnGrad;
-        
+
         const isPinnedBack = window.isPinned;
         if (!isPinnedBack) ctx.globalAlpha = 0.4;
 
@@ -386,7 +386,7 @@ window.LayoutPannelliRadianti = {
         if (!isPinnedBack) ctx.globalAlpha = 1.0;
     },
 
-    drawRow: function(ctx, label, val, unita, y) {
+    drawRow: function (ctx, label, val, unita, y) {
         ctx.textAlign = 'left';
         ctx.fillStyle = 'rgba(148,163,184,0.9)'; ctx.font = '24px Inter';
         ctx.fillText(label, 40, y);
@@ -398,7 +398,7 @@ window.LayoutPannelliRadianti = {
         ctx.fillText(`[${unita}]`, 690, y);
     },
 
-    drawRowDiag: function(ctx, label, val, unita, y) {
+    drawRowDiag: function (ctx, label, val, unita, y) {
         ctx.textAlign = 'left';
         ctx.fillStyle = 'rgba(148,163,184,0.9)'; ctx.font = '26px Inter';
         ctx.fillText(label, 70, y);
