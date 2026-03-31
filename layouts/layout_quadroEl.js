@@ -5,8 +5,8 @@ window.LayoutQuadroEl = {
     config: {
         canvasW: 1500,
         canvasH: 3600,
-        planeW: 3.0,
-        planeH: 7.2
+        planeW: 3.0 * 0.7,
+        planeH: 7.2 * 0.7
     },
     hitboxes: [
         { id: "toggle_grafico", x: 50, y: 3200, w: 1400, h: 220 },
