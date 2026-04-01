@@ -115,6 +115,15 @@ window.LayoutIAQ = {
         ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 43); ctx.stroke();
 
         // --- HEADER ---
+        const hdrGrad = ctx.createLinearGradient(10, 10, W - 10, 10);
+        hdrGrad.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+        hdrGrad.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
+        ctx.fillStyle = hdrGrad;
+        ctx.beginPath(); ctx.roundRect(0, 0, W, 180, { tl: 44, tr: 44, bl: 0, br: 0 }); ctx.fill();
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(0, 180); ctx.lineTo(W, 180); ctx.stroke();
+
         const titolo = config && config.nome ? config.nome.toUpperCase().replace('_', ' ') : "QUALITÀ DELL'ARIA";
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 48px sans-serif'; ctx.textAlign = 'center';
@@ -127,11 +136,6 @@ window.LayoutIAQ = {
         ctx.fillStyle = 'rgba(148,163,184,0.85)';
         ctx.font = '30px sans-serif';
         ctx.fillText(dati.testo_aggiornamento, W / 2, 151);
-
-        // Linea separatrice
-        ctx.strokeStyle = 'rgba(6,182,212,0.25)';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(53, 178); ctx.lineTo(747, 178); ctx.stroke();
 
         // --- ARCO IAQ (invariato nella logica, restyled) ---
         const cx = 400, cy = 533, radius = 249, thickness = 44;
