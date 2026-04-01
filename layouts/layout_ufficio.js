@@ -317,7 +317,7 @@ window.LayoutUfficio = {
             ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(6, 182, 212, 0.6)'; ctx.stroke();
             
             ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 18px Inter'; ctx.textAlign = 'center';
-            ctx.fillText(isPinnedUff ? "📅 AGENDA PERSONALE" : "🔒 AGENDA PERSONALE", 300, btnAy + 32);
+            ctx.fillText("📅 AGENDA PERSONALE", 300, btnAy + 32);
 
             // Pulsante Mail
             ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
@@ -325,7 +325,7 @@ window.LayoutUfficio = {
             ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)'; ctx.stroke();
             
             ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 18px Inter'; ctx.textAlign = 'center';
-            ctx.fillText(isPinnedUff ? "✉ CHIEDI APPUNTAMENTO" : "🔒 CHIEDI APPUNTAMENTO", 580, btnAy + 32);
+            ctx.fillText("✉ CHIEDI APPUNTAMENTO", 580, btnAy + 32);
 
             if (!isPinnedUff) ctx.globalAlpha = 1.0;
         });

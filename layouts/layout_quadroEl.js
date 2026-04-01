@@ -574,7 +574,7 @@ window.LayoutQuadroEl = {
         ctx.fillStyle = '#06b6d4';
         ctx.font = 'bold 80px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText(isPinnedExp ? "⛶" : "🔒", expBox.x + expBox.w / 2, expBox.y + expBox.h / 2 + 27);
+        ctx.fillText("⛶", expBox.x + expBox.w / 2, expBox.y + expBox.h / 2 + 27);
 
         if (!isPinnedExp) ctx.globalAlpha = 1.0;
 
@@ -676,7 +676,7 @@ window.LayoutQuadroEl = {
             ctx.fillStyle = '#fff';
             ctx.textAlign = 'center';
             ctx.font = 'bold 60px Inter';
-            ctx.fillText(!isPinnedTog ? "🔒 MODIFICA GRAFICO" : (state.vistaSingoleLinee ? "🔄 TORNA A GRAFICO GLOBALE" : "📈 VEDI STORICO SINGOLE LINEE"), box.x + box.w / 2, box.y + box.h / 2 + 22);
+            ctx.fillText(state.vistaSingoleLinee ? "🔄 TORNA A GRAFICO GLOBALE" : "📈 VEDI STORICO SINGOLE LINEE", box.x + box.w / 2, box.y + box.h / 2 + 22);
 
             if (!isPinnedTog) ctx.globalAlpha = 1.0;
         }

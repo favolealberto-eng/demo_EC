@@ -448,7 +448,7 @@ window.LayoutRack = {
                 ctx.fillStyle = '#06b6d4';
                 ctx.font = 'bold 20px Inter';
                 ctx.textAlign = 'right';
-                ctx.fillText(isPinnedDev ? "DETTAGLI +" : "🔒", 710, listY + 65);
+                ctx.fillText("DETTAGLI +", 710, listY + 65);
 
                 if (!isPinnedDev) ctx.globalAlpha = 1.0;
 
@@ -480,7 +480,7 @@ window.LayoutRack = {
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
         ctx.font = 'bold 36px Inter';
-        ctx.fillText(isPinnedAss ? "✉ RICHIEDI ASSISTENZA" : "🔒 RICHIEDI ASSISTENZA", btnBox.x + btnBox.w/2, btnBox.y + 70);
+        ctx.fillText("✉ RICHIEDI ASSISTENZA", btnBox.x + btnBox.w/2, btnBox.y + 70);
 
         if (!isPinnedAss) ctx.globalAlpha = 1.0;
     }

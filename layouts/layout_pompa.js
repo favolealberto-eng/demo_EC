@@ -273,7 +273,7 @@ window.LayoutPompa = {
 
             // Freccia a destra
             ctx.fillStyle = 'rgba(6,182,212,0.8)'; ctx.font = '28px sans-serif';
-            ctx.fillText(isPinnedCheck ? "➔" : "🔒", 710, y + 8);
+            ctx.fillText("➔", 710, y + 8);
 
             if (!isPinnedCheck) ctx.globalAlpha = 1.0;
         });
@@ -296,7 +296,7 @@ window.LayoutPompa = {
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText(isPinnedAss ? "✉ RICHIEDI ASSISTENZA" : "🔒 RICHIEDI ASSISTENZA", 400, btnY + 60);
+        ctx.fillText("✉ RICHIEDI ASSISTENZA", 400, btnY + 60);
 
         if (!isPinnedAss) ctx.globalAlpha = 1.0;
     },
@@ -367,7 +367,7 @@ window.LayoutPompa = {
 
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText(isPinnedBack ? "⬅ TORNA AL PANNELLO" : "🔒 TORNA AL PANNELLO", 400, btnY + 60);
+        ctx.fillText("⬅ TORNA AL PANNELLO", 400, btnY + 60);
 
         if (!isPinnedBack) ctx.globalAlpha = 1.0;
     }

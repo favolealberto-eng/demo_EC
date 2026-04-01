@@ -148,13 +148,13 @@ window.LayoutMacchina = {
         // SEZIONE 1: KPI Energetici
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
-        ctx.roundRect(50, 260, 700, 400, 24);
+        ctx.roundRect(50, 160, 700, 440, 24);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
 
         ctx.textAlign = 'left';
-        let offsetY = 320;
+        let offsetY = 220;
         const kpis = [
             { label: "Potenza Istantanea:", value: dati.potenza_kw + " kW" },
             { label: "Consumo Giornaliero:", value: dati.consumo_giornaliero_kwh + " kWh" },
@@ -178,12 +178,12 @@ window.LayoutMacchina = {
         ctx.fillStyle = '#64748b';
         ctx.font = 'italic 24px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText(`*Soglia allarme impostata a: ${soglia} kW`, w/2, 630);
+        ctx.fillText(`*Soglia allarme impostata a: ${soglia} kW`, w/2, 570);
 
         // SEZIONE 2: Benchmark Card
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
-        ctx.roundRect(50, 700, 700, 680, 24);
+        ctx.roundRect(50, 630, 700, 750, 24);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
@@ -191,24 +191,24 @@ window.LayoutMacchina = {
         ctx.fillStyle = '#f1f5f9';
         ctx.textAlign = 'center';
         ctx.font = 'bold 42px Inter';
-        ctx.fillText("BENCHMARK EnPI", w/2, 780);
+        ctx.fillText("BENCHMARK EnPI", w/2, 710);
         ctx.fillStyle = '#94a3b8';
         ctx.font = '28px Inter';
-        ctx.fillText("Energy Performance Indicator", w/2, 840);
+        ctx.fillText("Energy Performance Indicator", w/2, 760);
 
         ctx.fillStyle = '#06b6d4';
         ctx.font = 'bold 160px Inter';
-        ctx.fillText(dati.enpi_attuale, w/2, 1050);
+        ctx.fillText(dati.enpi_attuale, w/2, 1000);
         
         ctx.fillStyle = '#22c55e';
         ctx.font = 'bold 36px Inter';
-        ctx.fillText(`Baseline ISO 50001: ${dati.baseline_enpi}`, w/2, 1180);
+        ctx.fillText(`Baseline ISO 50001: ${dati.baseline_enpi}`, w/2, 1150);
 
         let diff = (dati.enpi_attuale - dati.baseline_enpi).toFixed(1);
         let statusText = diff > 0 ? `+${diff} (Sopra Baseline)` : `${diff} (Sotto Baseline)`;
         ctx.fillStyle = diff > 0 ? '#ef4444' : '#22c55e';
         ctx.font = 'bold 32px Inter';
-        ctx.fillText(statusText, w/2, 1260);
+        ctx.fillText(statusText, w/2, 1240);
 
         // SEZIONE 3: Bottone
         const btnBox = this.hitboxes[0];
@@ -231,7 +231,7 @@ window.LayoutMacchina = {
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
         ctx.font = 'bold 36px Inter';
-        ctx.fillText(isPinnedMac ? "📊 DETTAGLIO GRAFICO" : "🔒 DETTAGLIO GRAFICO", btnBox.x + btnBox.w/2, btnBox.y + 70);
+        ctx.fillText("📊 DETTAGLIO GRAFICO", btnBox.x + btnBox.w/2, btnBox.y + 70);
 
         if (!isPinnedMac) ctx.globalAlpha = 1.0;
     }

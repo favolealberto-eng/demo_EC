@@ -225,7 +225,7 @@ window.LayoutSala = {
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 40px sans-serif'; ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 6;
-        ctx.fillText(isPinnedCal ? '📅  APRI CALENDARIO' : '🔒 APRI CALENDARIO', 400, btnY + 73);
+        ctx.fillText('📅  APRI CALENDARIO', 400, btnY + 73);
         ctx.shadowBlur = 0;
 
         if (!isPinnedCal) ctx.globalAlpha = 1.0;

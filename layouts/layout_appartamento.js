@@ -252,7 +252,7 @@ window.LayoutAppartamento = {
         ctx.restore();
 
         // --- SEZIONI ---
-        let currentY = 220;
+        let currentY = 160;
 
         // 1. ACS (Acqua Calda Sanitaria)
         currentY = this.drawSection(ctx, currentY, w, "ACS - Acqua Calda", '#0ea5e9', [
@@ -261,7 +261,7 @@ window.LayoutAppartamento = {
             { label: "Trend Settimanale:", value: `+${dati.acs.trend}% ▲` }
         ], 'btn_info_acs');
 
-        currentY += 40;
+        currentY += 50;
 
         // 2. AFS (Acqua Fredda Sanitaria)
         // Se c'è anomalia inserisco item alert e pulldown mail
@@ -276,7 +276,7 @@ window.LayoutAppartamento = {
         }
         currentY = this.drawSection(ctx, currentY, w, "AFS - Acqua Fredda", '#3b82f6', afsItems, 'btn_info_afs', dati.afs.anomalia ? 'mail_idraulico' : null);
 
-        currentY += 40;
+        currentY += 50;
 
         // 3. Riscaldamento
         currentY = this.drawSection(ctx, currentY, w, "Riscaldamento", '#f97316', [
@@ -287,7 +287,7 @@ window.LayoutAppartamento = {
 
 
         // --- PULSANTE GLOBALE DIAGNOSTICA ---
-        const btnDiagY = currentY + 40;
+        const btnDiagY = currentY + 30;
         const btnBoxDiag = { id: "btn_diagnostica", x: 100, y: btnDiagY, w: 600, h: 90 };
         this.hitboxes.push(btnBoxDiag);
 
@@ -301,13 +301,13 @@ window.LayoutAppartamento = {
         ctx.fillStyle = '#38bdf8';
         ctx.textAlign = 'center';
         ctx.font = 'bold 32px Inter';
-        ctx.fillText(isPinned ? "⚙ DIAGNOSTICA E DETTAGLI" : "🔒 DIAGNOSTICA E DETTAGLI", w/2, btnDiagY + 55);
+        ctx.fillText("⚙ DIAGNOSTICA E DETTAGLI", w/2, btnDiagY + 55);
 
         if (!isPinned) ctx.globalAlpha = 1.0;
     },
 
     drawSection: function(ctx, y, w, title, colorPrimary, items, infoBtnId, alertMailId = null, extraColorLight = null) {
-        const hSec = alertMailId ? 380 : 310;
+        const hSec = alertMailId ? 440 : 380;
         const padding = 40;
         const secW = w - (padding * 2);
 
@@ -342,7 +342,7 @@ window.LayoutAppartamento = {
         }
 
         // Variabili items
-        let itemY = y + 120;
+        let itemY = y + 150;
         items.forEach(it => {
             if (it.isAlert) {
                 ctx.fillStyle = it.valColor || '#ef4444';
@@ -380,7 +380,7 @@ window.LayoutAppartamento = {
             ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)'; ctx.lineWidth = 1; ctx.stroke();
 
             ctx.fillStyle = '#ef4444'; ctx.textAlign = 'center'; ctx.font = 'bold 20px Inter';
-            ctx.fillText(isPinned ? "✉ CONTATTA IDRAULICO" : "🔒 CONTATTA IDRAULICO", mailX + mailBtnW/2, mailY + 33);
+            ctx.fillText("✉ CONTATTA IDRAULICO", mailX + mailBtnW/2, mailY + 33);
             
             if (!isPinned) ctx.globalAlpha = 1.0;
 
@@ -402,7 +402,7 @@ window.LayoutAppartamento = {
         ctx.fillStyle = '#06b6d4';
         ctx.textAlign = 'center';
         ctx.font = 'bold 24px Inter';
-        ctx.fillText(isPinnedInfo ? "MAGGIORI INFO 📊" : "🔒 MAGGIORI INFO", infoBtnBox.x + infoBtnBox.w/2, infoBtnBox.y + 40);
+        ctx.fillText("MAGGIORI INFO 📊", infoBtnBox.x + infoBtnBox.w/2, infoBtnBox.y + 40);
 
         if (!isPinnedInfo) ctx.globalAlpha = 1.0;
 
@@ -520,7 +520,7 @@ window.LayoutAppartamento = {
         ctx.fillStyle = '#06b6d4';
         ctx.textAlign = 'center';
         ctx.font = 'bold 30px Inter';
-        ctx.fillText(isPinnedBack ? "⬅ TORNA ALLA VISTA PRINCIPALE" : "🔒 TORNA ALLA VISTA PRINCIPALE", w/2, h - 90);
+        ctx.fillText("⬅ TORNA ALLA VISTA PRINCIPALE", w/2, h - 90);
 
         if (!isPinnedBack) ctx.globalAlpha = 1.0;
 

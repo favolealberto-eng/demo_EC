@@ -320,7 +320,7 @@ window.LayoutPannelliRadianti = {
         ctx.restore();
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText(isPinnedDiag ? "🛠 MANUTENZIONE & DIAGNOSTICA" : "🔒 MANUTENZIONE & DIAGNOSTICA", 400, btnY + 60);
+        ctx.fillText("🛠 MANUTENZIONE & DIAGNOSTICA", 400, btnY + 60);
 
         if (!isPinnedDiag) ctx.globalAlpha = 1.0;
     },
@@ -361,7 +361,7 @@ window.LayoutPannelliRadianti = {
         ctx.restore();
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText(isPinnedPompa ? "⚙ ACCEDI AL PANNELLO POMPA" : "🔒 ACCEDI AL PANNELLO POMPA", 400, btnP + 60);
+        ctx.fillText("⚙ ACCEDI AL PANNELLO POMPA", 400, btnP + 60);
 
         if (!isPinnedPompa) ctx.globalAlpha = 1.0;
 
@@ -381,7 +381,7 @@ window.LayoutPannelliRadianti = {
         ctx.restore();
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 32px Inter'; ctx.textAlign = 'center';
-        ctx.fillText(isPinnedBack ? "⬅ TORNA ALLA VISTA PRINCIPALE" : "🔒 TORNA ALLA VISTA PRINCIPALE", 400, btnY + 60);
+        ctx.fillText("⬅ TORNA ALLA VISTA PRINCIPALE", 400, btnY + 60);
 
         if (!isPinnedBack) ctx.globalAlpha = 1.0;
     },
