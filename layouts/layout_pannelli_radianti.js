@@ -195,9 +195,9 @@ window.LayoutPannelliRadianti = {
         // SFONDO SCURO GLASSMORPHISM
         const W = 800; const H = 1100;
         const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-        bgGrad.addColorStop(0, 'rgba(13, 31, 60, 0.97)');
-        bgGrad.addColorStop(0.5, 'rgba(15, 45, 31, 0.97)');
-        bgGrad.addColorStop(1, 'rgba(13, 31, 60, 0.97)');
+        bgGrad.addColorStop(0, '#0d1f3c');
+        bgGrad.addColorStop(0.5, '#0f2d1f');
+        bgGrad.addColorStop(1, '#0d1f3c');
         ctx.fillStyle = bgGrad;
         ctx.beginPath(); ctx.roundRect(0, 0, W, H, 40); ctx.fill();
 
