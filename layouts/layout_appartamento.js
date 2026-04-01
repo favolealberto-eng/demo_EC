@@ -246,9 +246,9 @@ window.LayoutAppartamento = {
 
         ctx.save();
         ctx.shadowColor = glowSemaforo;
-        ctx.shadowBlur = 30;
+        ctx.shadowBlur = 20;
         ctx.fillStyle = colorSemaforo;
-        ctx.beginPath(); ctx.arc(w - 180, 90, 30, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(w - 60, 65, 20, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
 
         // --- SEZIONI ---

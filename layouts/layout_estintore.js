@@ -13,7 +13,11 @@ window.LayoutEstintore = {
         planeH: 4.8
     },
 
-    hitboxes: [],  // Nessuna interazione complessa prevista per questo layout (solo visivo)
+    hitboxes: [],
+
+    processClick: function(id) {
+        // Nessun bottone interattivo presente
+    },
 
     /**
      * fetchDati - Simula il caricamento di record anagrafici e ispettivi dal gestionale antincendio.
@@ -38,6 +42,7 @@ window.LayoutEstintore = {
      * che simula scadenze imminenti differenziate per il "nome" identificativo del marker.
      */
     draw: function (ctx, dati, config) {
+        this.hitboxes = [];
         const W = this.config.canvasW, H = this.config.canvasH;
         ctx.clearRect(0, 0, W, H);
 
@@ -134,7 +139,7 @@ window.LayoutEstintore = {
 
         // --- SEZIONE 1: PIANO MANUTENTIVO ---
         ctx.fillStyle = 'rgba(255,255,255,0.04)';
-        ctx.beginPath(); ctx.roundRect(40, 240, 820, 520, 22); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(40, 240, 720, 520, 22); ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.10)';
         ctx.lineWidth = 1.5; ctx.stroke();
 
@@ -166,7 +171,7 @@ window.LayoutEstintore = {
 
         // --- SEZIONE 2: CHECKLIST ---
         ctx.fillStyle = 'rgba(255,255,255,0.04)';
-        ctx.beginPath(); ctx.roundRect(40, 800, 820, 600, 22); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(40, 800, 720, 600, 22); ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.10)';
         ctx.lineWidth = 1.5; ctx.stroke();
 

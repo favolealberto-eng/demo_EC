@@ -125,22 +125,22 @@ window.LayoutRack = {
         if (this.state.selectedDeviceIndex !== null) {
             // Stato 2: Modal Dettagli aperta (Disabilita l'array lista devices)
             this.hitboxes = [
-                { id: "traffico_rack", x: 50, y: 410, w: 380, h: 220 },
-                { id: "temperatura", x: 470, y: 410, w: 380, h: 220 },
-                { id: "assistenza", x: 50, y: 1420, w: 800, h: 120 },
-                { id: "chiudi_detail", x: 740, y: 720, w: 80, h: 60 }
+                { id: "traffico_rack", x: 50, y: 410, w: 330, h: 220 },
+                { id: "temperatura", x: 420, y: 410, w: 330, h: 220 },
+                { id: "assistenza", x: 50, y: 1420, w: 700, h: 120 },
+                { id: "chiudi_detail", x: 670, y: 720, w: 80, h: 60 }
             ];
         } else {
             // Stato 1: Lista Devices Standard Attiva
             this.hitboxes = [
-                { id: "traffico_rack", x: 50, y: 410, w: 380, h: 220 },
-                { id: "temperatura", x: 470, y: 410, w: 380, h: 220 },
-                { id: "assistenza", x: 50, y: 1420, w: 800, h: 120 },
-                { id: "dev_0", x: 50, y: 700, w: 800, h: 120 },
-                { id: "dev_1", x: 50, y: 830, w: 800, h: 120 },
-                { id: "dev_2", x: 50, y: 960, w: 800, h: 120 },
-                { id: "dev_3", x: 50, y: 1090, w: 800, h: 120 },
-                { id: "dev_4", x: 50, y: 1220, w: 800, h: 120 }
+                { id: "traffico_rack", x: 50, y: 410, w: 330, h: 220 },
+                { id: "temperatura", x: 420, y: 410, w: 330, h: 220 },
+                { id: "assistenza", x: 50, y: 1420, w: 700, h: 120 },
+                { id: "dev_0", x: 50, y: 700, w: 700, h: 120 },
+                { id: "dev_1", x: 50, y: 830, w: 700, h: 120 },
+                { id: "dev_2", x: 50, y: 960, w: 700, h: 120 },
+                { id: "dev_3", x: 50, y: 1090, w: 700, h: 120 },
+                { id: "dev_4", x: 50, y: 1220, w: 700, h: 120 }
             ];
         }
 
@@ -273,7 +273,7 @@ window.LayoutRack = {
         
         let boxX = 50;
         let boxY = 410;
-        let boxW = 380;
+        let boxW = 330;
         let boxH = 220;
         
         // Pannello A: TRAFFICO RACK
@@ -298,7 +298,7 @@ window.LayoutRack = {
         ctx.fillText("8.2 Gbps", boxX + boxW/2, boxY + 140);
         
         // Pannello B: TEMPERATURA
-        let b2X = 470;
+        let b2X = 420;
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
         ctx.roundRect(b2X, boxY, boxW, boxH, 20);
@@ -334,7 +334,7 @@ window.LayoutRack = {
             const device = dati.devices[this.state.selectedDeviceIndex];
             const dx = 50;
             const dy = 700;
-            const dw = 800;
+            const dw = 700;
             const dh = 680;
 
             // Sfondo Box dettaglio
@@ -419,7 +419,7 @@ window.LayoutRack = {
                 // Card Riga Apparato
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
                 ctx.beginPath();
-                ctx.roundRect(50, listY, 800, 110, 16);
+                ctx.roundRect(50, listY, 700, 110, 16);
                 ctx.fill();
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                 ctx.lineWidth = 1;
@@ -448,7 +448,7 @@ window.LayoutRack = {
                 ctx.fillStyle = '#06b6d4';
                 ctx.font = 'bold 20px Inter';
                 ctx.textAlign = 'right';
-                ctx.fillText(isPinnedDev ? "DETTAGLI +" : "🔒", 810, listY + 65);
+                ctx.fillText(isPinnedDev ? "DETTAGLI +" : "🔒", 710, listY + 65);
 
                 if (!isPinnedDev) ctx.globalAlpha = 1.0;
 

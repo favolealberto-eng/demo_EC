@@ -12,7 +12,7 @@ window.LayoutMacchina = {
         planeH: 4.8
     },
     hitboxes: [
-        { id: "benchmark_energia", x: 50, y: 1420, w: 800, h: 120 }
+        { id: "benchmark_energia", x: 50, y: 1420, w: 700, h: 120 }
     ],
 
     /**
@@ -148,7 +148,7 @@ window.LayoutMacchina = {
         // SEZIONE 1: KPI Energetici
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
-        ctx.roundRect(50, 260, 800, 400, 24);
+        ctx.roundRect(50, 260, 700, 400, 24);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
@@ -169,7 +169,7 @@ window.LayoutMacchina = {
             ctx.fillStyle = '#f1f5f9';
             ctx.font = 'bold 45px Inter';
             ctx.textAlign = 'right';
-            ctx.fillText(kpi.value, 820, offsetY + 2);
+            ctx.fillText(kpi.value, 720, offsetY + 2);
             ctx.textAlign = 'left';
             offsetY += 80;
         });
@@ -183,7 +183,7 @@ window.LayoutMacchina = {
         // SEZIONE 2: Benchmark Card
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.beginPath();
-        ctx.roundRect(50, 700, 800, 680, 24);
+        ctx.roundRect(50, 700, 700, 680, 24);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
