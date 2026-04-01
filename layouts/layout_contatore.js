@@ -7,8 +7,8 @@ window.LayoutContatore = {
     config: {
         canvasW: 1696,
         canvasH: 2716, // 2516 (immagine) + 200 (header)
-        planeW: 4.8,
-        planeH: 7.69
+        planeW: 4.08, // Ridotto del 15% (era 4.8)
+        planeH: 6.54  // Ridotto del 15% (era 7.69)
     },
 
     // 2. GESTIONE ASSET (Immagine e CSV)
@@ -287,8 +287,8 @@ window.LayoutContatore = {
                 ctx.strokeStyle = colorTheme || '#06b6d4'; ctx.lineWidth = Math.max(3, w * 0.03);
                 ctx.beginPath(); ctx.arc(cX, cY, raggio, 0, Math.PI * 2); ctx.stroke();
 
-                const valSize = Math.floor(w * 0.22);
-                const lblSize = Math.floor(w * 0.09);
+                const valSize = Math.floor(w * 0.28);
+                const lblSize = Math.floor(w * 0.12);
 
                 ctx.fillStyle = 'rgba(148,163,184,1)'; ctx.font = `bold ${lblSize}px Inter`;
                 ctx.fillText(label.toUpperCase(), cX, cY - (w * 0.18));
@@ -312,7 +312,7 @@ window.LayoutContatore = {
                 // Gestione Valvola Motorizzata (Stato)
                 if (isStato) {
                     let statusColor = (valore === "APERTA") ? "#22c55e" : "#eab308";
-                    const fontSize = Math.floor(Math.min(h * 0.40, w * 0.15));
+                    const fontSize = Math.floor(Math.min(h * 0.55, w * 0.25));
                     const iconRadius = Math.floor(h * 0.15);
 
                     ctx.fillStyle = statusColor;
@@ -324,12 +324,12 @@ window.LayoutContatore = {
                 // Gestione Scatole Dati (Temperature e Danfoss)
                 else {
                     if (h <= 140) { // Riga singola (Temperature)
-                        const fontSize = Math.floor(Math.min(h * 0.40, w * 0.15));
+                        const fontSize = Math.floor(Math.min(h * 0.55, w * 0.20));
                         ctx.fillStyle = '#f1f5f9'; ctx.font = `bold ${fontSize}px Inter`;
                         ctx.fillText(`${valore} ${unita}`, cX, cY + 2);
                     } else { // Multi riga (Danfoss)
-                        const valSize = Math.floor(Math.min(h * 0.25, w * 0.2));
-                        const lblSize = Math.floor(Math.min(h * 0.12, w * 0.1));
+                        const valSize = Math.floor(Math.min(h * 0.35, w * 0.25));
+                        const lblSize = Math.floor(Math.min(h * 0.16, w * 0.12));
 
                         ctx.fillStyle = 'rgba(148,163,184,1)'; ctx.font = `bold ${lblSize}px Inter`;
                         ctx.fillText(label.toUpperCase(), cX, y + (h * 0.25));
