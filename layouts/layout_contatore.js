@@ -7,8 +7,8 @@ window.LayoutContatore = {
     config: {
         canvasW: 1696,
         canvasH: 2716, // 2516 (immagine) + 200 (header)
-        planeW: 4.08, // Ridotto del 15% (era 4.8)
-        planeH: 6.54  // Ridotto del 15% (era 7.69)
+        planeW: 4.080 * 0.85, // Ridotto del 15% (era 4.8)
+        planeH: 6.54 * 0.85  // Ridotto del 15% (era 7.69)
     },
 
     // 2. GESTIONE ASSET (Immagine e CSV)

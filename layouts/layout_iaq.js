@@ -1,6 +1,6 @@
 // ==========================================
 // TEMPLATE: PANNELLO IAQ (Qualità dell'Aria)
-// Risoluzione nativa: 900x1600 (Verticale 9:16)
+// Risoluzione nativa: 800x1422 (Verticale 9:16)
 // Funzione: Fornisce un indicatore visuale con gauge circolare 
 // per uno score qualitativo ambientale, più 4 sotto-metri (temperatura, umidità etc).
 // ==========================================
@@ -8,19 +8,19 @@
 window.LayoutIAQ = {
     // 1. PARAMETRI DI STRUTTURA DEL CANVAS AR
     config: {
-        canvasW: 900,
-        canvasH: 1600,
-        planeW: 2.7,
-        planeH: 4.8
+        canvasW: 800,
+        canvasH: 1422,
+        planeW: 2.4,
+        planeH: 4.27
     },
 
     // 2. MAPPA DELLE AREE CLICCABILI (Coordinate aggiornate con i nuovi pulsanti)
     hitboxes: [
-        { id: "iaq_score", x: 250, y: 350, w: 400, h: 300 },
-        { id: "temperatura", x: 60, y: 900, w: 780, h: 88 },
-        { id: "umidita", x: 60, y: 1010, w: 780, h: 88 },
-        { id: "rumore", x: 60, y: 1120, w: 780, h: 88 },
-        { id: "luce", x: 60, y: 1230, w: 780, h: 88 }
+        { id: "iaq_score", x: 222, y: 311, w: 355, h: 266 },
+        { id: "temperatura", x: 53, y: 800, w: 693, h: 78 },
+        { id: "umidita", x: 53, y: 898, w: 693, h: 78 },
+        { id: "rumore", x: 53, y: 995, w: 693, h: 78 },
+        { id: "luce", x: 53, y: 1093, w: 693, h: 78 }
     ],
 
     // 3. DATABASE FITTIZIO (Simulazione chiamata API globale o sensoristica Edge)
@@ -69,7 +69,7 @@ window.LayoutIAQ = {
      * (Rosso->Verde) calcolando trigonometricamente la rotazione della lancetta (Freccia).
      */
     draw: function (ctx, dati, config) {
-        const W = 900, H = 1600;
+        const W = 800, H = 1422;
         ctx.clearRect(0, 0, W, H);
 
         if (typeof isPinned !== 'undefined' && isPinned) {
@@ -107,39 +107,39 @@ window.LayoutIAQ = {
         bgGrad.addColorStop(0.55, '#0f2d1f');
         bgGrad.addColorStop(1, '#0d1f3c');
         ctx.fillStyle = bgGrad;
-        ctx.beginPath(); ctx.roundRect(0, 0, W, H, 50); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(0, 0, W, H, 44); ctx.fill();
 
         // Bordo ambra
         ctx.strokeStyle = 'rgba(6,182,212,0.35)';
         ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 49); ctx.stroke();
+        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 43); ctx.stroke();
 
         // --- HEADER ---
         const titolo = config && config.nome ? config.nome.toUpperCase().replace('_', ' ') : "QUALITÀ DELL'ARIA";
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 54px sans-serif'; ctx.textAlign = 'center';
+        ctx.font = 'bold 48px sans-serif'; ctx.textAlign = 'center';
         ctx.textBaseline = 'alphabetic'; // Ripristina baseline standard per l'header
         ctx.shadowColor = 'rgba(6,182,212,0.4)'; ctx.shadowBlur = 12;
-        ctx.fillText(titolo, W / 2, 110);
+        ctx.fillText(titolo, W / 2, 98);
         ctx.shadowBlur = 0;
 
         // Sottotitolo orario
         ctx.fillStyle = 'rgba(148,163,184,0.85)';
-        ctx.font = '34px sans-serif';
-        ctx.fillText(dati.testo_aggiornamento, W / 2, 170);
+        ctx.font = '30px sans-serif';
+        ctx.fillText(dati.testo_aggiornamento, W / 2, 151);
 
         // Linea separatrice
         ctx.strokeStyle = 'rgba(6,182,212,0.25)';
         ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(60, 200); ctx.lineTo(840, 200); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(53, 178); ctx.lineTo(747, 178); ctx.stroke();
 
         // --- ARCO IAQ (invariato nella logica, restyled) ---
-        const cx = 450, cy = 600, radius = 280, thickness = 50;
+        const cx = 400, cy = 533, radius = 249, thickness = 44;
 
         // Track di sfondo scuro
         ctx.beginPath();
         ctx.arc(cx, cy, radius, Math.PI, Math.PI * 2);
-        ctx.lineWidth = thickness + 10;
+        ctx.lineWidth = thickness + 9;
         ctx.strokeStyle = 'rgba(255,255,255,0.05)';
         ctx.lineCap = 'round';
         ctx.stroke();
@@ -180,8 +180,8 @@ window.LayoutIAQ = {
         ctx.rotate(angoloFreccia);
         ctx.beginPath();
         ctx.moveTo(raggioInterno, 0);
-        ctx.lineTo(raggioInterno - 25, -15);
-        ctx.lineTo(raggioInterno - 25, 15);
+        ctx.lineTo(raggioInterno - 22, -13);
+        ctx.lineTo(raggioInterno - 22, 13);
         ctx.closePath();
         ctx.fillStyle = '#f1f5f9';
         ctx.shadowColor = 'rgba(255,255,255,0.5)';
@@ -194,93 +194,93 @@ window.LayoutIAQ = {
 
         // Valore score
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 145px sans-serif';
+        ctx.font = 'bold 129px sans-serif';
         ctx.textAlign = 'center';
         ctx.shadowColor = colorePunteggio; ctx.shadowBlur = 20;
-        ctx.fillText(dati.score.replace('.', ','), cx, 555);
+        ctx.fillText(dati.score.replace('.', ','), cx, 493);
         ctx.shadowBlur = 0;
 
         // Label qualità
         ctx.fillStyle = colorePunteggio;
-        ctx.font = 'bold 44px sans-serif';
+        ctx.font = 'bold 39px sans-serif';
         ctx.shadowColor = colorePunteggio; ctx.shadowBlur = 10;
-        ctx.fillText(label, cx, 648);
+        ctx.fillText(label, cx, 576);
         ctx.shadowBlur = 0;
 
         // Scale labels
         ctx.fillStyle = 'rgba(148,163,184,0.7)';
-        ctx.font = 'bold 32px sans-serif';
-        ctx.fillText("1", 170, 700);
-        ctx.fillText("10", 732, 700);
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillText("1", 151, 622);
+        ctx.fillText("10", 650, 622);
 
         // --- CARD DATI SENSORI ---
         ctx.fillStyle = 'rgba(255,255,255,0.03)';
-        ctx.beginPath(); ctx.roundRect(40, 800, 820, 720, 40); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(36, 711, 729, 640, 36); ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.10)';
         ctx.lineWidth = 1.5; ctx.stroke();
 
         // Titolo card
         ctx.fillStyle = 'rgba(6,182,212,0.9)';
-        ctx.font = 'bold 30px sans-serif'; ctx.textAlign = 'left';
-        ctx.fillText('DATI SENSORI AMBIENTALI', 75, 855);
+        ctx.font = 'bold 27px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('DATI SENSORI AMBIENTALI', 67, 760);
         ctx.fillStyle = 'rgba(6,182,212,0.35)';
-        ctx.fillRect(75, 862, 370, 2);
+        ctx.fillRect(67, 766, 329, 2);
 
 
         // --- NUOVA LOGICA DI DISEGNO RIGHE ---
         function drawRigaDato(rowTop, label, valore, unita) {
-            const rowH = 88;
+            const rowH = 78;
             const centerY = rowTop + (rowH / 2); // Calcoliamo il centro verticale esatto della riga
 
             // Pill background
             ctx.fillStyle = 'rgba(6,182,212,0.07)';
-            ctx.beginPath(); ctx.roundRect(60, rowTop, 780, rowH, 20); ctx.fill();
+            ctx.beginPath(); ctx.roundRect(53, rowTop, 693, rowH, 18); ctx.fill();
 
             // Bordo sottile cyan
             ctx.strokeStyle = 'rgba(6,182,212,0.22)';
             ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.roundRect(60, rowTop, 780, rowH, 20); ctx.stroke();
+            ctx.beginPath(); ctx.roundRect(53, rowTop, 693, rowH, 18); ctx.stroke();
 
             // Configura l'allineamento verticale al centro
             ctx.textBaseline = 'middle';
 
             // Label
             ctx.fillStyle = 'rgba(148,163,184,0.90)';
-            ctx.font = '38px sans-serif';
+            ctx.font = '34px sans-serif';
             ctx.textAlign = 'left';
-            ctx.fillText(label, 95, centerY);
+            ctx.fillText(label, 84, centerY);
 
             // Valore
             ctx.fillStyle = '#f1f5f9';
-            ctx.font = 'bold 44px sans-serif'; // Leggermente ridotto per non toccare i bordi
+            ctx.font = 'bold 39px sans-serif'; // Leggermente ridotto per non toccare i bordi
             ctx.textAlign = 'right';
-            ctx.fillText(`${valore} ${unita}`, 710, centerY);
+            ctx.fillText(`${valore} ${unita}`, 631, centerY);
 
             // Pallino verde live indicator
             ctx.fillStyle = '#22c55e';
             ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 10;
             ctx.beginPath();
-            ctx.arc(760, centerY, 8, 0, Math.PI * 2); // Allineato a centerY e leggermente più piccolo
+            ctx.arc(675, centerY, 7, 0, Math.PI * 2); // Allineato a centerY e leggermente più piccolo
             ctx.fill();
             ctx.shadowBlur = 0;
 
             // Chevron '›'
             ctx.fillStyle = 'rgba(6,182,212,0.65)';
-            ctx.font = 'bold 46px sans-serif';
+            ctx.font = 'bold 41px sans-serif';
             ctx.textAlign = 'right';
-            ctx.fillText('›', 820, centerY);
+            ctx.fillText('›', 729, centerY);
         }
 
         // Ora passiamo la coordinata Y superiore (rowTop) della riga
-        drawRigaDato(900, "Temperatura", dati.temperatura, "°C");
-        drawRigaDato(1010, "Umidità", dati.umidita, "%");
-        drawRigaDato(1120, "Rumore", dati.rumore, "dB");
-        drawRigaDato(1230, "Illuminamento", dati.luce, "lux");
+        drawRigaDato(800, "Temperatura", dati.temperatura, "°C");
+        drawRigaDato(898, "Umidità", dati.umidita, "%");
+        drawRigaDato(995, "Rumore", dati.rumore, "dB");
+        drawRigaDato(1093, "Illuminamento", dati.luce, "lux");
 
         // Footer
         ctx.textBaseline = 'alphabetic'; // Ripristina la baseline standard prima del footer
         ctx.fillStyle = 'rgba(100,116,139,0.55)';
-        ctx.font = '28px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('👆 Tocca una riga o lo score per il dettaglio', W / 2, 1490); // Spostato leggermente in alto per stare nella card
+        ctx.font = '25px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('👆 Tocca una riga o lo score per il dettaglio', W / 2, 1324); // Spostato leggermente in alto per stare nella card
     }
 }
