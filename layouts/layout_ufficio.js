@@ -23,7 +23,7 @@ window.LayoutUfficio = {
     fetchDati: function (callback) {
         const giorniNomi = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
         const todayIdx = new Date().getDay();
-        
+
         const formatOrari = (idx) => {
             if (idx === 0 || idx === 6) return "Chiuso";
             if (idx === 5) return "08:30 - 12:30"; // Venerdì solo mattina
@@ -42,7 +42,7 @@ window.LayoutUfficio = {
 
         const dati = {
             id: "UFF-01",
-            nome: "Ufficio IT & Sensori",
+            nome: "UFFICIO IT & SENSORI",
             luogo: "Piano Principale, Ala Sud",
             orariSettimana: orari,
             persone: [
@@ -52,15 +52,15 @@ window.LayoutUfficio = {
                     ruolo: "Area Software",
                     email: "mario.rossi@eurix.com",
                     agendaSettimana: {
-                        "Lunedì": [{titolo: "Sviluppo Backend", inizio: 8.5, fine: 12.5}, {titolo: "Riunione Clienti", inizio: 14, fine: 16}],
-                        "Martedì": [{titolo: "Code Review", inizio: 9, fine: 11}],
-                        "Mercoledì": [{titolo: "Sviluppo AR", inizio: 9, fine: 12.5}, {titolo: "Standup", inizio: 14, fine: 14.5}],
-                        "Giovedì": [{titolo: "Test Piattaforma", inizio: 10, fine: 12.5}, {titolo: "Formazione", inizio: 15, fine: 17}],
-                        "Venerdì": [{titolo: "Scrum Rétro", inizio: 9, fine: 11.5}]
+                        "Lunedì": [{ titolo: "Sviluppo Backend", inizio: 8.5, fine: 12.5 }, { titolo: "Riunione Clienti", inizio: 14, fine: 16 }],
+                        "Martedì": [{ titolo: "Code Review", inizio: 9, fine: 11 }],
+                        "Mercoledì": [{ titolo: "Sviluppo AR", inizio: 9, fine: 12.5 }, { titolo: "Standup", inizio: 14, fine: 14.5 }],
+                        "Giovedì": [{ titolo: "Test Piattaforma", inizio: 10, fine: 12.5 }, { titolo: "Formazione", inizio: 15, fine: 17 }],
+                        "Venerdì": [{ titolo: "Scrum Rétro", inizio: 9, fine: 11.5 }]
                     },
                     agendaGiorno: [
-                        {titolo: "Scrum e Allineamento", inizio: 9, fine: 10},
-                        {titolo: "Sviluppo AR", inizio: 10.5, fine: 12.5}
+                        { titolo: "Scrum e Allineamento", inizio: 9, fine: 10 },
+                        { titolo: "Sviluppo AR", inizio: 10.5, fine: 12.5 }
                     ]
                 },
                 {
@@ -69,14 +69,14 @@ window.LayoutUfficio = {
                     ruolo: "Area Hardware",
                     email: "luigi.bianchi@eurix.com",
                     agendaSettimana: {
-                        "Lunedì": [{titolo: "Sopralluogo Impianti", inizio: 8.5, fine: 12}],
-                        "Martedì": [{titolo: "Manutenzione Sensori", inizio: 9, fine: 12.5}, {titolo: "Acquisti", inizio: 14, fine: 16}],
-                        "Mercoledì": [{titolo: "Installazione", inizio: 10, fine: 12}],
-                        "Giovedì": [{titolo: "Calibrazione", inizio: 9, fine: 11.5}],
-                        "Venerdì": [{titolo: "Report", inizio: 9, fine: 11}]
+                        "Lunedì": [{ titolo: "Sopralluogo Impianti", inizio: 8.5, fine: 12 }],
+                        "Martedì": [{ titolo: "Manutenzione Sensori", inizio: 9, fine: 12.5 }, { titolo: "Acquisti", inizio: 14, fine: 16 }],
+                        "Mercoledì": [{ titolo: "Installazione", inizio: 10, fine: 12 }],
+                        "Giovedì": [{ titolo: "Calibrazione", inizio: 9, fine: 11.5 }],
+                        "Venerdì": [{ titolo: "Report", inizio: 9, fine: 11 }]
                     },
                     agendaGiorno: [
-                        {titolo: "Controllo Sensori IAQ", inizio: 9.5, fine: 12}
+                        { titolo: "Controllo Sensori IAQ", inizio: 9.5, fine: 12 }
                     ]
                 }
             ]
@@ -110,7 +110,7 @@ window.LayoutUfficio = {
 
                         if (typeof apriCalendario === 'function') {
                             apriCalendario();
-                            
+
                             // Restore original name after calendar pulls it asynchronously/synchronously
                             setTimeout(() => {
                                 if (typeof currentConfig !== 'undefined' && currentConfig && this.nomeOriginale) {
@@ -119,7 +119,7 @@ window.LayoutUfficio = {
                             }, 500);
                         }
                     }
-                } catch(e) {
+                } catch (e) {
                     console.error("Errore apertura agenda", e);
                 }
             }
@@ -160,7 +160,7 @@ window.LayoutUfficio = {
                     c3d.setAttribute('visible', 'true');
                 }
             }
-        } catch(e) {}
+        } catch (e) { }
 
         ctx.clearRect(0, 0, 800, 1100);
 
@@ -235,7 +235,7 @@ window.LayoutUfficio = {
         const g = String(now.getDate()).padStart(2, '0');
         const mo = String(now.getMonth() + 1).padStart(2, '0');
         const year = now.getFullYear();
-        
+
         ctx.textAlign = 'right';
         ctx.font = '500 16px Inter, sans-serif';
         ctx.fillStyle = 'rgba(148, 163, 184, 0.9)';
@@ -243,24 +243,24 @@ window.LayoutUfficio = {
 
         // ORARI
         const oggi = dati.orariSettimana[0];
-        
+
         ctx.textAlign = 'left';
         ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 30px Inter';
         ctx.fillText(`Orari per ${oggi.giorno}:`, 40, 200);
-        
+
         ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 36px Inter';
         ctx.fillText(oggi.orario, 40, 245);
 
         ctx.fillStyle = 'rgba(6,182,212,0.35)';
         ctx.fillRect(40, 275, 720, 3);
-        
+
         // ALTRI GIORNI
         for (let i = 1; i < 7; i++) {
             const gg = dati.orariSettimana[i];
-            const y = 320 + ((i-1) * 36);
+            const y = 320 + ((i - 1) * 36);
             ctx.fillStyle = 'rgba(148,163,184,0.9)'; ctx.font = '22px Inter';
             ctx.fillText(gg.giorno, 40, y);
-            
+
             ctx.textAlign = 'right';
             if (gg.orario === "Chiuso") {
                 ctx.fillStyle = '#ef4444';
@@ -283,7 +283,7 @@ window.LayoutUfficio = {
         const cardH = 190;
         dati.persone.forEach((p, idx) => {
             const y = 630 + (idx * (cardH + 20));
-            
+
             // Sfondo card contatto
             ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
             ctx.beginPath(); ctx.roundRect(40, y, 720, cardH, 20); ctx.fill();
@@ -291,9 +291,9 @@ window.LayoutUfficio = {
 
             // Avatar cerchio
             ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
-            ctx.beginPath(); ctx.arc(100, y + 65, 45, 0, 2*Math.PI); ctx.fill();
+            ctx.beginPath(); ctx.arc(100, y + 65, 45, 0, 2 * Math.PI); ctx.fill();
             ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)'; ctx.stroke();
-            
+
             ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 38px Inter'; ctx.textAlign = 'center';
             const iniziali = p.nome.split(" ").map(n => n.charAt(0)).slice(-2).join("").toUpperCase();
             ctx.fillText(iniziali, 100, y + 78);
@@ -307,7 +307,7 @@ window.LayoutUfficio = {
 
             // PULSANTI AZIONE (i loro hitbox corrispondono a questi disegni)
             const btnAy = y + 120;
-            
+
             const isPinnedUff = window.isPinned;
             if (!isPinnedUff) ctx.globalAlpha = 0.4;
 
@@ -315,7 +315,7 @@ window.LayoutUfficio = {
             ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
             ctx.beginPath(); ctx.roundRect(170, btnAy, 260, 50, 10); ctx.fill();
             ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(6, 182, 212, 0.6)'; ctx.stroke();
-            
+
             ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 18px Inter'; ctx.textAlign = 'center';
             ctx.fillText("📅 AGENDA PERSONALE", 300, btnAy + 32);
 
@@ -323,7 +323,7 @@ window.LayoutUfficio = {
             ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
             ctx.beginPath(); ctx.roundRect(450, btnAy, 260, 50, 10); ctx.fill();
             ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)'; ctx.stroke();
-            
+
             ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 18px Inter'; ctx.textAlign = 'center';
             ctx.fillText("✉ CHIEDI APPUNTAMENTO", 580, btnAy + 32);
 

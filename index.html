@@ -286,24 +286,26 @@
 
         .btn-close {
             position: fixed;
-            top: 18px;
-            right: 18px;
+            top: 0;
+            right: 0;
             background: rgba(239, 68, 68, 0.85);
             color: white;
-            border: 1.5px solid rgba(255, 255, 255, 0.2);
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            font-size: 18px;
+            border: none;
+            width: 54px;
+            height: 54px;
+            border-bottom-left-radius: 24px;
+            font-size: 24px;
             font-weight: bold;
             cursor: pointer;
             z-index: 10000;
             backdrop-filter: blur(8px);
-            transition: transform 0.15s, background 0.15s;
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-close:hover {
-            transform: scale(1.1);
             background: rgba(239, 68, 68, 1);
         }
 
