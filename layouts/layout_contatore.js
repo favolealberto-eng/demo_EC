@@ -312,14 +312,14 @@ window.LayoutContatore = {
                 // Gestione Valvola Motorizzata (Stato)
                 if (isStato) {
                     let statusColor = (valore === "APERTA") ? "#22c55e" : "#eab308";
-                    const fontSize = Math.floor(Math.min(h * 0.55, w * 0.25));
+                    const fontSize = Math.floor(Math.min(h * 0.55, w * 0.18));
                     const iconRadius = Math.floor(h * 0.15);
 
                     ctx.fillStyle = statusColor;
-                    ctx.beginPath(); ctx.arc(x + (w * 0.25), cY, iconRadius, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(x + (w * 0.15), cY, iconRadius, 0, Math.PI * 2); ctx.fill();
 
                     ctx.fillStyle = statusColor; ctx.font = `bold ${fontSize}px Inter`; ctx.textAlign = 'left';
-                    ctx.fillText(valore, x + (w * 0.25) + iconRadius + 20, cY + 2);
+                    ctx.fillText(valore, x + (w * 0.15) + iconRadius + 15, cY + 2);
                 }
                 // Gestione Scatole Dati (Temperature e Danfoss)
                 else {
