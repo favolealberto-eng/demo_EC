@@ -12,8 +12,8 @@ window.LayoutAppartamento = {
     config: {
         canvasW: 800, 
         canvasH: 1600, 
-        planeW: 2.2, 
-        planeH: 4.4
+        planeW: 2.4, 
+        planeH: 4.8
     },
 
     vistaCorrente: 'main', // Determina il router interno: 'main' o 'diagnostica'
@@ -180,7 +180,11 @@ window.LayoutAppartamento = {
         this.hitboxes = [];
 
         // Sfondo dark glassmorphism
-        ctx.fillStyle = 'rgba(13, 31, 60, 0.9)';
+        const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+        bgGrad.addColorStop(0, 'rgba(13, 31, 60, 0.97)');
+        bgGrad.addColorStop(0.5, 'rgba(15, 45, 31, 0.97)');
+        bgGrad.addColorStop(1, 'rgba(13, 31, 60, 0.97)');
+        ctx.fillStyle = bgGrad;
         ctx.beginPath();
         ctx.roundRect(0, 0, w, h, 40);
         ctx.fill();
@@ -206,23 +210,28 @@ window.LayoutAppartamento = {
      */
     drawMain: function(ctx, dati, w, h) {
         // --- HEADER LOGICA ---
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        const hdrGrad = ctx.createLinearGradient(10, 10, w - 10, 10);
+        hdrGrad.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+        hdrGrad.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
+        ctx.fillStyle = hdrGrad;
         ctx.beginPath();
-        ctx.roundRect(0, 0, w, 180, { tl: 40, tr: 40, bl: 0, br: 0 });
+        ctx.roundRect(0, 0, w, 130, { tl: 40, tr: 40, bl: 0, br: 0 });
         ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
-        ctx.beginPath(); ctx.moveTo(0, 180); ctx.lineTo(w, 180); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, 130); ctx.lineTo(w, 130); ctx.stroke();
 
         // Icona/Testo
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 50px Inter';
-        ctx.textAlign = 'left';
-        ctx.fillText(dati.nome, 50, 80);
+        ctx.font = 'bold 38px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
+        ctx.fillText(dati.nome, 400, 70);
+        ctx.shadowBlur = 0;
 
         // Ultimo aggiornamento
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '24px Inter';
-        ctx.fillText(`Ultimo agg: ${dati.last_update} - Ora attuale: ${dati.str_ora_attuale}`, 50, 130);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = '24px Inter, sans-serif';
+        ctx.fillText(`Ultimo agg: ${dati.last_update} - Ora attuale: ${dati.str_ora_attuale}`, 400, 110);
 
         // Spia Globale + Icona info globale
         let colorSemaforo = '#22c55e'; // Verde ok
@@ -406,17 +415,23 @@ window.LayoutAppartamento = {
      */
     drawDiagnostica: function(ctx, dati, w, h) {
         // --- HEADER STRUTTURA DIAGNOSTICA ---
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-        ctx.beginPath(); ctx.roundRect(0, 0, w, 160, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
-        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)'; ctx.beginPath(); ctx.moveTo(0, 160); ctx.lineTo(w, 160); ctx.stroke();
+        const hdrGrad = ctx.createLinearGradient(10, 10, w - 10, 10);
+        hdrGrad.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+        hdrGrad.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
+        ctx.fillStyle = hdrGrad;
+        ctx.beginPath(); ctx.roundRect(0, 0, w, 130, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)'; ctx.beginPath(); ctx.moveTo(0, 130); ctx.lineTo(w, 130); ctx.stroke();
 
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 46px Inter';
+        ctx.font = 'bold 38px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText("DIAGNOSTICA CONTATORI", w/2, 80);
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '24px Inter';
-        ctx.fillText(`Pannello di controllo ${dati.nome}`, w/2, 125);
+        ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
+        ctx.fillText("DIAGNOSTICA CONTATORI", 400, 70);
+        ctx.shadowBlur = 0;
+        
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = '24px Inter, sans-serif';
+        ctx.fillText(`Pannello di controllo ${dati.nome}`, 400, 110);
 
         // --- CONTENUTO DIAGNOSTICA ---
         let dY = 200;

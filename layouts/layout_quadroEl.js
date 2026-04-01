@@ -148,14 +148,21 @@ window.LayoutQuadroEl = {
 
             ctx.clearRect(0, 0, W_TAB, H_TAB);
 
-            // Sfondo Dark
-            ctx.fillStyle = 'rgba(13, 31, 60, 0.95)';
+            // Sfondo Dark Glassmorphism standard
+            const bgGrad = ctx.createLinearGradient(0, 0, W_TAB, H_TAB);
+            bgGrad.addColorStop(0, 'rgba(13, 31, 60, 0.97)');
+            bgGrad.addColorStop(0.5, 'rgba(15, 45, 31, 0.97)');
+            bgGrad.addColorStop(1, 'rgba(13, 31, 60, 0.97)');
+            ctx.fillStyle = bgGrad;
             ctx.beginPath(); ctx.roundRect(0, 0, W_TAB, H_TAB, 40); ctx.fill();
             ctx.strokeStyle = 'rgba(6, 182, 212, 0.6)';
             ctx.lineWidth = 4; ctx.stroke();
 
-            // Header
-            ctx.fillStyle = '#061325';
+            // Header Cyan
+            const hdrGrad = ctx.createLinearGradient(10, 10, W_TAB - 10, 10);
+            hdrGrad.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+            hdrGrad.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
+            ctx.fillStyle = hdrGrad;
             ctx.beginPath(); ctx.roundRect(0, 0, W_TAB, 150, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
             ctx.fillStyle = '#f1f5f9';
             ctx.font = 'bold 55px Inter'; // Font ridotto
@@ -378,10 +385,17 @@ window.LayoutQuadroEl = {
         ctx.clearRect(0, 0, w, h);
 
         if (typeof isPinned !== 'undefined' && isPinned) {
-            ctx.fillStyle = '#061325';
+            const bgGradP = ctx.createLinearGradient(0, 0, w, h);
+            bgGradP.addColorStop(0, 'rgba(13, 31, 60, 0.97)');
+            bgGradP.addColorStop(0.5, 'rgba(15, 45, 31, 0.97)');
+            bgGradP.addColorStop(1, 'rgba(13, 31, 60, 0.97)');
+            ctx.fillStyle = bgGradP;
             ctx.fillRect(0, 0, w, h);
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            const hdrGradP = ctx.createLinearGradient(10, 10, w - 10, 10);
+            hdrGradP.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+            hdrGradP.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
+            ctx.fillStyle = hdrGradP;
             ctx.fillRect(0, 0, w, 360);
             ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
             ctx.beginPath();
@@ -417,7 +431,11 @@ window.LayoutQuadroEl = {
                 }
             }
 
-            ctx.fillStyle = 'rgba(13, 31, 60, 0.92)';
+            const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+            bgGrad.addColorStop(0, 'rgba(13, 31, 60, 0.97)');
+            bgGrad.addColorStop(0.5, 'rgba(15, 45, 31, 0.97)');
+            bgGrad.addColorStop(1, 'rgba(13, 31, 60, 0.97)');
+            ctx.fillStyle = bgGrad;
             ctx.beginPath();
             ctx.roundRect(0, 0, w, h, 60);
             ctx.fill();
@@ -425,7 +443,10 @@ window.LayoutQuadroEl = {
             ctx.lineWidth = 6;
             ctx.stroke();
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            const hdrGrad = ctx.createLinearGradient(10, 10, w - 10, 10);
+            hdrGrad.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+            hdrGrad.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
+            ctx.fillStyle = hdrGrad;
             ctx.beginPath();
             ctx.roundRect(0, 0, w, 360, { tl: 60, tr: 60, bl: 0, br: 0 });
             ctx.fill();

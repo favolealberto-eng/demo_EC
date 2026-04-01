@@ -7,10 +7,10 @@
  */
 window.LayoutEstintore = {
     config: {
-        canvasW: 900,
+        canvasW: 800,
         canvasH: 1600,
-        planeW: 1.8,
-        planeH: 3.2
+        planeW: 2.4,
+        planeH: 4.8
     },
 
     hitboxes: [],  // Nessuna interazione complessa prevista per questo layout (solo visivo)
@@ -72,15 +72,15 @@ window.LayoutEstintore = {
 
         // --- SFONDO SCURO ---
         const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-        bgGrad.addColorStop(0, '#0d1f3c');
-        bgGrad.addColorStop(0.5, '#0f2d1f');
-        bgGrad.addColorStop(1, '#0d1f3c');
+        bgGrad.addColorStop(0, 'rgba(13, 31, 60, 0.97)');
+        bgGrad.addColorStop(0.5, 'rgba(15, 45, 31, 0.97)');
+        bgGrad.addColorStop(1, 'rgba(13, 31, 60, 0.97)');
         ctx.fillStyle = bgGrad;
         ctx.beginPath(); ctx.roundRect(0, 0, W, H, 40); ctx.fill();
 
-        ctx.strokeStyle = 'rgba(6,182,212,0.35)';
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 39); ctx.stroke();
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 38); ctx.stroke();
 
         // --- CALCOLO STATO ---
         const nomeUpper = config && config.nome ? config.nome.toUpperCase() : "ESTINTORE";
@@ -103,30 +103,33 @@ window.LayoutEstintore = {
         }
 
         // --- HEADER ---
-        const hdrGrad = ctx.createLinearGradient(10, 10, W-10, 10);
-        hdrGrad.addColorStop(0, '#06b6d4');
-        hdrGrad.addColorStop(1, '#0891b2');
+        const hdrGrad = ctx.createLinearGradient(10, 10, W - 10, 10);
+        hdrGrad.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+        hdrGrad.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
         ctx.fillStyle = hdrGrad;
-        ctx.beginPath(); ctx.roundRect(10, 10, W - 20, 190, [30, 30, 0, 0]); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(0, 0, W, 130, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+        ctx.beginPath(); ctx.moveTo(0, 130); ctx.lineTo(W, 130); ctx.stroke();
 
-        // Titolo header (Spezzato in due righe per via della larghezza ridotta)
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 50px sans-serif'; ctx.textAlign = 'left';
-        ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 8;
-        ctx.fillText("ESTINTORE:", 40, 75);
-        ctx.fillText(nomeUpper, 40, 135);
+        ctx.fillStyle = '#f1f5f9';
+        ctx.font = 'bold 38px Inter, sans-serif'; ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
+        ctx.fillText("ESTINTORE", 400, 70);
         ctx.shadowBlur = 0;
+
+        ctx.font = '24px Inter, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fillText(nomeUpper, 400, 110);
 
         // Bollino stato 
         ctx.fillStyle = statoColore;
         ctx.shadowColor = statoColore; ctx.shadowBlur = 20;
-        ctx.beginPath(); ctx.arc(W - 70, 70, 35, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(W - 40, 65, 20, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = statoColore;
-        ctx.font = 'bold 30px sans-serif'; ctx.textAlign = 'right';
+        ctx.font = 'bold 20px Inter, sans-serif'; ctx.textAlign = 'right';
         ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 4;
-        ctx.fillText(testoStato, W - 120, 80);
+        ctx.fillText(testoStato, W - 70, 70);
         ctx.shadowBlur = 0;
 
         // --- SEZIONE 1: PIANO MANUTENTIVO ---

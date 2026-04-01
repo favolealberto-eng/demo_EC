@@ -7,7 +7,7 @@
  */
 window.LayoutSala = {
     config: {
-        canvasW: 800, canvasH: 1000, planeW: 2.4, planeH: 3.0
+        canvasW: 800, canvasH: 1100, planeW: 2.4, planeH: 3.3
     },
 
     // La hitbox per il bottone del calendario
@@ -83,7 +83,7 @@ window.LayoutSala = {
         // Salviamo l'ID per usarlo nel fetchDati
         this.currentIdSala = config.id_sala;
 
-        const W = 800, H = 1000;
+        const W = 800, H = 1100;
         ctx.clearRect(0, 0, W, H);
 
         if (typeof isPinned !== 'undefined' && isPinned) {
@@ -114,37 +114,35 @@ window.LayoutSala = {
             }
         }
 
-
         // --- SFONDO SCURO PRINCIPALE ---
         const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-        bgGrad.addColorStop(0, '#0d1f3c');
-        bgGrad.addColorStop(0.6, '#0f2d1f');
-        bgGrad.addColorStop(1, '#0d1f3c');
+        bgGrad.addColorStop(0, 'rgba(13, 31, 60, 0.97)');
+        bgGrad.addColorStop(0.5, 'rgba(15, 45, 31, 0.97)');
+        bgGrad.addColorStop(1, 'rgba(13, 31, 60, 0.97)');
         ctx.fillStyle = bgGrad;
         ctx.beginPath(); ctx.roundRect(0, 0, W, H, 40); ctx.fill();
 
-        // Bordo sottile ambra
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = 'rgba(6,182,212,0.35)';
-        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 39); ctx.stroke();
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 38); ctx.stroke();
 
-        // --- HEADER con gradiente ambra→arancio ---
-        const hdrGrad = ctx.createLinearGradient(10, 10, 790, 10);
-        hdrGrad.addColorStop(0, '#06b6d4');
-        hdrGrad.addColorStop(1, '#0891b2');
+        // --- HEADER ---
+        const hdrGrad = ctx.createLinearGradient(10, 10, W - 10, 10);
+        hdrGrad.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+        hdrGrad.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
         ctx.fillStyle = hdrGrad;
-        ctx.beginPath(); ctx.roundRect(10, 10, W - 20, 145, [34, 34, 0, 0]); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(0, 0, W, 130, { tl: 40, tr: 40, bl: 0, br: 0 }); ctx.fill();
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+        ctx.beginPath(); ctx.moveTo(0, 130); ctx.lineTo(W, 130); ctx.stroke();
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 58px sans-serif'; ctx.textAlign = 'center';
-        ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 8;
-        ctx.fillText(config.nome.toUpperCase(), 400, 104);
+        ctx.fillStyle = '#f1f5f9';
+        ctx.font = 'bold 38px Inter, sans-serif'; ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
+        ctx.fillText(config.nome.toUpperCase(), 400, 70);
         ctx.shadowBlur = 0;
 
-        // Sottotitolo header
-        ctx.fillStyle = 'rgba(255,255,255,0.75)';
-        ctx.font = '28px sans-serif';
-        ctx.fillText('STATO SALA CONFERENZE', 400, 140);
+        ctx.font = '24px Inter, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fillText('STATO SALA CONFERENZE', 400, 110);
 
         // --- STATUS BADGE ---
         // Sfondo badge

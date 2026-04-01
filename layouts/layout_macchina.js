@@ -6,10 +6,10 @@
  */
 window.LayoutMacchina = {
     config: {
-        canvasW: 900,
+        canvasW: 800,
         canvasH: 1600,
-        planeW: 1.8,
-        planeH: 3.2
+        planeW: 2.4,
+        planeH: 4.8
     },
     hitboxes: [
         { id: "benchmark_energia", x: 50, y: 1420, w: 800, h: 120 }
@@ -86,7 +86,11 @@ window.LayoutMacchina = {
 
         
         // Sfondo dark glassmorphism
-        ctx.fillStyle = 'rgba(13, 31, 60, 0.85)';
+        const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+        bgGrad.addColorStop(0, 'rgba(13, 31, 60, 0.97)');
+        bgGrad.addColorStop(0.5, 'rgba(15, 45, 31, 0.97)');
+        bgGrad.addColorStop(1, 'rgba(13, 31, 60, 0.97)');
+        ctx.fillStyle = bgGrad;
         ctx.beginPath();
         ctx.roundRect(0, 0, w, h, 40);
         ctx.fill();
@@ -95,29 +99,30 @@ window.LayoutMacchina = {
         ctx.stroke();
 
         // Header
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        const hdrGrad = ctx.createLinearGradient(10, 10, w - 10, 10);
+        hdrGrad.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+        hdrGrad.addColorStop(1, 'rgba(8, 145, 178, 0.2)');
+        ctx.fillStyle = hdrGrad;
         ctx.beginPath();
-        ctx.roundRect(0, 0, w, 220, { tl: 40, tr: 40, bl: 0, br: 0 });
+        ctx.roundRect(0, 0, w, 130, { tl: 40, tr: 40, bl: 0, br: 0 });
         ctx.fill();
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
         ctx.beginPath();
-        ctx.moveTo(0, 220);
-        ctx.lineTo(w, 220);
+        ctx.moveTo(0, 130);
+        ctx.lineTo(w, 130);
         ctx.stroke();
 
         // Titolo Macchina
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 55px Inter';
-        ctx.textAlign = 'left';
-        ctx.fillText(currentConfig.nome, 50, 90);
+        ctx.font = 'bold 38px Inter';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
+        ctx.fillText(currentConfig.nome, w/2, 70);
+        ctx.shadowBlur = 0;
         
-        // Sottotitolo
-        const gradient = ctx.createLinearGradient(50, 0, 800, 0);
-        gradient.addColorStop(0, '#06b6d4');
-        gradient.addColorStop(1, '#0891b2');
-        ctx.fillStyle = gradient;
-        ctx.font = 'bold 24px Inter';
-        ctx.fillText(dati.testo_aggiornamento, 50, 150);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = '24px Inter';
+        ctx.fillText(dati.testo_aggiornamento, w/2, 110);
 
         // Spia di Allarme
         const soglia = currentConfig.soglia_kw || 45;
@@ -133,10 +138,10 @@ window.LayoutMacchina = {
         }
         ctx.save();
         ctx.shadowColor = glowSemaforo;
-        ctx.shadowBlur = 40;
+        ctx.shadowBlur = 20;
         ctx.fillStyle = colorSemaforo;
         ctx.beginPath();
-        ctx.arc(w - 90, 100, 45, 0, Math.PI * 2);
+        ctx.arc(w - 60, 65, 20, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
