@@ -7,8 +7,8 @@ window.LayoutContatore = {
     config: {
         canvasW: 1696,
         canvasH: 2716, // 2516 (immagine) + 200 (header)
-        planeW: 4.080 * 0.85, // Ridotto del 15% (era 4.8)
-        planeH: 6.54 * 0.85  // Ridotto del 15% (era 7.69)
+        planeW: 4.080 * 0.80, // Ridotto del 15% (era 4.8)
+        planeH: 6.54 * 0.80  // Ridotto del 15% (era 7.69)
     },
 
     // 2. GESTIONE ASSET (Immagine e CSV)
@@ -180,8 +180,10 @@ window.LayoutContatore = {
             ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)'; ctx.lineWidth = 4;
             ctx.beginPath(); ctx.moveTo(0, headerH); ctx.lineTo(W, headerH); ctx.stroke();
 
-            ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 90px Inter'; ctx.textAlign = 'left';
-            ctx.fillText(`GRUPPO IDRICO - ID: ${config.id_macchina || 'CNT-01'}`, 80, 150);
+            ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 90px Inter, sans-serif'; ctx.textAlign = 'left';
+            ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12;
+            ctx.fillText(`GRUPPO IDRICO - ID: ${config.id_macchina || 'CNT-01'}`.toUpperCase(), 80, 150);
+            ctx.shadowBlur = 0;
 
             const colW = W - 160;
             const colY = headerH + 80;
@@ -239,10 +241,12 @@ window.LayoutContatore = {
         ctx.strokeStyle = 'rgba(6,182,212,1)'; ctx.lineWidth = 6;
         ctx.beginPath(); ctx.moveTo(0, headerH); ctx.lineTo(W, headerH); ctx.stroke();
 
-        ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 80px Inter'; ctx.textAlign = 'left';
-        ctx.fillText(config.nome || "CONTATORE GENERALE", 60, 130);
-        ctx.fillStyle = 'rgba(6,182,212,1)'; ctx.font = 'bold 60px Inter'; ctx.textAlign = 'right';
-        ctx.fillText(`${dati.dataStr} · ${dati.oraStr}`, W - 60, 130);
+        ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 80px Inter, sans-serif'; ctx.textAlign = 'left';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12;
+        ctx.fillText((config.nome || "CONTATORE GENERALE").toUpperCase(), 60, 130);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(6,182,212,1)'; ctx.font = 'bold 60px Inter, sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText(`${dati.dataStr} · ${dati.oraStr}`.toUpperCase(), W - 60, 130);
 
         // 2. TRASLAZIONE (Zero matematica sui box!)
         ctx.save();

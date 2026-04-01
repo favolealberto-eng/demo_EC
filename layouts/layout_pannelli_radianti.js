@@ -216,11 +216,11 @@ window.LayoutPannelliRadianti = {
         ctx.fillStyle = '#f1f5f9';
         ctx.font = 'bold 38px Inter, sans-serif'; ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
-        ctx.fillText(`${dati.nome} ${config && config.id_macchina ? config.id_macchina : dati.id}`, 400, 70);
+        ctx.fillText(`${dati.nome} ${config && config.id_macchina ? config.id_macchina : dati.id}`.toUpperCase(), 400, 70);
         ctx.shadowBlur = 0;
 
         ctx.font = '24px Inter, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.fillText(dati.luogo.toUpperCase(), 400, 110);
+        ctx.fillText((dati.luogo || "").toUpperCase(), 400, 110);
 
         // Linea separatrice bottom header
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';

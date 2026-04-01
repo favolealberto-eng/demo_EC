@@ -210,12 +210,12 @@ window.LayoutRack = {
         ctx.font = 'bold 38px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
-        ctx.fillText(currentConfig.nome, w/2, 70);
+        ctx.fillText((currentConfig.nome || "").toUpperCase(), w/2, 70);
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.font = '24px Inter, sans-serif';
-        ctx.fillText(dati.testo_aggiornamento, w/2, 110);
+        ctx.fillText((dati.testo_aggiornamento || "").toUpperCase(), w/2, 110);
 
         // --- SEZIONE 1: INDICATORI GLOBALI (KPI) ---
         // Logica a semafori colorati

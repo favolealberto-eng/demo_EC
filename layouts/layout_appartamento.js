@@ -225,13 +225,13 @@ window.LayoutAppartamento = {
         ctx.font = 'bold 38px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
-        ctx.fillText(dati.nome, 400, 70);
+        ctx.fillText((dati.nome || "Appartamento").toUpperCase(), 400, 70);
         ctx.shadowBlur = 0;
 
         // Ultimo aggiornamento
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.font = '24px Inter, sans-serif';
-        ctx.fillText(`Ultimo agg: ${dati.last_update} - Ora attuale: ${dati.str_ora_attuale}`, 400, 110);
+        ctx.fillText(`Ultimo agg: ${dati.last_update} - Ora attuale: ${dati.str_ora_attuale}`.toUpperCase(), 400, 110);
 
         // Spia Globale + Icona info globale
         let colorSemaforo = '#22c55e'; // Verde ok
@@ -330,10 +330,17 @@ window.LayoutAppartamento = {
             iconOffset = 45;
         }
 
-        ctx.fillStyle = '#f1f5f9';
+        ctx.fillStyle = colorPrimary;
         ctx.textAlign = 'left';
         ctx.font = 'bold 34px Inter';
-        ctx.fillText(title, padding + 30 + iconOffset, y + 55);
+        const titleUpper = title.toUpperCase();
+        ctx.fillText(titleUpper, padding + 30 + iconOffset, y + 55);
+        
+        ctx.fillStyle = colorPrimary;
+        ctx.globalAlpha = 0.35;
+        let twSection = ctx.measureText(titleUpper).width;
+        ctx.fillRect(padding + 30 + iconOffset, y + 70, twSection, 3);
+        ctx.globalAlpha = 1.0;
 
         // Eventuale spia stato sezione
         if (extraColorLight) {
@@ -431,15 +438,16 @@ window.LayoutAppartamento = {
         
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.font = '24px Inter, sans-serif';
-        ctx.fillText(`Pannello di controllo ${dati.nome}`, 400, 110);
+        ctx.fillText(`Pannello di controllo ${dati.nome}`.toUpperCase(), 400, 110);
 
         // --- CONTENUTO DIAGNOSTICA ---
         let dY = 200;
         ctx.textAlign = 'left';
 
         // 1. Stato Comunicazione
-        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 30px Inter';
-        ctx.fillText("Stato Comunicazione:", 50, dY);
+        ctx.fillStyle = 'rgba(6,182,212,0.9)'; ctx.font = 'bold 30px Inter';
+        ctx.fillText("STATO COMUNICAZIONE:", 50, dY);
+        ctx.fillStyle = 'rgba(6,182,212,0.35)'; ctx.fillRect(50, dY + 15, ctx.measureText("STATO COMUNICAZIONE:").width, 3);
         dY += 50;
 
         for (const [key, val] of Object.entries(dati.diagnostica.counters)) {
@@ -457,8 +465,9 @@ window.LayoutAppartamento = {
         dY += 40;
 
         // 2. Errori
-        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 30px Inter';
-        ctx.fillText("Log Errori Recenti:", 50, dY);
+        ctx.fillStyle = 'rgba(6,182,212,0.9)'; ctx.font = 'bold 30px Inter';
+        ctx.fillText("LOG ERRORI RECENTI:", 50, dY);
+        ctx.fillStyle = 'rgba(6,182,212,0.35)'; ctx.fillRect(50, dY + 15, ctx.measureText("LOG ERRORI RECENTI:").width, 3);
         dY += 50;
 
         if (dati.diagnostica.errors.length === 0) {
@@ -476,8 +485,9 @@ window.LayoutAppartamento = {
         dY += 40;
 
         // 3. Soglie Configurate
-        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 30px Inter';
-        ctx.fillText("Soglie Alert Impostate:", 50, dY);
+        ctx.fillStyle = 'rgba(6,182,212,0.9)'; ctx.font = 'bold 30px Inter';
+        ctx.fillText("SOGLIE ALERT IMPOSTATE:", 50, dY);
+        ctx.fillStyle = 'rgba(6,182,212,0.35)'; ctx.fillRect(50, dY + 15, ctx.measureText("SOGLIE ALERT IMPOSTATE:").width, 3);
         dY += 50;
         for (const [key, val] of Object.entries(dati.diagnostica.soglie)) {
             ctx.fillStyle = '#94a3b8'; ctx.font = '26px Inter';
@@ -492,8 +502,9 @@ window.LayoutAppartamento = {
         dY += 40;
 
         // 4. Cumulato Mese
-        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 30px Inter';
-        ctx.fillText("Consumo Cumulato (Mese in corso):", 50, dY);
+        ctx.fillStyle = 'rgba(6,182,212,0.9)'; ctx.font = 'bold 30px Inter';
+        ctx.fillText("CONSUMO CUMULATO (MESE IN CORSO):", 50, dY);
+        ctx.fillStyle = 'rgba(6,182,212,0.35)'; ctx.fillRect(50, dY + 15, ctx.measureText("CONSUMO CUMULATO (MESE IN CORSO):").width, 3);
         dY += 50;
         for (const [key, val] of Object.entries(dati.diagnostica.cumulato_mese)) {
             ctx.fillStyle = '#94a3b8'; ctx.font = '26px Inter';

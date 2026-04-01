@@ -114,15 +114,15 @@ window.LayoutMacchina = {
 
         // Titolo Macchina
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 38px Inter';
+        ctx.font = 'bold 38px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
-        ctx.fillText(currentConfig.nome, w/2, 70);
+        ctx.fillText((currentConfig.nome || "Macchinario").toUpperCase(), w/2, 70);
         ctx.shadowBlur = 0;
         
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.font = '24px Inter';
-        ctx.fillText(dati.testo_aggiornamento, w/2, 110);
+        ctx.font = '24px Inter, sans-serif';
+        ctx.fillText((dati.testo_aggiornamento || "").toUpperCase(), w/2, 110);
 
         // Spia di Allarme
         const soglia = currentConfig.soglia_kw || 45;
@@ -188,13 +188,18 @@ window.LayoutMacchina = {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
 
-        ctx.fillStyle = '#f1f5f9';
+        ctx.fillStyle = 'rgba(6,182,212,0.9)';
         ctx.textAlign = 'center';
         ctx.font = 'bold 42px Inter';
-        ctx.fillText("BENCHMARK EnPI", w/2, 710);
+        ctx.fillText("BENCHMARK ENPI", w/2, 710);
+        
+        ctx.fillStyle = 'rgba(6,182,212,0.35)';
+        let wText = ctx.measureText("BENCHMARK ENPI").width;
+        ctx.fillRect(w/2 - wText/2, 725, wText, 3);
+
         ctx.fillStyle = '#94a3b8';
         ctx.font = '28px Inter';
-        ctx.fillText("Energy Performance Indicator", w/2, 760);
+        ctx.fillText("ENERGY PERFORMANCE INDICATOR", w/2, 770);
 
         ctx.fillStyle = '#06b6d4';
         ctx.font = 'bold 160px Inter';

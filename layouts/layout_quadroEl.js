@@ -458,13 +458,15 @@ window.LayoutQuadroEl = {
         }
 
         ctx.fillStyle = '#f1f5f9';
-        ctx.font = 'bold 100px Inter';
+        ctx.font = 'bold 100px Inter, sans-serif';
         ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12;
         ctx.fillText("QUADRO ELETTRICO", w / 2, 160);
+        ctx.shadowBlur = 0;
 
-        ctx.fillStyle = '#06b6d4';
-        ctx.font = 'bold 46px Inter';
-        ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  ${dati.testo_aggiornamento}`, w / 2, 260);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = 'bold 46px Inter, sans-serif';
+        ctx.fillText(`ID: ${currentConfig.id_macchina || 'QE-01'}  ·  ${dati.testo_aggiornamento}`.toUpperCase(), w / 2, 260);
 
         let colorAllarme = '#22c55e';
         let testAllarme = "SISTEMA OK";
@@ -483,10 +485,14 @@ window.LayoutQuadroEl = {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '60px Inter';
+        ctx.fillStyle = 'rgba(6,182,212,0.9)';
+        ctx.font = 'bold 60px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText("Potenza Attiva (P)", w / 2, 540);
+        ctx.fillText("POTENZA ATTIVA (P)", w / 2, 540);
+        
+        ctx.fillStyle = 'rgba(6,182,212,0.35)';
+        let w_pot = ctx.measureText("POTENZA ATTIVA (P)").width;
+        ctx.fillRect(w / 2 - w_pot / 2, 555, w_pot, 5);
 
         const valText = dati.potenza_kw.toString();
         ctx.font = 'bold 280px Inter';
@@ -518,9 +524,14 @@ window.LayoutQuadroEl = {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
 
-        ctx.fillStyle = '#f1f5f9';
+        ctx.fillStyle = 'rgba(6,182,212,0.9)';
         ctx.font = 'bold 60px Inter';
+        ctx.textAlign = 'center';
         ctx.fillText("DISTRIBUZIONE CARICHI", w / 2, 1240);
+        
+        ctx.fillStyle = 'rgba(6,182,212,0.35)';
+        let w_dc = ctx.measureText("DISTRIBUZIONE CARICHI").width;
+        ctx.fillRect(w / 2 - w_dc / 2, 1255, w_dc, 5);
 
         let cy = 1380;
         const lineColors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
@@ -555,10 +566,15 @@ window.LayoutQuadroEl = {
         ctx.strokeStyle = 'rgba(6, 182, 212, 0.3)';
         ctx.stroke();
 
-        ctx.fillStyle = '#f1f5f9';
+        ctx.fillStyle = 'rgba(6,182,212,0.9)';
         ctx.font = 'bold 60px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText(state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)", w / 2, 2030);
+        let txtAnd = state.vistaSingoleLinee ? "ANDAMENTO NEL TEMPO (SINGOLE LINEE)" : "ANDAMENTO POTENZA (TOTALE)";
+        ctx.fillText(txtAnd, w / 2, 2030);
+        
+        ctx.fillStyle = 'rgba(6,182,212,0.35)';
+        let w_and = ctx.measureText(txtAnd).width;
+        ctx.fillRect(w / 2 - w_and / 2, 2045, w_and, 5);
 
         let expBox = { x: 1250, y: 1920, w: 120, h: 120 };
 
