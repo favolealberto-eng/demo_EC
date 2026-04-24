@@ -1,5 +1,5 @@
 {
-  "0": {
+  "30": {
     "tipo": "iaq",
     "nome": "Sensore IAQ Zona 0",
     "file": "layouts/layout_iaq.js",
